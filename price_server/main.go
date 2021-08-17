@@ -110,7 +110,12 @@ func HandleGetPrice(context *gin.Context) {
 	symbol := context.Param("name")[1 : lastIndex+1]
 	exchange := context.Param("name")[lastIndex+2:]
 
-	var price float64
+	type RspData struct {
+		Timestamps int64
+		Price      float64
+	}
+
+	var rspData RspData
 	bFind := false
 
 	m.RLock()
@@ -119,7 +124,8 @@ func HandleGetPrice(context *gin.Context) {
 		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) &&
 			strings.ToLower(info.PriceOrigin) == strings.ToLower(exchange) {
 			bFind = true
-			price = info.Price
+			rspData.Price = info.Price
+			rspData.Timestamps = info.TimeStamps
 		}
 	}
 	m.RUnlock()
@@ -132,8 +138,7 @@ func HandleGetPrice(context *gin.Context) {
 		return
 	}
 
-	//response.Data = strconv.FormatFloat(price, 'f', 10, 64)
-	response.Data = price
+	response.Data = rspData
 	context.JSON(http.StatusOK, response)
 }
 
@@ -142,6 +147,12 @@ func HandleGetPartyPrice(context *gin.Context) {
 
 	symbol := context.Param("symbol")
 
+	type RspData struct {
+		Price      float64
+		Timestamps int64
+	}
+
+	var rspData RspData
 	bFind := false
 
 	m.RLock()
@@ -153,6 +164,7 @@ func HandleGetPartyPrice(context *gin.Context) {
 			bFind = true
 			totalPrice += info.Price * float64(info.Weight)
 			totalWeight += info.Weight
+			rspData.Timestamps = info.TimeStamps
 		}
 	}
 	m.RUnlock()
@@ -165,7 +177,8 @@ func HandleGetPartyPrice(context *gin.Context) {
 		return
 	}
 
-	response.Data = totalPrice / float64(totalWeight)
+	rspData.Price = totalPrice / float64(totalWeight)
+	response.Data = rspData
 	context.JSON(http.StatusOK, response)
 }
 
@@ -177,9 +190,10 @@ func HandleGetPriceAll(context *gin.Context) {
 	bFind := false
 
 	type PriceAllInfo struct {
-		Name   string
-		Symbol string
-		Price  float64
+		Name       string
+		Symbol     string
+		Price      float64
+		Timestamps int64
 	}
 
 	var priceAll []PriceAllInfo
@@ -191,8 +205,9 @@ func HandleGetPriceAll(context *gin.Context) {
 		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) {
 			bFind = true
 			priceAllInfo := PriceAllInfo{Name: info.PriceOrigin,
-				Symbol: info.Symbol,
-				Price:  info.Price,
+				Symbol:     info.Symbol,
+				Price:      info.Price,
+				Timestamps: info.TimeStamps,
 			}
 			priceAll = append(priceAll, priceAllInfo)
 		}

@@ -5,10 +5,13 @@ import (
 	"log"
 	conf "price_api/price_server/config"
 	"strings"
+	"time"
 )
 
 func GetExchangePrice(cfg conf.Config) (conf.PriceInfos, error) {
 	var retPriceInfos conf.PriceInfos
+
+	timestamps := time.Now().Unix()
 	for _, exchange := range cfg.Exchanges {
 		for _, symbol := range cfg.Symbols {
 			var priceInfo conf.PriceInfo
@@ -22,6 +25,7 @@ func GetExchangePrice(cfg conf.Config) (conf.PriceInfos, error) {
 			priceInfo.Weight = exchange.Weight
 			priceInfo.Symbol = symbol
 			priceInfo.PriceOrigin = exchange.Name
+			priceInfo.TimeStamps = timestamps
 
 			//add price
 			var price float64

@@ -7,8 +7,8 @@ import (
 
 //{"symbol":"BTCUSDT","price":"47653.01000000"}
 type BinancePriceInfo struct {
-	Symbol string `json:symbol`
-	Price  string `json:price`
+	Symbol string `json:"symbol"`
+	Price  string `json:"price"`
 }
 
 func parseBinancePrice(priceJson string) (float64, error) {

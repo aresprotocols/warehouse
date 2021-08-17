@@ -5,6 +5,7 @@ type PriceInfo struct {
 	Price       float64
 	PriceOrigin string
 	Weight      int64
+	TimeStamps  int64
 }
 
 type PriceInfos struct {
