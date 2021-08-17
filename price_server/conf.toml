@@ -2,7 +2,7 @@ interval = 60
 port = 5566
 proxy = "http://127.0.0.1:7890/"
 
-symbols = ["btcusdt", "ethusdt", "dotusdt", "xrpusdt"]
+symbols = ["btc-usdt", "eth-usdt", "dot-usdt", "xrp-usdt"]
 
 [mysql]
 server = "127.0.0.1"
@@ -20,4 +20,31 @@ url = "https://api.binance.com/api/v3/ticker/price?symbol={$symbol}"
 name = "huobi"
 weight = 1
 url = "https://api.huobi.pro/market/detail/merged?symbol={$symbol}"
+
+[exchange.3]
+name = "bitfinex"
+weight = 1
+url = "https://api-pub.bitfinex.com/v2/tickers?symbols=t{$symbol}"
+
+[exchange.4]
+name = "ok"
+weight = 1
+url = "https://www.okex.com/api/spot/v3/instruments/{$symbol1}-{$symbol2}/ticker"
+
+[exchange.5]
+name = "cryptocompare"
+weight = 1
+url = "https://min-api.cryptocompare.com/data/price?fsym={$symbol1}&tsyms={$symbol2}"
+
+[exchange.6]
+name = "coinbase"
+weight = 1
+url = "https://api.pro.coinbase.com/products/{$symbol}/book"
+
+[exchange.7]
+name = "bitstamp"
+weight = 1
+url = "https://www.bitstamp.net/api/v2/ticker/{$symbol}"
+
+
 
