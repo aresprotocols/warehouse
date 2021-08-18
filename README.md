@@ -15,7 +15,9 @@ symbols = ["btc-usdt", "eth-usdt", "dot-usdt", "xrp-usdt", "add token here"]
 base url:http://127.0.0.1:5566/api/
 1. get coin history price (the price must store in db)
 url : getHistoryPrice/$symbol
+
 query param:timestamp
+
 example:http://127.0.0.1:5566/api/getHistoryPrice/btcusdt?timestamp=1629197717
 
 2. get exchange price
