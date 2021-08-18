@@ -1,6 +1,6 @@
 interval = 60
 port = 5566
-insertInterval = 1 #insert db interval  time = insertInterval * interval
+insertInterval = 5 #insert db interval  time = insertInterval * interval
 maxVolume = 60  #max volume in memory
 proxy = "http://127.0.0.1:7890/"
 
