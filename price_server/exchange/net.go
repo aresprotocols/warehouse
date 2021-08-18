@@ -37,7 +37,7 @@ func getPrice(exchangeUrl string, proxyAddr string) (string, error) {
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
-		return "", errors.New("status code :" + strconv.Itoa(res.StatusCode))
+		return "", errors.New("status code :" + strconv.Itoa(res.StatusCode) + " url:" + exchangeUrl)
 	}
 	c, _ := ioutil.ReadAll(res.Body)
 	return string(c), nil

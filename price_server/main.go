@@ -5,8 +5,9 @@ import (
 	"net/http"
 	conf "price_api/price_server/config"
 	exchange "price_api/price_server/exchange"
+	"price_api/price_server/sql"
+
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 
 var gPriceInfosCache conf.PriceInfosCache
 var m *sync.RWMutex
+var gCfg conf.Config
 
 func main() {
 	m = new(sync.RWMutex)
@@ -26,7 +28,14 @@ func main() {
 		return
 	}
 
+	gCfg = cfg
 	log.Println("config load over:", cfg)
+
+	err = sql.InitMysqlDB(cfg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
 	router := gin.Default()
 
@@ -35,6 +44,8 @@ func main() {
 	router.GET("/api/getprice/*name", Check(), HandleGetPrice)
 	router.GET("/api/getPartyPrice/:symbol", Check(), HandleGetPartyPrice)
 	router.GET("/api/getPriceAll/:symbol", Check(), HandleGetPriceAll)
+	router.GET("/api/getConfigWeight", HandleGetConfigWeight)
+	router.GET("/api/getHistoryPrice/:symbol", HandleGetHistoryPrice)
 
 	go updatePrice(cfg)
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
@@ -42,13 +53,28 @@ func main() {
 
 func updatePrice(cfg conf.Config) {
 	for {
+		idx := 0
+
 		infos, err := exchange.GetExchangePrice(cfg)
 		if err != nil {
 			log.Println(err)
 		} else {
+			idx++
 			m.Lock()
 			gPriceInfosCache.PriceInfosCache = append(gPriceInfosCache.PriceInfosCache, infos)
+			if len(gPriceInfosCache.PriceInfosCache) == int(cfg.MaxVolume) {
+				gPriceInfosCache.PriceInfosCache = gPriceInfosCache.PriceInfosCache[cfg.MaxVolume/2:]
+			}
 			m.Unlock()
+		}
+
+		if idx >= int(cfg.InsertInterval) {
+			err = sql.InsertPriceInfo(infos)
+			if err != nil {
+				log.Println(err)
+			} else {
+				idx = 0
+			}
 		}
 		time.Sleep(time.Second * time.Duration(cfg.Interval))
 	}
@@ -81,7 +107,7 @@ func Check() gin.HandlerFunc {
 		m.RUnlock()
 		if infoLen == 0 {
 			response.Code = -1
-			response.Message = "price not ready"
+			response.Message = MSG_PRICE_NOT_READY
 			context.JSON(http.StatusOK, response)
 			context.Abort()
 			return
@@ -91,143 +117,8 @@ func Check() gin.HandlerFunc {
 	}
 }
 
-func HandleHello(context *gin.Context) {
-	context.String(http.StatusOK, "Hello, world")
-}
-
-func HandleGetPrice(context *gin.Context) {
-	response := RESPONSE{Code: 0, Message: "OK"}
-
-	lastIndex := strings.LastIndex(context.Param("name")[1:], "/")
-	if lastIndex == -1 {
-		log.Println("not true param name", context.Param("name")[1:])
-		response.Code = -1
-		response.Message = "url not find"
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	symbol := context.Param("name")[1 : lastIndex+1]
-	exchange := context.Param("name")[lastIndex+2:]
-
-	type RspData struct {
-		Timestamps int64
-		Price      float64
-	}
-
-	var rspData RspData
-	bFind := false
-
-	m.RLock()
-	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
-	for _, info := range latestInfos.PriceInfos {
-		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) &&
-			strings.ToLower(info.PriceOrigin) == strings.ToLower(exchange) {
-			bFind = true
-			rspData.Price = info.Price
-			rspData.Timestamps = info.TimeStamps
-		}
-	}
-	m.RUnlock()
-
-	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol, " exchange:", exchange)
-		response.Code = -1
-		response.Message = "url not find"
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	response.Data = rspData
-	context.JSON(http.StatusOK, response)
-}
-
-func HandleGetPartyPrice(context *gin.Context) {
-	response := RESPONSE{Code: 0, Message: "OK"}
-
-	symbol := context.Param("symbol")
-
-	type RspData struct {
-		Price      float64
-		Timestamps int64
-	}
-
-	var rspData RspData
-	bFind := false
-
-	m.RLock()
-	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
-	totalPrice := 0.0
-	totalWeight := int64(0)
-	for _, info := range latestInfos.PriceInfos {
-		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) {
-			bFind = true
-			totalPrice += info.Price * float64(info.Weight)
-			totalWeight += info.Weight
-			rspData.Timestamps = info.TimeStamps
-		}
-	}
-	m.RUnlock()
-
-	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol)
-		response.Code = -1
-		response.Message = "url not find"
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	rspData.Price = totalPrice / float64(totalWeight)
-	response.Data = rspData
-	context.JSON(http.StatusOK, response)
-}
-
-func HandleGetPriceAll(context *gin.Context) {
-	response := RESPONSE{Code: 0, Message: "OK"}
-
-	symbol := context.Param("symbol")
-
-	bFind := false
-
-	type PriceAllInfo struct {
-		Name       string
-		Symbol     string
-		Price      float64
-		Timestamps int64
-	}
-
-	var priceAll []PriceAllInfo
-
-	m.RLock()
-	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
-
-	for _, info := range latestInfos.PriceInfos {
-		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) {
-			bFind = true
-			priceAllInfo := PriceAllInfo{Name: info.PriceOrigin,
-				Symbol:     info.Symbol,
-				Price:      info.Price,
-				Timestamps: info.TimeStamps,
-			}
-			priceAll = append(priceAll, priceAllInfo)
-		}
-	}
-	m.RUnlock()
-
-	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol)
-		response.Code = -1
-		response.Message = "url not find"
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	response.Data = priceAll
-	context.JSON(http.StatusOK, response)
-}
-
 type RESPONSE struct {
-	Code    int
-	Message string
-	Data    interface{}
+	Code    int         `json:"code"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
 }

@@ -22,12 +22,14 @@ type ExchangeConfig struct {
 }
 
 type Config struct {
-	Interval  int64
-	Port      int64
-	Proxy     string
-	Mysql     MysqlConfig
-	Exchanges []ExchangeConfig
-	Symbols   []string
+	Interval       int64
+	Port           int64
+	Proxy          string
+	InsertInterval int64 `toml:"insertInterval"`
+	MaxVolume      int64 `toml:"maxVolume"`
+	Mysql          MysqlConfig
+	Exchanges      []ExchangeConfig
+	Symbols        []string
 }
 
 // func GetConfig() (Config, error) {
@@ -56,6 +58,16 @@ func GetConfig() (Config, error) {
 	retConfig.Port, ok = config.Get("port").(int64)
 	if !ok {
 		return Config{}, errors.New("parse key port error")
+	}
+
+	retConfig.MaxVolume, ok = config.Get("maxVolume").(int64)
+	if !ok {
+		return Config{}, errors.New("parse key maxVolume error")
+	}
+
+	retConfig.InsertInterval, ok = config.Get("insertInterval").(int64)
+	if !ok {
+		return Config{}, errors.New("parse key insertInterval error")
 	}
 
 	retConfig.Proxy, ok = config.Get("proxy").(string)
