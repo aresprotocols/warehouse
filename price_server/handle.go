@@ -260,7 +260,7 @@ func getHistoryPrice(symbol string, timestamp int64, bAverage bool) (bool, Party
 		//nothing todo
 		//just find db
 	} else {
-		for i := len(gPriceInfosCache.PriceInfosCache); i >= 0; i-- {
+		for i := len(gPriceInfosCache.PriceInfosCache) - 1; i >= 0; i-- {
 			info := gPriceInfosCache.PriceInfosCache[i]
 			if len(info.PriceInfos) == 0 {
 				continue

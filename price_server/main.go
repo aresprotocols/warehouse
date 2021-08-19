@@ -37,6 +37,7 @@ func main() {
 		return
 	}
 
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	router.Use(Cors())

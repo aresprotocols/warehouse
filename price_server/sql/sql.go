@@ -21,6 +21,11 @@ func InitMysqlDB(cfg conf.Config) error {
 		return err
 	}
 
+	err = mysqlDb.Ping()
+	if err != nil {
+		return err
+	}
+
 	db = mysqlDb
 	createOrderTables(mysqlDb, cfg.Mysql.Db)
 
