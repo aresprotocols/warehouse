@@ -35,7 +35,7 @@ func InitMysqlDB(cfg conf.Config) error {
 const TABLE_COIN_PRICE = "t_coin_history_info"
 
 func InsertPriceInfo(cfg conf.PriceInfos) error {
-	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbols,timestamp,price,price_origin,weight)" +
+	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbol,timestamp,price,price_origin,weight)" +
 		" values(?,?,?,?,?)"
 	for _, info := range cfg.PriceInfos {
 		//TODO battle
