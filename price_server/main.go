@@ -53,9 +53,9 @@ func main() {
 }
 
 func updatePrice(cfg conf.Config) {
-	for {
-		idx := 0
+	idx := 0
 
+	for {
 		infos, err := exchange.GetExchangePrice(cfg)
 		if err != nil {
 			log.Println(err)
