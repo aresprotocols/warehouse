@@ -159,3 +159,16 @@ Run
 ```
 
 
+### Get ares info
+
+> http://127.0.0.1:5566/api/getAresAll
+>
+> example:http://127.0.0.1:5566/api/getAresAll
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":{"price":0.04235333740536,"percent_change":-5.38960837,"rank":1108,"market_cap":6516779.946008743,"volume":749528.82939821}}
+```
+
+

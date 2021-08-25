@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	conf "price_api/price_server/config"
+	"price_api/price_server/exchange"
 	"price_api/price_server/sql"
 	"sort"
 	"strconv"
@@ -15,11 +16,13 @@ import (
 const MSG_URL_NOT_FIND = "url not find"
 const MSG_PRICE_NOT_READY = "price not ready"
 const MSG_PARAM_NOT_TRUE = "param not true"
+const MSG_GET_ARES_ERROR = "get ares info error"
 
 const (
 	ERROR = iota - 1000
 	NO_MATCH_FORMAT_ERROR
 	PARAM_NOT_TRUE_ERROR
+	GET_ARES_INFO_ERROR
 )
 
 func HandleHello(context *gin.Context) {
@@ -285,4 +288,17 @@ func getHistoryPrice(symbol string, timestamp int64, bAverage bool) (bool, Party
 	}
 
 	return partyPrice(dbPriceInfos, symbol, bAverage)
+}
+
+func HandleGetAresAll(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+	aresShowInfo, err := exchange.GetAresInfo(gCfg.Proxy)
+	if err != nil {
+		response.Code = GET_ARES_INFO_ERROR
+		response.Message = MSG_GET_ARES_ERROR
+		context.JSON(http.StatusOK, response)
+	}
+
+	response.Data = aresShowInfo
+	context.JSON(http.StatusOK, response)
 }
