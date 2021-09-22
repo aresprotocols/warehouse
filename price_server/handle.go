@@ -177,6 +177,11 @@ type PartyPriceInfo struct {
 	Infos     []WeightInfo `json:"infos"`
 }
 
+type PartyPrice struct {
+	Price     float64 `json:"price"`
+	Timestamp int64   `json:"timestamp"`
+}
+
 //@param bAverage     get average not cointain lowest and highest
 //@return bool     symbol find?
 func partyPrice(infos []conf.PriceInfo, symbol string, bAverage bool) (bool, PartyPriceInfo) {
@@ -288,6 +293,37 @@ func getHistoryPrice(symbol string, timestamp int64, bAverage bool) (bool, Party
 	}
 
 	return partyPrice(dbPriceInfos, symbol, bAverage)
+}
+
+func HandleGetBulkPrices(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	symbols := strings.Split(symbol, "_")
+
+	m.RLock()
+	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
+	m.RUnlock()
+
+	mSymbolPriceInfo := make(map[string]PartyPrice)
+	for _, symbol := range symbols {
+		bFind, partyPriceData := partyPrice(latestInfos.PriceInfos, symbol, true)
+		if !bFind {
+			mSymbolPriceInfo[symbol] = PartyPrice{Price: 0, Timestamp: 0}
+		} else {
+			mSymbolPriceInfo[symbol] = PartyPrice{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
+		}
+	}
+
+	response.Data = mSymbolPriceInfo
+	context.JSON(http.StatusOK, response)
 }
 
 func HandleGetAresAll(context *gin.Context) {

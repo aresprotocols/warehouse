@@ -171,4 +171,18 @@ Run
 {"code":0,"message":"OK","data":{"price":0.04235333740536,"percent_change":-5.38960837,"rank":1108,"market_cap":6516779.946008743,"volume":749528.82939821}}
 ```
 
+### Get symbol price
+
+> http://127.0.0.1:5566/api/getBulkPrices?symbol={}
+>
+> example:http://127.0.0.1:5566/api/getBulkPrices?symbol=btcusdt_ethusdt
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":{"btcusdt":{"price":42174.990000000005,"timestamp":1632279887},"ethusdt":{"price":2874.3959999999997,"timestamp":1632279887}}}
+
+{"code":0,"message":"OK","data":{"arrusdt":{"price":0,"timestamp":0}}}
+```
+
 
