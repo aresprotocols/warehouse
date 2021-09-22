@@ -56,6 +56,7 @@ func GetExchangePrice(cfg conf.Config) (conf.PriceInfos, error) {
 			} else if lowName == "cryptocompare" {
 				price, err = parseCryptoComparePrice(resJson)
 				if err != nil {
+					log.Println(resJson)
 					log.Println(err)
 					continue
 				}
