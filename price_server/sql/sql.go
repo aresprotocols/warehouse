@@ -26,6 +26,7 @@ func InitMysqlDB(cfg conf.Config) error {
 		return err
 	}
 
+	db.SetMaxOpenConns(1)
 	db = mysqlDb
 	createOrderTables(mysqlDb, cfg.Mysql.Db)
 
