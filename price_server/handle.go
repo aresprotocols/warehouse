@@ -17,12 +17,16 @@ const MSG_URL_NOT_FIND = "url not find"
 const MSG_PRICE_NOT_READY = "price not ready"
 const MSG_PARAM_NOT_TRUE = "param not true"
 const MSG_GET_ARES_ERROR = "get ares info error"
+const MSG_PARSE_PARAM_ERROR = "parse param error"
+const MSG_GET_LOG_INFO_ERROR = "get log info error"
 
 const (
 	ERROR = iota - 1000
 	NO_MATCH_FORMAT_ERROR
 	PARAM_NOT_TRUE_ERROR
 	GET_ARES_INFO_ERROR
+	PARSE_PARAM_ERROR
+	GET_LOG_INFO_ERROR
 )
 
 func HandleHello(context *gin.Context) {
@@ -326,12 +330,43 @@ func HandleGetBulkPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetRequestInfo(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	index, exist := context.GetQuery("index")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	idx, err := strconv.Atoi(index)
+	if err != nil {
+		response.Code = PARSE_PARAM_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	logInfos, err := sql.GetLogInfo(idx, int(gCfg.PageSize))
+	if err != nil {
+		response.Code = GET_LOG_INFO_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	response.Data = logInfos
+	context.JSON(http.StatusOK, response)
+}
+
 func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 	aresShowInfo, err := exchange.GetAresInfo(gCfg.Proxy)
 	if err != nil {
 		response.Code = GET_ARES_INFO_ERROR
-		response.Message = MSG_GET_ARES_ERROR
+		response.Message = err.Error()
 		context.JSON(http.StatusOK, response)
 	}
 

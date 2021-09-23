@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
 	"net/http"
 	conf "price_api/price_server/config"
@@ -37,10 +39,13 @@ func main() {
 		return
 	}
 
+	log.Println("mysql init over")
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	router.Use(Cors())
+
 	router.GET("/index", HandleHello)
 	router.GET("/api/getprice/*name", Check(), HandleGetPrice)
 	router.GET("/api/getPartyPrice/:symbol", Check(), HandleGetPartyPrice)
@@ -48,6 +53,7 @@ func main() {
 	router.GET("/api/getConfigWeight", HandleGetConfigWeight)
 	router.GET("/api/getHistoryPrice/:symbol", HandleGetHistoryPrice)
 	router.GET("/api/getBulkPrices", Check(), HandleGetBulkPrices)
+	router.GET("/api/getRequestInfo", HandleGetRequestInfo)
 	router.GET("/api/getAresAll", HandleGetAresAll)
 
 	go updatePrice(cfg)
@@ -83,6 +89,20 @@ func updatePrice(cfg conf.Config) {
 	}
 }
 
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+func (w bodyLogWriter) WriteString(s string) (int, error) {
+	w.body.WriteString(s)
+	return w.ResponseWriter.WriteString(s)
+}
+
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
@@ -97,7 +117,45 @@ func Cors() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusNoContent)
 		}
 
+		bodyLogWriter := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+		c.Writer = bodyLogWriter
+
+		//开始时间
+		startTime := time.Now().Format("2006-01-02 15:04:05")
 		c.Next()
+
+		responseBody := bodyLogWriter.body.String()
+
+		//结束时间
+		endTime := time.Now().Format("2006-01-02 15:04:05")
+
+		if c.Request.Method == "POST" {
+			c.Request.ParseForm()
+		}
+
+		//日志格式
+		accessLogMap := make(map[string]string)
+
+		accessLogMap["request_time"] = startTime
+		accessLogMap["request_method"] = c.Request.Method
+		accessLogMap["request_uri"] = c.Request.RequestURI
+		accessLogMap["request_proto"] = c.Request.Proto
+		accessLogMap["request_ua"] = c.Request.UserAgent()
+		//accessLogMap["request_referer"] = c.Request.Referer()
+		accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
+		accessLogMap["request_client_ip"] = c.ClientIP()
+
+		accessLogMap["response_time"] = endTime
+		accessLogMap["response"] = responseBody
+
+		accessLogJson, _ := json.Marshal(accessLogMap)
+
+		log.Println(string(accessLogJson))
+
+		err := sql.InsertLogInfo(accessLogMap)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
