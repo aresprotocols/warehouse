@@ -25,14 +25,11 @@ create table if not exists t_log_info
 (
      id bigint(20) not NULL AUTO_INCREMENT primary key,
      client_ip varchar(20) not null,
-     method varchar(20) not null,
-     post_data varchar(2048),
-     request_proto varchar(20) not null,
 	 request_time varchar(64) not null,
 	 user_agent varchar(256) not null,
 	 request_url varchar(64) not null,
 	 response_time varchar(64) not null,
-	 request_response varchar(2048) not null
+	 request_response text not null
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 `
 

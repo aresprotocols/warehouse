@@ -69,12 +69,12 @@ func InsertPriceInfo(cfg conf.PriceInfos) error {
 }
 
 func InsertLogInfo(mapInfo map[string]string) error {
-	insertSql := "insert into " + TABLE_LOG_INFO + " (client_ip,method,post_data,request_proto," +
-		"request_time,user_agent,request_url,response_time,request_response)" +
+	insertSql := "insert into " + TABLE_LOG_INFO + " (client_ip,request_time,user_agent,request_url," +
+		"response_time,request_response)" +
 		" values(?,?,?,?," +
-		"?,?,?,?,?)"
-	_, err := db.Exec(insertSql, mapInfo["request_client_ip"], mapInfo["request_method"], mapInfo["request_post_data"], mapInfo["request_proto"],
-		mapInfo["request_time"], mapInfo["request_ua"], mapInfo["request_uri"], mapInfo["response_time"], mapInfo["response"])
+		"?,?)"
+	_, err := db.Exec(insertSql, mapInfo["request_client_ip"], mapInfo["request_time"], mapInfo["request_ua"], mapInfo["request_uri"],
+		mapInfo["response_time"], mapInfo["response"])
 	if err != nil {
 		return err
 	}
@@ -84,9 +84,6 @@ func InsertLogInfo(mapInfo map[string]string) error {
 
 type LOG_INFO struct {
 	ClientIP     string `db:"client_ip" json:"client_ip"`
-	Method       string `db:"method" json:"method"`
-	PostData     string `db:"post_data" json:"post_data"`
-	Proto        string `db:"request_proto" json:"proto"`
 	RequestTime  string `db:"request_time" json:"request_time"`
 	UserAgent    string `db:"user_agent" json:"user_agent"`
 	RequestUrl   string `db:"request_url" json:"request_url"`
@@ -100,7 +97,7 @@ type LOG_INFOS struct {
 
 func GetLogInfo(idx int, pageSize int) (LOG_INFOS, error) {
 	var logInfos LOG_INFOS
-	querySql := "select client_ip,method,post_data,request_proto," +
+	querySql := "select client_ip," +
 		"request_time,user_agent,request_url,response_time,request_response from " +
 		TABLE_LOG_INFO + " order by id desc limit ?,?;"
 	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))

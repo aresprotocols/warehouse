@@ -138,26 +138,22 @@ func Cors() gin.HandlerFunc {
 		accessLogMap := make(map[string]string)
 
 		accessLogMap["request_time"] = startTime
-		accessLogMap["request_method"] = c.Request.Method
+		//accessLogMap["request_method"] = c.Request.Method
 		accessLogMap["request_uri"] = c.Request.RequestURI
-		accessLogMap["request_proto"] = c.Request.Proto
+		//accessLogMap["request_proto"] = c.Request.Proto
 		accessLogMap["request_ua"] = c.Request.UserAgent()
 		//accessLogMap["request_referer"] = c.Request.Referer()
-		accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
+		//accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
 		accessLogMap["request_client_ip"] = c.ClientIP()
 
 		accessLogMap["response_time"] = endTime
-		if len(responseBody) >= 2048 {
-			accessLogMap["response"] = responseBody[0:2047]
-		} else {
-			accessLogMap["response"] = responseBody
-		}
+		accessLogMap["response"] = responseBody
 
 		accessLogJson, _ := json.Marshal(accessLogMap)
 
 		log.Println(string(accessLogJson))
 
-		if strings.Contains(accessLogMap["request_uri"], "getRequestInfo") {
+		if !strings.Contains(accessLogMap["request_uri"], "getRequestInfo") {
 			err := sql.InsertLogInfo(accessLogMap)
 			if err != nil {
 				log.Println(err)
