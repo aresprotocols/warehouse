@@ -185,4 +185,16 @@ Run
 {"code":0,"message":"OK","data":{"arrusdt":{"price":0,"timestamp":0}}}
 ```
 
+### Get log info
+
+> http://127.0.0.1:5566/api/getRequestInfo?index={}
+>
+> example:http://127.0.0.1:5566/api/getRequestInfo?index=0
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":{"infos":[{"client_ip":"127.0.0.1","method":"GET","post_data":"","proto":"HTTP/1.1","request_time":"2021-09-23 16:37:32","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36","request_url":"/api/getRequestInfo?index=1","response_time":"2021-09-23 16:37:32","response":"{\"code\":0,\"message\":\"OK\",\"data\":{\"infos\":null}}"}]}}
+```
+
 
