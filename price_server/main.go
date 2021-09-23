@@ -8,6 +8,7 @@ import (
 	conf "price_api/price_server/config"
 	exchange "price_api/price_server/exchange"
 	"price_api/price_server/sql"
+	"strings"
 
 	"strconv"
 	"sync"
@@ -146,15 +147,21 @@ func Cors() gin.HandlerFunc {
 		accessLogMap["request_client_ip"] = c.ClientIP()
 
 		accessLogMap["response_time"] = endTime
-		accessLogMap["response"] = responseBody
+		if len(responseBody) >= 2048 {
+			accessLogMap["response"] = responseBody[0:2047]
+		} else {
+			accessLogMap["response"] = responseBody
+		}
 
 		accessLogJson, _ := json.Marshal(accessLogMap)
 
 		log.Println(string(accessLogJson))
 
-		err := sql.InsertLogInfo(accessLogMap)
-		if err != nil {
-			log.Println(err)
+		if strings.Contains(accessLogMap["request_uri"], "getRequestInfo") {
+			err := sql.InsertLogInfo(accessLogMap)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 }

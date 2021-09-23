@@ -12,9 +12,32 @@ import (
 
 var db *sqlx.DB
 
+func createTable(cfg conf.Config) error {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/?charset=utf8", cfg.Mysql.Name, cfg.Mysql.Password, cfg.Mysql.Server, cfg.Mysql.Port)
+	mysqlDb, err := sqlx.Open("mysql", dsn)
+	if err != nil {
+		return err
+	}
+	defer mysqlDb.Close()
+
+	err = mysqlDb.Ping()
+	if err != nil {
+		return err
+	}
+
+	createOrderTables(mysqlDb, cfg.Mysql.Db)
+
+	return nil
+}
+
 //operation about mysql
 func InitMysqlDB(cfg conf.Config) error {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/?charset=utf8", cfg.Mysql.Name, cfg.Mysql.Password, cfg.Mysql.Server, cfg.Mysql.Port)
+	err := createTable(cfg)
+	if err != nil {
+		return err
+	}
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8", cfg.Mysql.Name, cfg.Mysql.Password, cfg.Mysql.Server, cfg.Mysql.Port, cfg.Mysql.Db)
 	mysqlDb, err := sqlx.Open("mysql", dsn)
 	//db.SetMaxIdleConns(conf.Mysql.Conn.MaxIdle)
 	//db.SetMaxOpenConns(conf.Mysql.Conn.Maxopen)
@@ -23,14 +46,7 @@ func InitMysqlDB(cfg conf.Config) error {
 		return err
 	}
 
-	err = mysqlDb.Ping()
-	if err != nil {
-		return err
-	}
-
 	db = mysqlDb
-	db.SetMaxOpenConns(1)
-	createOrderTables(mysqlDb, cfg.Mysql.Db)
 
 	return nil
 }
