@@ -28,6 +28,7 @@ type Config struct {
 	InsertInterval int64 `toml:"insertInterval"`
 	MaxMemTime     int64 `toml:"maxMemTime"`
 	PageSize       int64 `toml:"pageSize"`
+	RetryCount     int64 `toml:"retryCount"`
 	User           string
 	Password       string
 	Mysql          MysqlConfig
@@ -76,6 +77,11 @@ func GetConfig() (Config, error) {
 	retConfig.PageSize, ok = config.Get("pageSize").(int64)
 	if !ok {
 		return Config{}, errors.New("parse key pageSize error")
+	}
+
+	retConfig.RetryCount, ok = config.Get("retryCount").(int64)
+	if !ok {
+		return Config{}, errors.New("parse key retryCount error")
 	}
 
 	retConfig.Proxy, ok = config.Get("proxy").(string)

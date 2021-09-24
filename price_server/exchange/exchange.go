@@ -16,7 +16,7 @@ func GetExchangePrice(cfg conf.Config) (conf.PriceInfos, error) {
 	timestamp := time.Now().Unix()
 	for _, exchange := range cfg.Exchanges {
 		for _, symbol := range cfg.Symbols {
-			go getPriceInfo(exchange, symbol, cfg.Proxy)
+			go getPriceInfo(exchange, symbol, cfg)
 		}
 	}
 
@@ -31,14 +31,23 @@ func GetExchangePrice(cfg conf.Config) (conf.PriceInfos, error) {
 	return retPriceInfos, nil
 }
 
-func getPriceInfo(exchange conf.ExchangeConfig, symbol string, proxy string) {
+func getPriceInfo(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) {
 	var priceInfo conf.PriceInfo
 	defer func() {
 		gCh <- priceInfo
 	}()
 
+	var resJson string
+	var err error
+
 	lowName := strings.ToLower(exchange.Name)
-	resJson, err := getPriceBySymbolExchange(exchange.Url, symbol, exchange.Name, proxy)
+	for i := 0; i < int(cfg.RetryCount); i++ {
+		resJson, err = getPriceBySymbolExchange(exchange.Url, symbol, exchange.Name, cfg.Proxy)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 3)
+	}
 	if err != nil {
 		log.Println(err)
 		return
