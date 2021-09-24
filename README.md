@@ -197,4 +197,16 @@ Run
 {"code":0,"message":"OK","data":{"infos":[{"client_ip":"127.0.0.1","method":"GET","post_data":"","proto":"HTTP/1.1","request_time":"2021-09-23 16:37:32","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36","request_url":"/api/getRequestInfo?index=1","response_time":"2021-09-23 16:37:32","response":"{\"code\":0,\"message\":\"OK\",\"data\":{\"infos\":null}}"}]}}
 ```
 
+### Get local prices
+
+> http://127.0.0.1:5566/api/getLocalPrices?index={}
+>
+> example:http://127.0.0.1:5566/api/getLocalPrices?index=0
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":{"PriceInfosCache":[{"PriceInfos":[{"Symbol":"btcusdt","Price":44338.14,"PriceOrigin":"binance","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3083.8,"PriceOrigin":"binance","Weight":1,"TimeStamp":1632463535},{"Symbol":"btcusdt","Price":44339.44,"PriceOrigin":"huobi","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3083.77,"PriceOrigin":"huobi","Weight":1,"TimeStamp":1632463535},{"Symbol":"btcusdt","Price":44358,"PriceOrigin":"bitfinex","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3084.6,"PriceOrigin":"bitfinex","Weight":1,"TimeStamp":1632463535},{"Symbol":"btcusdt","Price":44337.6,"PriceOrigin":"ok","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3082.91,"PriceOrigin":"ok","Weight":1,"TimeStamp":1632463535},{"Symbol":"btcusdt","Price":44337.45,"PriceOrigin":"cryptocompare","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3083.58,"PriceOrigin":"cryptocompare","Weight":1,"TimeStamp":1632463535},{"Symbol":"btcusdt","Price":44341.25,"PriceOrigin":"coinbase","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3081.91,"PriceOrigin":"coinbase","Weight":1,"TimeStamp":1632463535},{"Symbol":"btcusdt","Price":44316.63,"PriceOrigin":"bitstamp","Weight":1,"TimeStamp":1632463535},{"Symbol":"ethusdt","Price":3067.31,"PriceOrigin":"bitstamp","Weight":1,"TimeStamp":1632463535}]}]}}
+```
+
 

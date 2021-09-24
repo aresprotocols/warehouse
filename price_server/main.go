@@ -55,6 +55,7 @@ func main() {
 	router.GET("/api/getHistoryPrice/:symbol", HandleGetHistoryPrice)
 	router.GET("/api/getBulkPrices", Check(), HandleGetBulkPrices)
 	router.GET("/api/getRequestInfo", HandleGetRequestInfo)
+	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
 	router.GET("/api/getAresAll", HandleGetAresAll)
 
 	go updatePrice(cfg)

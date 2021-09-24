@@ -1,7 +1,7 @@
 interval = 60
 port = 5566
 insertInterval = 5 #insert db interval  time = insertInterval * interval
-maxVolume = 60  #max volume in memory
+maxMemTime = 18000  #max memory time in memory （second）
 pageSize = 20 
 user = "root"
 password = "49ba59abbe56e057"

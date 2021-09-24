@@ -386,6 +386,43 @@ func HandleGetRequestInfo(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetLocalPrices(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	index, exist := context.GetQuery("index")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	idx, err := strconv.Atoi(index)
+	if err != nil {
+		response.Code = PARSE_PARAM_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	start := idx * int(gCfg.PageSize)
+	end := start + int(gCfg.PageSize)
+
+	retData := conf.PriceInfosCache{}
+	m.RLock()
+	if start < len(gPriceInfosCache.PriceInfosCache) {
+		if end < len(gPriceInfosCache.PriceInfosCache) {
+			retData.PriceInfosCache = gPriceInfosCache.PriceInfosCache[start:end]
+		} else {
+			retData.PriceInfosCache = gPriceInfosCache.PriceInfosCache[start:]
+		}
+	}
+	m.RUnlock()
+
+	response.Data = retData
+	context.JSON(http.StatusOK, response)
+}
+
 func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 	aresShowInfo, err := exchange.GetAresInfo(gCfg.Proxy)
