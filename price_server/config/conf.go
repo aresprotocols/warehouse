@@ -26,7 +26,7 @@ type Config struct {
 	Port           int64
 	Proxy          string
 	InsertInterval int64 `toml:"insertInterval"`
-	MaxVolume      int64 `toml:"maxVolume"`
+	MaxMemTime     int64 `toml:"maxMemTime"`
 	PageSize       int64 `toml:"pageSize"`
 	User           string
 	Password       string
@@ -63,9 +63,9 @@ func GetConfig() (Config, error) {
 		return Config{}, errors.New("parse key port error")
 	}
 
-	retConfig.MaxVolume, ok = config.Get("maxVolume").(int64)
+	retConfig.MaxMemTime, ok = config.Get("maxMemTime").(int64)
 	if !ok {
-		return Config{}, errors.New("parse key maxVolume error")
+		return Config{}, errors.New("parse key maxMemTime error")
 	}
 
 	retConfig.InsertInterval, ok = config.Get("insertInterval").(int64)

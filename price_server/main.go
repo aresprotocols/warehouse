@@ -72,8 +72,8 @@ func updatePrice(cfg conf.Config) {
 			idx++
 			m.Lock()
 			gPriceInfosCache.PriceInfosCache = append(gPriceInfosCache.PriceInfosCache, infos)
-			if len(gPriceInfosCache.PriceInfosCache) == int(cfg.MaxVolume) {
-				gPriceInfosCache.PriceInfosCache = gPriceInfosCache.PriceInfosCache[cfg.MaxVolume/2:]
+			if len(gPriceInfosCache.PriceInfosCache) > int(cfg.MaxMemTime) {
+				gPriceInfosCache.PriceInfosCache = gPriceInfosCache.PriceInfosCache[1:]
 			}
 			m.Unlock()
 		}
