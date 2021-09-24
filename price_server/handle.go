@@ -19,6 +19,7 @@ const MSG_PARAM_NOT_TRUE = "param not true"
 const MSG_GET_ARES_ERROR = "get ares info error"
 const MSG_PARSE_PARAM_ERROR = "parse param error"
 const MSG_GET_LOG_INFO_ERROR = "get log info error"
+const MSG_CHECK_USER_ERROR = "user and password not match"
 
 const (
 	ERROR = iota - 1000
@@ -27,6 +28,7 @@ const (
 	GET_ARES_INFO_ERROR
 	PARSE_PARAM_ERROR
 	GET_LOG_INFO_ERROR
+	CHECK_USER_ERROR
 )
 
 func HandleHello(context *gin.Context) {
@@ -345,6 +347,29 @@ func HandleGetRequestInfo(context *gin.Context) {
 	if err != nil {
 		response.Code = PARSE_PARAM_ERROR
 		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	user, exist := context.GetQuery("user")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	password, exist := context.GetQuery("password")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	if user != gCfg.User || password != gCfg.Password {
+		response.Code = CHECK_USER_ERROR
+		response.Message = MSG_CHECK_USER_ERROR
 		context.JSON(http.StatusOK, response)
 		return
 	}

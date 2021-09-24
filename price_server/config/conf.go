@@ -28,6 +28,8 @@ type Config struct {
 	InsertInterval int64 `toml:"insertInterval"`
 	MaxVolume      int64 `toml:"maxVolume"`
 	PageSize       int64 `toml:"pageSize"`
+	User           string
+	Password       string
 	Mysql          MysqlConfig
 	Exchanges      []ExchangeConfig
 	Symbols        []string
@@ -79,6 +81,16 @@ func GetConfig() (Config, error) {
 	retConfig.Proxy, ok = config.Get("proxy").(string)
 	if !ok {
 		return Config{}, errors.New("parse key proxy error")
+	}
+
+	retConfig.User, ok = config.Get("user").(string)
+	if !ok {
+		return Config{}, errors.New("parse key user error")
+	}
+
+	retConfig.Password, ok = config.Get("password").(string)
+	if !ok {
+		return Config{}, errors.New("parse key password error")
 	}
 
 	sysbols := config.Get("symbols")
