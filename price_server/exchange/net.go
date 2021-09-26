@@ -24,6 +24,7 @@ func getPrice(exchangeUrl string, proxyAddr string) (string, error) {
 			Proxy:                 http.ProxyURL(proxy),
 			MaxIdleConnsPerHost:   10,
 			ResponseHeaderTimeout: time.Second * time.Duration(5),
+			DisableKeepAlives:     true,
 		}
 		httpClient = &http.Client{
 			Timeout:   time.Second * 10,

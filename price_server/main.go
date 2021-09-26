@@ -127,20 +127,17 @@ func Cors() gin.HandlerFunc {
 		bodyLogWriter := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 		c.Writer = bodyLogWriter
 
-		//开始时间
 		startTime := time.Now().Format("2006-01-02 15:04:05")
 		c.Next()
 
 		responseBody := bodyLogWriter.body.String()
 
-		//结束时间
 		endTime := time.Now().Format("2006-01-02 15:04:05")
 
 		if c.Request.Method == "POST" {
 			c.Request.ParseForm()
 		}
 
-		//日志格式
 		accessLogMap := make(map[string]string)
 
 		accessLogMap["request_time"] = startTime

@@ -3,7 +3,7 @@ port = 5566
 insertInterval = 5 #insert db interval  time = insertInterval * interval
 maxMemTime = 18000  #max memory time in memory （second）
 pageSize = 20 
-retryCount = 1
+retryCount = 3
 user = "root"
 password = "49ba59abbe56e057"
 proxy = "http://127.0.0.1:7890/"
