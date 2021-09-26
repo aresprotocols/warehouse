@@ -58,6 +58,7 @@ func main() {
 	router.GET("/api/getConfigWeight", HandleGetConfigWeight)
 	router.GET("/api/getHistoryPrice/:symbol", HandleGetHistoryPrice)
 	router.GET("/api/getBulkPrices", Check(), HandleGetBulkPrices)
+	router.GET("/api/getReqConfig", HandleGetReqConfig)
 	router.GET("/api/getRequestInfo", HandleGetRequestInfo)
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
 	router.GET("/api/getAresAll", HandleGetAresAll)

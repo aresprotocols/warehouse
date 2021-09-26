@@ -39,8 +39,8 @@ func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config)
 		}
 	}
 
-	end := time.Now().Unix()
-	log.Println("cost time:", end-timestamp)
+	// end := time.Now().Unix()
+	// log.Println("cost time:", end-timestamp)
 
 	return retPriceInfos, nil
 }

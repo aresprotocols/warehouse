@@ -332,6 +332,20 @@ func HandleGetBulkPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetReqConfig(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	data := make(map[string][]string)
+	for symbol, confList := range gRequestPriceConfs {
+		for _, conf := range confList {
+			data[symbol] = append(data[symbol], conf.Name)
+		}
+	}
+
+	response.Data = data
+	context.JSON(http.StatusOK, response)
+}
+
 func HandleGetRequestInfo(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
