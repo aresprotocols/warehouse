@@ -10,23 +10,37 @@ import (
 
 var gCh = make(chan conf.PriceInfo)
 
-func GetExchangePrice(cfg conf.Config) (conf.PriceInfos, error) {
+type RESPONSE_PRICE_CONF struct {
+	Price  float64
+	Conf   conf.ExchangeConfig
+	Symbol string
+}
+
+var gResPriceConfCH = make(chan RESPONSE_PRICE_CONF)
+
+func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config) (conf.PriceInfos, error) {
 	var retPriceInfos conf.PriceInfos
 
 	timestamp := time.Now().Unix()
-	for _, exchange := range cfg.Exchanges {
-		for _, symbol := range cfg.Symbols {
-			go getPriceInfo(exchange, symbol, cfg)
+
+	reqCount := 0
+	for symbol, confList := range reqConf {
+		for _, exchangeConf := range confList {
+			reqCount++
+			go getPriceInfo(exchangeConf, symbol, cfg)
 		}
 	}
 
-	for i := 0; i < len(cfg.Exchanges)*len(cfg.Symbols); i++ {
+	for i := 0; i < reqCount; i++ {
 		priceInfo := <-gCh
 		priceInfo.TimeStamp = timestamp
 		if priceInfo.Price != 0 {
 			retPriceInfos.PriceInfos = append(retPriceInfos.PriceInfos, priceInfo)
 		}
 	}
+
+	end := time.Now().Unix()
+	log.Println("cost time:", end-timestamp)
 
 	return retPriceInfos, nil
 }
@@ -37,77 +51,11 @@ func getPriceInfo(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) 
 		gCh <- priceInfo
 	}()
 
-	var resJson string
-	var err error
-
-	lowName := strings.ToLower(exchange.Name)
-	for i := 0; i < int(cfg.RetryCount); i++ {
-		resJson, err = getPriceBySymbolExchange(exchange.Url, symbol, exchange.Name, cfg.Proxy)
-		if err == nil {
-			break
-		}
-		time.Sleep(time.Second * 3)
-	}
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
 	priceInfo.Weight = exchange.Weight
 	priceInfo.Symbol = strings.Replace(symbol, "-", "", -1)
 	priceInfo.PriceOrigin = exchange.Name
 
-	//add price
-	var price float64
-	if lowName == "binance" {
-		price, err = parseBinancePrice(resJson)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else if lowName == "huobi" {
-		price, err = parseHuobiPrice(resJson)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else if lowName == "bitfinex" {
-		price, err = parseBitfinexPrice(resJson)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else if lowName == "ok" {
-		price, err = parseOkPrice(resJson)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else if lowName == "cryptocompare" {
-		price, err = parseCryptoComparePrice(resJson)
-		if err != nil {
-			log.Println(resJson)
-			log.Println(err)
-			return
-		}
-	} else if lowName == "coinbase" {
-		price, err = parseCoinbasePrice(resJson)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else if lowName == "bitstamp" {
-		price, err = parseBitStampPrice(resJson)
-		if err != nil {
-			log.Println(err)
-			return
-		}
-	} else {
-		log.Println("unknow exchange name:", exchange.Name)
-		return
-	}
-
-	priceInfo.Price = price
+	priceInfo.Price = getPriceByConf(exchange, symbol, cfg)
 }
 
 func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, error) {
@@ -176,4 +124,101 @@ func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, 
 	} else {
 		return "", errors.New("unknow exchangeName:" + exchangeName)
 	}
+}
+
+func InitRequestPriceConf(cfg conf.Config) map[string][]conf.ExchangeConfig {
+	retRequestPriceConf := make(map[string][]conf.ExchangeConfig)
+
+	for _, exchange := range cfg.Exchanges {
+		for _, symbol := range cfg.Symbols {
+			go initRequestPrice(exchange, symbol, cfg)
+		}
+	}
+
+	for i := 0; i < len(cfg.Exchanges)*len(cfg.Symbols); i++ {
+		resPriceConf := <-gResPriceConfCH
+		if resPriceConf.Price != 0 {
+			retRequestPriceConf[resPriceConf.Symbol] = append(retRequestPriceConf[resPriceConf.Symbol], resPriceConf.Conf)
+		}
+	}
+
+	return retRequestPriceConf
+}
+
+func initRequestPrice(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) {
+	resPriceConf := RESPONSE_PRICE_CONF{Conf: exchange, Symbol: symbol}
+	defer func() {
+		gResPriceConfCH <- resPriceConf
+	}()
+
+	resPriceConf.Price = getPriceByConf(exchange, symbol, cfg)
+}
+
+func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) float64 {
+	var resJson string
+	var err error
+
+	lowName := strings.ToLower(exchange.Name)
+	for i := 0; i < int(cfg.RetryCount); i++ {
+		resJson, err = getPriceBySymbolExchange(exchange.Url, symbol, exchange.Name, cfg.Proxy)
+		if err == nil {
+			break
+		}
+		time.Sleep(time.Second * 3)
+	}
+	if err != nil {
+		log.Println(err)
+		return 0
+	}
+
+	//add price
+	var price float64
+	if lowName == "binance" {
+		price, err = parseBinancePrice(resJson)
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
+	} else if lowName == "huobi" {
+		price, err = parseHuobiPrice(resJson)
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
+	} else if lowName == "bitfinex" {
+		price, err = parseBitfinexPrice(resJson)
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
+	} else if lowName == "ok" {
+		price, err = parseOkPrice(resJson)
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
+	} else if lowName == "cryptocompare" {
+		price, err = parseCryptoComparePrice(resJson)
+		if err != nil {
+			log.Println(resJson)
+			log.Println(err)
+			return 0
+		}
+	} else if lowName == "coinbase" {
+		price, err = parseCoinbasePrice(resJson)
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
+	} else if lowName == "bitstamp" {
+		price, err = parseBitStampPrice(resJson)
+		if err != nil {
+			log.Println(err)
+			return 0
+		}
+	} else {
+		log.Println("unknow exchange name:", exchange.Name)
+		return 0
+	}
+	return price
 }

@@ -20,9 +20,11 @@ import (
 var gPriceInfosCache conf.PriceInfosCache
 var m *sync.RWMutex
 var gCfg conf.Config
+var gRequestPriceConfs map[string][]conf.ExchangeConfig
 
 func main() {
 	m = new(sync.RWMutex)
+	//gRequestPriceConfs = make(map[string][]conf.ExchangeConfig)
 
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	cfg, err := conf.GetConfig()
@@ -33,6 +35,8 @@ func main() {
 
 	gCfg = cfg
 	log.Println("config load over:", cfg)
+
+	gRequestPriceConfs = exchange.InitRequestPriceConf(cfg)
 
 	err = sql.InitMysqlDB(cfg)
 	if err != nil {
@@ -58,15 +62,15 @@ func main() {
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
 	router.GET("/api/getAresAll", HandleGetAresAll)
 
-	go updatePrice(cfg)
+	go updatePrice(cfg, gRequestPriceConfs)
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
 }
 
-func updatePrice(cfg conf.Config) {
+func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 	idx := 0
 
 	for {
-		infos, err := exchange.GetExchangePrice(cfg)
+		infos, err := exchange.GetExchangePrice(reqConf, cfg)
 		if err != nil {
 			log.Println(err)
 		} else {
