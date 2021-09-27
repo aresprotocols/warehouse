@@ -151,28 +151,6 @@ func HandleGetPriceAll(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func HandleGetConfigWeight(context *gin.Context) {
-	response := RESPONSE{Code: 0, Message: "OK"}
-
-	type WeightInfo struct {
-		ExchangeName string `json:"exchangeName"`
-		Weight       int64  `json:"weight"`
-	}
-
-	type ExchangesWeightInfo struct {
-		WeightInfos []WeightInfo `json:"weightInfos"`
-	}
-
-	var exchangesWeightInfo ExchangesWeightInfo
-
-	for _, info := range gCfg.Exchanges {
-		exchangesWeightInfo.WeightInfos = append(exchangesWeightInfo.WeightInfos, WeightInfo{ExchangeName: info.Name, Weight: info.Weight})
-	}
-
-	response.Data = exchangesWeightInfo
-	context.JSON(http.StatusOK, response)
-}
-
 type WeightInfo struct {
 	Price        float64 `json:"price"`
 	Weight       int64   `json:"weight"`
