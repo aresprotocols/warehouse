@@ -44,10 +44,21 @@ create table if not exists t_http_error
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 `
 
+var t_weight_info = `
+create table if not exists t_weight_info
+(
+     id bigint(20) not NULL AUTO_INCREMENT primary key,
+     symbol varchar(16) not null,
+	 exchange varchar(16) not null,
+	 weight integer not null
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+`
+
 func createOrderTables(db *sqlx.DB, dbName string) {
 	db.MustExec(db_create)
 	db.MustExec("USE " + dbName)
 	db.MustExec(t_coin_history_info)
 	db.MustExec(t_log_info)
 	db.MustExec(t_http_error)
+	db.MustExec(t_weight_info)
 }

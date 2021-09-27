@@ -5,6 +5,7 @@ import (
 	"log"
 	conf "price_api/price_server/config"
 	"strconv"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -55,6 +56,7 @@ func InitMysqlDB(cfg conf.Config) error {
 const TABLE_COIN_PRICE = "t_coin_history_info"
 const TABLE_LOG_INFO = "t_log_info"
 const TABLE_HTTP_ERROR = "t_http_error"
+const TABLE_WEIGH_INFO = "t_weight_info"
 
 func InsertPriceInfo(cfg conf.PriceInfos) error {
 	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbol,timestamp,price,price_origin,weight)" +
@@ -163,4 +165,45 @@ func GetHttpErrorInfo(idx int, pageSize int) (HTTP_ERROR_INFOS, error) {
 	}
 
 	return httpErrorInfos, nil
+}
+
+//check symbo exchangeName in db, if not, update. if in. get weight return
+func CheckUpdateWeight(symbol, exchangeName string, weight int64) (int64, error) {
+	var weightDb int64
+	querySql := "select weight from " + TABLE_WEIGH_INFO + " where symbol = ? and exchange = ?"
+	err := db.Get(&weightDb, querySql, symbol, exchangeName)
+	if err != nil {
+		//no result, insert weight to db
+		if strings.Contains(err.Error(), "no rows in result set") {
+			insertSql := "insert into " + TABLE_WEIGH_INFO + " (symbol,exchange,weight)" +
+				" values(?,?,?)"
+			_, err := db.Exec(insertSql, symbol, exchangeName, weight)
+			if err != nil {
+				return weight, err
+			} else {
+				return weight, nil
+			}
+		} else {
+			return weight, err
+		}
+	}
+
+	return weightDb, nil
+}
+
+func SetWeight(symbol, exchangeName string, weight int) error {
+	var weightDb int64
+	querySql := "select weight from " + TABLE_WEIGH_INFO + " where symbol = ? and exchange = ?"
+	err := db.Get(&weightDb, querySql, symbol, exchangeName)
+	if err != nil {
+		return err
+	}
+
+	updateSql := "update " + TABLE_WEIGH_INFO + " set weight = ? where symbol = ? and exchange = ?"
+	_, err = db.Exec(updateSql, weight, symbol, exchangeName)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

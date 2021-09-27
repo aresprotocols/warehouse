@@ -30,6 +30,7 @@ const (
 	GET_LOG_INFO_ERROR
 	GET_HTTP_ERROR_ERROR
 	CHECK_USER_ERROR
+	SET_WEIGHT_ERROR
 )
 
 func HandleHello(context *gin.Context) {
@@ -336,10 +337,15 @@ func HandleGetBulkPrices(context *gin.Context) {
 func HandleGetReqConfig(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
-	data := make(map[string][]string)
+	type EXCHANGE_WEIGHT_INFO struct {
+		Exchange string `json:"exchange"`
+		Weight   int64  `json:"weight"`
+	}
+
+	data := make(map[string][]EXCHANGE_WEIGHT_INFO)
 	for symbol, confList := range gRequestPriceConfs {
 		for _, conf := range confList {
-			data[symbol] = append(data[symbol], conf.Name)
+			data[symbol] = append(data[symbol], EXCHANGE_WEIGHT_INFO{Exchange: conf.Name, Weight: conf.Weight})
 		}
 	}
 
@@ -487,6 +493,61 @@ func HandleGetLocalPrices(context *gin.Context) {
 	}
 
 	response.Data = retData
+	context.JSON(http.StatusOK, response)
+}
+
+func HandleSetWeight(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	weightStr, exist := context.GetQuery("weight")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	weight, err := strconv.Atoi(weightStr)
+	if err != nil {
+		response.Code = PARSE_PARAM_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	exchange, exist := context.GetQuery("exchange")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	err = sql.SetWeight(symbol, exchange, weight)
+	if err != nil {
+		response.Code = SET_WEIGHT_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	m.Lock()
+	for i, conf := range gRequestPriceConfs[symbol] {
+		if conf.Name == exchange {
+			gRequestPriceConfs[symbol][i].Weight = int64(weight)
+			break
+		}
+	}
+	m.Unlock()
+
 	context.JSON(http.StatusOK, response)
 }
 

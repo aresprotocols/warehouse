@@ -231,3 +231,15 @@ Run
 ```javascript
 {"code":0,"message":"OK","data":{"infos":[{"url":"https://www.okex.com/api/spot/v3/instruments/{$symbol1}-{$symbol2}/ticker","symbol":"btc-usdt","error":"test error","Timestamp":1632727340},{"url":"https://api.huobi.pro/market/detail/merged?symbol={$symbol}","symbol":"btc-usdt","error":"test error","Timestamp":1632727288}]}}
 ```
+
+### set weight
+
+> http://127.0.0.1:5566/api/setWeight?exchange={}&symbol={}&weight={}
+>
+> example:http://127.0.0.1:5566/api/setWeight?exchange=coinbase&symbol=btc-usdt&weight=3
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":null}
+```

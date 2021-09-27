@@ -36,8 +36,6 @@ func main() {
 	gCfg = cfg
 	log.Println("config load over:", cfg)
 
-	gRequestPriceConfs = exchange.InitRequestPriceConf(cfg)
-
 	err = sql.InitMysqlDB(cfg)
 	if err != nil {
 		log.Println(err)
@@ -45,6 +43,13 @@ func main() {
 	}
 
 	log.Println("mysql init over")
+
+	gRequestPriceConfs, err = exchange.InitRequestPriceConf(cfg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Println("request init over")
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
@@ -62,6 +67,7 @@ func main() {
 	router.GET("/api/getRequestInfo", HandleGetRequestInfo)
 	router.GET("/api/getHttpErrorInfo", HandleGetHttpErrorInfo)
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
+	router.GET("/api/setWeight", Check(), HandleSetWeight)
 	router.GET("/api/getAresAll", HandleGetAresAll)
 
 	go updatePrice(cfg, gRequestPriceConfs)

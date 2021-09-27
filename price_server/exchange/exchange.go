@@ -127,7 +127,7 @@ func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, 
 	}
 }
 
-func InitRequestPriceConf(cfg conf.Config) map[string][]conf.ExchangeConfig {
+func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, error) {
 	retRequestPriceConf := make(map[string][]conf.ExchangeConfig)
 
 	for _, exchange := range cfg.Exchanges {
@@ -143,7 +143,17 @@ func InitRequestPriceConf(cfg conf.Config) map[string][]conf.ExchangeConfig {
 		}
 	}
 
-	return retRequestPriceConf
+	for symbol, configs := range retRequestPriceConf {
+		for i, config := range configs {
+			weight, err := sql.CheckUpdateWeight(symbol, config.Name, config.Weight)
+			if err != nil {
+				return retRequestPriceConf, err
+			}
+			retRequestPriceConf[symbol][i].Weight = weight
+		}
+	}
+
+	return retRequestPriceConf, nil
 }
 
 func initRequestPrice(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) {
