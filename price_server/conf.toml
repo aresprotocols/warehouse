@@ -48,16 +48,11 @@ weight = 1
 url = "https://www.okex.com/api/spot/v3/instruments/{$symbol1}-{$symbol2}/ticker"
 
 [exchange.5]
-name = "cryptocompare"
-weight = 1
-url = "https://min-api.cryptocompare.com/data/price?fsym={$symbol1}&tsyms={$symbol2}"
-
-[exchange.6]
 name = "coinbase"
 weight = 1
 url = "https://api.pro.coinbase.com/products/{$symbol}/book"
 
-[exchange.7]
+[exchange.6]
 name = "bitstamp"
 weight = 1
 url = "https://www.bitstamp.net/api/v2/ticker/{$symbol}"
