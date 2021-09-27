@@ -85,19 +85,6 @@ Run
 ```
 
 ## Api
-###  Get weight by config
->
-> http://127.0.0.1:5566/api/getConfigWeight
->
-**Return**
-
-``` javascript
-{"code":0,"message":"OK","data":{"weightInfos":[{"exchangeName":"binance","weight":1},{"exchangeName":"huobi","weight":1},
-{"exchangeName":"bitfinex","weight":1},{"exchangeName":"ok","weight":1},{"exchangeName":"cryptocompare","weight":1},{"exchangeName":"coinbase","weight":1},
-{"exchangeName":"bitstamp","weight":1}]}}
-```
-
-
 ### Get exchange price
 >
 > http://127.0.0.1:5566/api/getprice/$symbol/$market
