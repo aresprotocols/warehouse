@@ -422,16 +422,37 @@ func HandleGetLocalPrices(context *gin.Context) {
 	start := idx * int(gCfg.PageSize)
 	end := start + int(gCfg.PageSize)
 
-	retData := conf.PriceInfosCache{}
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	tmpRetData := conf.PriceInfosCache{}
 	m.RLock()
 	if start < len(gPriceInfosCache.PriceInfosCache) {
 		if end < len(gPriceInfosCache.PriceInfosCache) {
-			retData.PriceInfosCache = gPriceInfosCache.PriceInfosCache[start:end]
+			tmpRetData.PriceInfosCache = gPriceInfosCache.PriceInfosCache[start:end]
 		} else {
-			retData.PriceInfosCache = gPriceInfosCache.PriceInfosCache[start:]
+			tmpRetData.PriceInfosCache = gPriceInfosCache.PriceInfosCache[start:]
 		}
 	}
 	m.RUnlock()
+
+	retData := conf.PriceInfosCache{}
+	for _, infosCache := range tmpRetData.PriceInfosCache {
+		var retPriceInfos conf.PriceInfos
+		for _, priceInfo := range infosCache.PriceInfos {
+			if priceInfo.Symbol == symbol {
+				retPriceInfos.PriceInfos = append(retPriceInfos.PriceInfos, priceInfo)
+			}
+		}
+		if len(retPriceInfos.PriceInfos) != 0 {
+			retData.PriceInfosCache = append(retData.PriceInfosCache, retPriceInfos)
+		}
+	}
 
 	response.Data = retData
 	context.JSON(http.StatusOK, response)
