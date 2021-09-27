@@ -28,6 +28,7 @@ const (
 	GET_ARES_INFO_ERROR
 	PARSE_PARAM_ERROR
 	GET_LOG_INFO_ERROR
+	GET_HTTP_ERROR_ERROR
 	CHECK_USER_ERROR
 )
 
@@ -397,6 +398,37 @@ func HandleGetRequestInfo(context *gin.Context) {
 	}
 
 	response.Data = logInfos
+	context.JSON(http.StatusOK, response)
+}
+
+func HandleGetHttpErrorInfo(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	index, exist := context.GetQuery("index")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	idx, err := strconv.Atoi(index)
+	if err != nil {
+		response.Code = PARSE_PARAM_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	httpErrorInfos, err := sql.GetHttpErrorInfo(idx, int(gCfg.PageSize))
+	if err != nil {
+		response.Code = GET_HTTP_ERROR_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	response.Data = httpErrorInfos
 	context.JSON(http.StatusOK, response)
 }
 

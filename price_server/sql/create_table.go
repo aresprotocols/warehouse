@@ -33,9 +33,21 @@ create table if not exists t_log_info
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 `
 
+var t_http_error = `
+create table if not exists t_http_error
+(
+     id bigint(20) not NULL AUTO_INCREMENT primary key,
+     url varchar(128) not null,
+	 symbol varchar(16) not null,
+	 error varchar(1024) not null,
+	 timestamp integer not null
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+`
+
 func createOrderTables(db *sqlx.DB, dbName string) {
 	db.MustExec(db_create)
 	db.MustExec("USE " + dbName)
 	db.MustExec(t_coin_history_info)
 	db.MustExec(t_log_info)
+	db.MustExec(t_http_error)
 }

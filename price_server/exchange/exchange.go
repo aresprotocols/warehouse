@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	conf "price_api/price_server/config"
+	"price_api/price_server/sql"
 	"strings"
 	"time"
 )
@@ -55,7 +56,7 @@ func getPriceInfo(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) 
 	priceInfo.Symbol = strings.Replace(symbol, "-", "", -1)
 	priceInfo.PriceOrigin = exchange.Name
 
-	priceInfo.Price = getPriceByConf(exchange, symbol, cfg)
+	priceInfo.Price = getPriceByConf(exchange, symbol, cfg, true)
 }
 
 func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, error) {
@@ -151,10 +152,10 @@ func initRequestPrice(exchange conf.ExchangeConfig, symbol string, cfg conf.Conf
 		gResPriceConfCH <- resPriceConf
 	}()
 
-	resPriceConf.Price = getPriceByConf(exchange, symbol, cfg)
+	resPriceConf.Price = getPriceByConf(exchange, symbol, cfg, false)
 }
 
-func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) float64 {
+func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config, bRemberDb bool) float64 {
 	var resJson string
 	var err error
 
@@ -166,8 +167,15 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		}
 		time.Sleep(time.Second * 3)
 	}
+
 	if err != nil {
 		log.Println(err)
+		if bRemberDb {
+			err = sql.InsertHttpError(exchange.Url, symbol, err.Error())
+			if err != nil {
+				log.Println(err)
+			}
+		}
 		return 0
 	}
 

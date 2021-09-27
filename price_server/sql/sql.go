@@ -5,6 +5,7 @@ import (
 	"log"
 	conf "price_api/price_server/config"
 	"strconv"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -53,6 +54,7 @@ func InitMysqlDB(cfg conf.Config) error {
 
 const TABLE_COIN_PRICE = "t_coin_history_info"
 const TABLE_LOG_INFO = "t_log_info"
+const TABLE_HTTP_ERROR = "t_http_error"
 
 func InsertPriceInfo(cfg conf.PriceInfos) error {
 	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbol,timestamp,price,price_origin,weight)" +
@@ -75,6 +77,18 @@ func InsertLogInfo(mapInfo map[string]string) error {
 		"?,?)"
 	_, err := db.Exec(insertSql, mapInfo["request_client_ip"], mapInfo["request_time"], mapInfo["request_ua"], mapInfo["request_uri"],
 		mapInfo["response_time"], mapInfo["response"])
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func InsertHttpError(url string, symbol string, errorInfo string) error {
+	insertSql := "insert into " + TABLE_HTTP_ERROR + " (url,symbol,error,timestamp)" +
+		" values(?,?,?,?)"
+
+	_, err := db.Exec(insertSql, url, symbol, errorInfo, time.Now().Unix())
 	if err != nil {
 		return err
 	}
@@ -125,4 +139,28 @@ func GetHistoryBySymbolTimestamp(symbol string, timestamp int64) ([]conf.PriceIn
 	}
 
 	return dbPriceInfos, nil
+}
+
+type HTTP_ERROR_INFO struct {
+	Url       string `db:"url" json:"url"`
+	Symbol    string `db:"symbol" json:"symbol"`
+	Error     string `db:"error" json:"error"`
+	Timestamp int64  `db:"timestamp" jsoon:"timestamp"`
+}
+
+type HTTP_ERROR_INFOS struct {
+	Infos []HTTP_ERROR_INFO `json:"infos"`
+}
+
+func GetHttpErrorInfo(idx int, pageSize int) (HTTP_ERROR_INFOS, error) {
+	var httpErrorInfos HTTP_ERROR_INFOS
+	querySql := "select url,symbol,error,timestamp from " +
+		TABLE_HTTP_ERROR + " order by id desc limit ?,?;"
+	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	err := db.Select(&httpErrorInfos.Infos, querySql, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	if err != nil {
+		return HTTP_ERROR_INFOS{}, err
+	}
+
+	return httpErrorInfos, nil
 }
