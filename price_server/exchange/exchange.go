@@ -28,7 +28,7 @@ func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config)
 	for symbol, confList := range reqConf {
 		for _, exchangeConf := range confList {
 			reqCount++
-			go getPriceInfo(exchangeConf, symbol, cfg)
+			go getPriceInfo(exchangeConf, symbol, cfg, reqConf)
 		}
 	}
 
@@ -46,13 +46,20 @@ func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config)
 	return retPriceInfos, nil
 }
 
-func getPriceInfo(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) {
+func getPriceInfo(exchange conf.ExchangeConfig, symbol string, cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 	var priceInfo conf.PriceInfo
 	defer func() {
 		gCh <- priceInfo
 	}()
 
-	priceInfo.Weight = exchange.Weight
+	infos := reqConf[symbol]
+	for _, info := range infos {
+		if info.Name == exchange.Name {
+			priceInfo.Weight = info.Weight
+			break
+		}
+	}
+
 	priceInfo.Symbol = strings.Replace(symbol, "-", "", -1)
 	priceInfo.PriceOrigin = exchange.Name
 
