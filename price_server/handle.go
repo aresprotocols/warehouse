@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	conf "price_api/price_server/config"
@@ -52,12 +53,7 @@ func HandleGetPrice(context *gin.Context) {
 	symbol := context.Param("name")[1 : lastIndex+1]
 	exchange := context.Param("name")[lastIndex+2:]
 
-	type RspData struct {
-		Timestamp int64   `json:"timestamp"`
-		Price     float64 `json:"price"`
-	}
-
-	var rspData RspData
+	var rspData PRICE_INFO
 	bFind := false
 
 	m.RLock()
@@ -107,19 +103,19 @@ func HandleGetPartyPrice(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+type PriceAllInfo struct {
+	Name      string  `json:"name"`
+	Symbol    string  `json:"symbol"`
+	Price     float64 `json:"price"`
+	Timestamp int64   `json:"timestamp"`
+}
+
 func HandleGetPriceAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
 	symbol := context.Param("symbol")
 
 	bFind := false
-
-	type PriceAllInfo struct {
-		Name      string  `json:"name"`
-		Symbol    string  `json:"symbol"`
-		Price     float64 `json:"price"`
-		Timestamp int64   `json:"timestamp"`
-	}
 
 	var priceAll []PriceAllInfo
 
@@ -385,6 +381,106 @@ func HandleGetRequestInfo(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetRequestInfoBySymbol(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	index, exist := context.GetQuery("index")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	idx, err := strconv.Atoi(index)
+	if err != nil {
+		response.Code = PARSE_PARAM_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	logInfos, err := sql.GetLogInfoBySymbol(idx, int(gCfg.PageSize), symbol)
+	if err != nil {
+		response.Code = GET_LOG_INFO_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	response.Data = parseLogInfos(logInfos, symbol)
+	context.JSON(http.StatusOK, response)
+}
+
+type PRICE_INFO struct {
+	Price     float64 `json:"price"`
+	Timestamp int64   `json:"timestamp"`
+}
+
+type PRICE_EXCHANGE_INFO struct {
+	Price     float64 `json:"price"`
+	Timestamp int64   `json:"timestamp"`
+	Exchange  string  `json:"exchange"`
+}
+
+func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]interface{} {
+	log.Println("loginfos:", logInfos)
+	retPriceInfos := make(map[string][]interface{})
+	//tag
+	for _, logInfo := range logInfos {
+		var rsp RESPONSE
+		err := json.Unmarshal([]byte(logInfo.Response), &rsp)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+		if strings.Contains(logInfo.ReqUrl, "getPriceAll") {
+			priceInfoLists := rsp.Data.([]interface{})
+			for _, priceInfo := range priceInfoLists {
+				info := priceInfo.(map[string]interface{})
+				retPriceInfos["getPriceAll"] = append(retPriceInfos["getPriceAll"], PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
+					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64))})
+			}
+		} else if strings.Contains(logInfo.ReqUrl, "getPrice") {
+			mapPriceInfo := rsp.Data.(map[string]interface{})
+
+			retPriceInfos["getPrice"] = append(retPriceInfos["getPrice"], PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))})
+			//retPriceInfos["getPrice"] = append(retPriceInfos["getPrice"], rsp.Data.(PRICE_INFO))
+		} else if strings.Contains(logInfo.ReqUrl, "getPartyPrice") {
+			mapPriceInfo := rsp.Data.(map[string]interface{})
+			retPriceInfos["getPartyPrice"] = append(retPriceInfos["getPartyPrice"], PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))})
+		} else if strings.Contains(logInfo.ReqUrl, "getHistoryPrice") {
+			mapPriceInfo := rsp.Data.(map[string]interface{})
+			timestamp := int64(mapPriceInfo["timestamp"].(float64))
+			retPriceInfos["getHistoryPrice"] = append(retPriceInfos["getHistoryPrice"], PRICE_EXCHANGE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp})
+
+			priceInfoLists := mapPriceInfo["infos"].([]interface{})
+			for _, priceInfo := range priceInfoLists {
+				info := priceInfo.(map[string]interface{})
+				retPriceInfos["getHistoryPrice"] = append(retPriceInfos["getHistoryPrice"], PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
+					Exchange: info["exchangeName"].(string), Timestamp: timestamp})
+			}
+		} else if strings.Contains(logInfo.ReqUrl, "getBulkPrices") {
+			mapPriceInfo := rsp.Data.(map[string]interface{})
+			symbolPriceInfo := mapPriceInfo[symbol].(map[string]interface{})
+			retPriceInfos["getBulkPrices"] = append(retPriceInfos["getBulkPrices"], PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))})
+		} else {
+			//log.Println("unknow logInfo", logInfo)
+			continue
+		}
+	}
+	return retPriceInfos
+}
+
 func HandleGetHttpErrorInfo(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
@@ -497,6 +593,29 @@ func HandleSetWeight(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	user, exist := context.GetQuery("user")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	password, exist := context.GetQuery("password")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	if user != gCfg.User || password != gCfg.Password {
+		response.Code = CHECK_USER_ERROR
+		response.Message = MSG_CHECK_USER_ERROR
 		context.JSON(http.StatusOK, response)
 		return
 	}

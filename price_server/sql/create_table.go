@@ -29,6 +29,7 @@ create table if not exists t_log_info
 	 user_agent varchar(256) not null,
 	 request_url varchar(64) not null,
 	 response_time varchar(64) not null,
+	 use_symbol integer not null,
 	 request_response text not null
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 `

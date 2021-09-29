@@ -57,13 +57,14 @@ func main() {
 	router.Use(Cors())
 
 	router.GET("/index", HandleHello)
-	router.GET("/api/getprice/*name", Check(), HandleGetPrice)
+	router.GET("/api/getPrice/*name", Check(), HandleGetPrice)
 	router.GET("/api/getPartyPrice/:symbol", Check(), HandleGetPartyPrice)
 	router.GET("/api/getPriceAll/:symbol", Check(), HandleGetPriceAll)
 	router.GET("/api/getHistoryPrice/:symbol", HandleGetHistoryPrice)
 	router.GET("/api/getBulkPrices", Check(), HandleGetBulkPrices)
 	router.GET("/api/getReqConfig", HandleGetReqConfig)
 	router.GET("/api/getRequestInfo", HandleGetRequestInfo)
+	router.GET("/api/getRequestInfoBySymbol", HandleGetRequestInfoBySymbol)
 	router.GET("/api/getHttpErrorInfo", HandleGetHttpErrorInfo)
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
 	router.GET("/api/setWeight", Check(), HandleSetWeight)
@@ -162,12 +163,27 @@ func Cors() gin.HandlerFunc {
 
 		log.Println(string(accessLogJson))
 
-		if !strings.Contains(accessLogMap["request_uri"], "getRequestInfo") {
-			err := sql.InsertLogInfo(accessLogMap)
+		if strings.Contains(accessLogMap["request_uri"], "getPrice") ||
+			strings.Contains(accessLogMap["request_uri"], "getPartyPrice") ||
+			strings.Contains(accessLogMap["request_uri"], "getHistoryPrice") ||
+			strings.Contains(accessLogMap["request_uri"], "getBulkPrices") {
+			err := sql.InsertLogInfo(accessLogMap, 1)
+			if err != nil {
+				log.Println(err)
+			}
+		} else {
+			err := sql.InsertLogInfo(accessLogMap, 0)
 			if err != nil {
 				log.Println(err)
 			}
 		}
+
+		// if !strings.Contains(accessLogMap["request_uri"], "getRequestInfo") {
+		// 	err := sql.InsertLogInfo(accessLogMap)
+		// 	if err != nil {
+		// 		log.Println(err)
+		// 	}
+		// }
 	}
 }
 

@@ -87,9 +87,9 @@ Run
 ## Api
 ### Get exchange price
 >
-> http://127.0.0.1:5566/api/getprice/$symbol/$market
+> http://127.0.0.1:5566/api/getPrice/$symbol/$market
 >
-> example: http://127.0.0.1:5566/api/getprice/btcusdt/huobi
+> example: http://127.0.0.1:5566/api/getPrice/btcusdt/huobi
 
 **Return**
 
@@ -230,3 +230,16 @@ Run
 ```javascript
 {"code":0,"message":"OK","data":null}
 ```
+
+### get symbol request info
+
+> http://127.0.0.1:5566/api/getRequestInfoBySymbol?index={}&symbol={}
+>
+> example:http://127.0.0.1:5566/api/getRequestInfoBySymbol?index=0&symbol=btcusdt
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":{"getBulkPrices":[{"price":41700.786666666674,"timestamp":1632884557}],"getHistoryPrice":[{"price":45287.56999999999,"timestamp":1629268984,"exchange":""},{"price":45286.2,"timestamp":1629268984,"exchange":"ok"},{"price":45295,"timestamp":1629268984,"exchange":"bitfinex"},{"price":45283.32,"timestamp":1629268984,"exchange":"huobi"},{"price":45290.2,"timestamp":1629268984,"exchange":"bitstamp"},{"price":45283.13,"timestamp":1629268984,"exchange":"binance"}],"getPartyPrice":[{"price":41721.92571428571,"timestamp":1632819233}],"getPrice":[{"price":41724,"timestamp":1632819294}],"getPriceAll":[{"price":41689.63,"timestamp":1632884557,"exchange":"binance"},{"price":41689.05,"timestamp":1632884557,"exchange":"coinbase"},{"price":41718,"timestamp":1632884557,"exchange":"bitfinex"},{"price":41729.94,"timestamp":1632884557,"exchange":"bitstamp"},{"price":41692.35,"timestamp":1632884557,"exchange":"huobi"},{"price":41687.8,"timestamp":1632884557,"exchange":"ok"}]}}
+```
+

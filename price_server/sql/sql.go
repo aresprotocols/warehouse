@@ -72,13 +72,13 @@ func InsertPriceInfo(cfg conf.PriceInfos) error {
 	return nil
 }
 
-func InsertLogInfo(mapInfo map[string]string) error {
+func InsertLogInfo(mapInfo map[string]string, t int) error {
 	insertSql := "insert into " + TABLE_LOG_INFO + " (client_ip,request_time,user_agent,request_url," +
-		"response_time,request_response)" +
+		"response_time,request_response, use_symbol)" +
 		" values(?,?,?,?," +
-		"?,?)"
+		"?,?,?)"
 	_, err := db.Exec(insertSql, mapInfo["request_client_ip"], mapInfo["request_time"], mapInfo["request_ua"], mapInfo["request_uri"],
-		mapInfo["response_time"], mapInfo["response"])
+		mapInfo["response_time"], mapInfo["response"], t)
 	if err != nil {
 		return err
 	}
@@ -120,6 +120,25 @@ func GetLogInfo(idx int, pageSize int) (LOG_INFOS, error) {
 	err := db.Select(&logInfos.Infos, querySql, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	if err != nil {
 		return LOG_INFOS{}, err
+	}
+
+	return logInfos, nil
+}
+
+type REQ_RSP_LOG_INFO struct {
+	ReqUrl   string `json:"reqUrl" db:"request_url"`
+	Response string `json:"response" db:"request_response"`
+}
+
+func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INFO, error) {
+	var logInfos []REQ_RSP_LOG_INFO
+	querySql := "select request_url,request_response from " +
+		TABLE_LOG_INFO + " where request_response like '%" + symbol + "%'" +
+		" or request_url like '%" + symbol + "%'" + " and use_symbol = 1 order by id desc limit ?,?;"
+	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	err := db.Select(&logInfos, querySql, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	if err != nil {
+		return logInfos, err
 	}
 
 	return logInfos, nil
