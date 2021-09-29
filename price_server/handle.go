@@ -34,10 +34,6 @@ const (
 	SET_WEIGHT_ERROR
 )
 
-func HandleHello(context *gin.Context) {
-	context.String(http.StatusOK, "Hello, world")
-}
-
 func HandleGetPrice(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
@@ -59,8 +55,8 @@ func HandleGetPrice(context *gin.Context) {
 	m.RLock()
 	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
 	for _, info := range latestInfos.PriceInfos {
-		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) &&
-			strings.ToLower(info.PriceOrigin) == strings.ToLower(exchange) {
+		if strings.EqualFold(info.Symbol, symbol) &&
+			strings.EqualFold(info.PriceOrigin, exchange) {
 			bFind = true
 			rspData.Price = info.Price
 			rspData.Timestamp = info.TimeStamp
@@ -123,7 +119,7 @@ func HandleGetPriceAll(context *gin.Context) {
 	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
 
 	for _, info := range latestInfos.PriceInfos {
-		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) {
+		if strings.EqualFold(info.Symbol, symbol) {
 			bFind = true
 			priceAllInfo := PriceAllInfo{Name: info.PriceOrigin,
 				Symbol:    info.Symbol,
@@ -159,17 +155,12 @@ type PartyPriceInfo struct {
 	Infos     []WeightInfo `json:"infos"`
 }
 
-type PartyPrice struct {
-	Price     float64 `json:"price"`
-	Timestamp int64   `json:"timestamp"`
-}
-
 //@param bAverage     get average not cointain lowest and highest
 //@return bool     symbol find?
 func partyPrice(infos []conf.PriceInfo, symbol string, bAverage bool) (bool, PartyPriceInfo) {
 	var symbolPriceInfo []conf.PriceInfo
 	for _, info := range infos {
-		if strings.ToLower(info.Symbol) == strings.ToLower(symbol) {
+		if strings.EqualFold(info.Symbol, symbol) {
 			symbolPriceInfo = append(symbolPriceInfo, info)
 		}
 	}
@@ -246,10 +237,7 @@ func getHistoryPrice(symbol string, timestamp int64, bAverage bool) (bool, Party
 	var cacheInfo conf.PriceInfos
 	m.RLock()
 	//latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
-	if len(gPriceInfosCache.PriceInfosCache) == 0 {
-		//nothing todo
-		//just find db
-	} else {
+	if len(gPriceInfosCache.PriceInfosCache) != 0 {
 		for i := len(gPriceInfosCache.PriceInfosCache) - 1; i >= 0; i-- {
 			info := gPriceInfosCache.PriceInfosCache[i]
 			if len(info.PriceInfos) == 0 {
@@ -294,13 +282,13 @@ func HandleGetBulkPrices(context *gin.Context) {
 	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
 	m.RUnlock()
 
-	mSymbolPriceInfo := make(map[string]PartyPrice)
+	mSymbolPriceInfo := make(map[string]PRICE_INFO)
 	for _, symbol := range symbols {
 		bFind, partyPriceData := partyPrice(latestInfos.PriceInfos, symbol, true)
 		if !bFind {
-			mSymbolPriceInfo[symbol] = PartyPrice{Price: 0, Timestamp: 0}
+			mSymbolPriceInfo[symbol] = PRICE_INFO{Price: 0, Timestamp: 0}
 		} else {
-			mSymbolPriceInfo[symbol] = PartyPrice{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
+			mSymbolPriceInfo[symbol] = PRICE_INFO{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
 		}
 	}
 
@@ -431,10 +419,37 @@ type PRICE_EXCHANGE_INFO struct {
 	Exchange  string  `json:"exchange"`
 }
 
+type PRICE_EXCHANGE_WEIGHT_INFO struct {
+	Price     float64 `json:"price"`
+	Timestamp int64   `json:"timestamp"`
+	Exchange  string  `json:"exchange"`
+	Weight    int     `json:"weight"`
+}
+
+type CLIENT_INFO struct {
+	Ip          string `json:"ip"`
+	RequestTime string `json:"request_time"`
+}
+
+type CLIENT_PRICE_INFO struct {
+	Client    CLIENT_INFO `json:"client"`
+	PriceInfo PRICE_INFO  `json:"price_info"`
+}
+
+type CLIENT_PRICEALL_INFO struct {
+	Client     CLIENT_INFO           `json:"client"`
+	PriceInfos []PRICE_EXCHANGE_INFO `json:"price_infos"`
+}
+
+type PARTY_PRICE_INFO struct {
+	Client     CLIENT_INFO                  `json:"client"`
+	PriceInfo  PRICE_INFO                   `json:"price_info"`
+	PriceInfos []PRICE_EXCHANGE_WEIGHT_INFO `json:"price_infos"`
+}
+
 func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]interface{} {
-	log.Println("loginfos:", logInfos)
 	retPriceInfos := make(map[string][]interface{})
-	//tag
+
 	for _, logInfo := range logInfos {
 		var rsp RESPONSE
 		err := json.Unmarshal([]byte(logInfo.Response), &rsp)
@@ -445,34 +460,60 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]
 
 		if strings.Contains(logInfo.ReqUrl, "getPriceAll") {
 			priceInfoLists := rsp.Data.([]interface{})
+			var priceAllInfos CLIENT_PRICEALL_INFO
+			priceAllInfos.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
 			for _, priceInfo := range priceInfoLists {
 				info := priceInfo.(map[string]interface{})
-				retPriceInfos["getPriceAll"] = append(retPriceInfos["getPriceAll"], PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
-					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64))})
+				priceExchangeInfo := PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
+					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64))}
+				priceAllInfos.PriceInfos = append(priceAllInfos.PriceInfos, priceExchangeInfo)
 			}
+			retPriceInfos["getPriceAll"] = append(retPriceInfos["getPriceAll"], priceAllInfos)
 		} else if strings.Contains(logInfo.ReqUrl, "getPrice") {
 			mapPriceInfo := rsp.Data.(map[string]interface{})
-
-			retPriceInfos["getPrice"] = append(retPriceInfos["getPrice"], PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))})
-			//retPriceInfos["getPrice"] = append(retPriceInfos["getPrice"], rsp.Data.(PRICE_INFO))
+			var getPriceInfo CLIENT_PRICE_INFO
+			getPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			getPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))}
+			retPriceInfos["getPrice"] = append(retPriceInfos["getPrice"], getPriceInfo)
 		} else if strings.Contains(logInfo.ReqUrl, "getPartyPrice") {
 			mapPriceInfo := rsp.Data.(map[string]interface{})
-			retPriceInfos["getPartyPrice"] = append(retPriceInfos["getPartyPrice"], PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))})
-		} else if strings.Contains(logInfo.ReqUrl, "getHistoryPrice") {
-			mapPriceInfo := rsp.Data.(map[string]interface{})
+			var historyPriceInfo PARTY_PRICE_INFO
+
 			timestamp := int64(mapPriceInfo["timestamp"].(float64))
-			retPriceInfos["getHistoryPrice"] = append(retPriceInfos["getHistoryPrice"], PRICE_EXCHANGE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp})
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp}
 
 			priceInfoLists := mapPriceInfo["infos"].([]interface{})
 			for _, priceInfo := range priceInfoLists {
 				info := priceInfo.(map[string]interface{})
-				retPriceInfos["getHistoryPrice"] = append(retPriceInfos["getHistoryPrice"], PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
-					Exchange: info["exchangeName"].(string), Timestamp: timestamp})
+				weightExchangeInfo := PRICE_EXCHANGE_WEIGHT_INFO{Price: info["price"].(float64),
+					Exchange: info["exchangeName"].(string), Timestamp: timestamp, Weight: int(info["weight"].(float64))}
+				historyPriceInfo.PriceInfos = append(historyPriceInfo.PriceInfos, weightExchangeInfo)
 			}
+			retPriceInfos["getPartyPrice"] = append(retPriceInfos["getPartyPrice"], historyPriceInfo)
+		} else if strings.Contains(logInfo.ReqUrl, "getHistoryPrice") {
+			mapPriceInfo := rsp.Data.(map[string]interface{})
+			var historyPriceInfo PARTY_PRICE_INFO
+
+			timestamp := int64(mapPriceInfo["timestamp"].(float64))
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp}
+
+			priceInfoLists := mapPriceInfo["infos"].([]interface{})
+			for _, priceInfo := range priceInfoLists {
+				info := priceInfo.(map[string]interface{})
+				weightExchangeInfo := PRICE_EXCHANGE_WEIGHT_INFO{Price: info["price"].(float64),
+					Exchange: info["exchangeName"].(string), Timestamp: timestamp, Weight: int(info["weight"].(float64))}
+				historyPriceInfo.PriceInfos = append(historyPriceInfo.PriceInfos, weightExchangeInfo)
+			}
+			retPriceInfos["getHistoryPrice"] = append(retPriceInfos["getHistoryPrice"], historyPriceInfo)
 		} else if strings.Contains(logInfo.ReqUrl, "getBulkPrices") {
 			mapPriceInfo := rsp.Data.(map[string]interface{})
 			symbolPriceInfo := mapPriceInfo[symbol].(map[string]interface{})
-			retPriceInfos["getBulkPrices"] = append(retPriceInfos["getBulkPrices"], PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))})
+			var getBulkPriceInfo CLIENT_PRICE_INFO
+			getBulkPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			getBulkPriceInfo.PriceInfo = PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
+			retPriceInfos["getBulkPrices"] = append(retPriceInfos["getBulkPrices"], getBulkPriceInfo)
 		} else {
 			//log.Println("unknow logInfo", logInfo)
 			continue

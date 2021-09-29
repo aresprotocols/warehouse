@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"log"
 	"net/http"
 	conf "price_api/price_server/config"
@@ -56,7 +55,6 @@ func main() {
 
 	router.Use(Cors())
 
-	router.GET("/index", HandleHello)
 	router.GET("/api/getPrice/*name", Check(), HandleGetPrice)
 	router.GET("/api/getPartyPrice/:symbol", Check(), HandleGetPartyPrice)
 	router.GET("/api/getPriceAll/:symbol", Check(), HandleGetPriceAll)
@@ -148,20 +146,12 @@ func Cors() gin.HandlerFunc {
 		accessLogMap := make(map[string]string)
 
 		accessLogMap["request_time"] = startTime
-		//accessLogMap["request_method"] = c.Request.Method
 		accessLogMap["request_uri"] = c.Request.RequestURI
-		//accessLogMap["request_proto"] = c.Request.Proto
 		accessLogMap["request_ua"] = c.Request.UserAgent()
-		//accessLogMap["request_referer"] = c.Request.Referer()
-		//accessLogMap["request_post_data"] = c.Request.PostForm.Encode()
 		accessLogMap["request_client_ip"] = c.ClientIP()
 
 		accessLogMap["response_time"] = endTime
 		accessLogMap["response"] = responseBody
-
-		accessLogJson, _ := json.Marshal(accessLogMap)
-
-		log.Println(string(accessLogJson))
 
 		if strings.Contains(accessLogMap["request_uri"], "getPrice") ||
 			strings.Contains(accessLogMap["request_uri"], "getPartyPrice") ||
@@ -178,12 +168,6 @@ func Cors() gin.HandlerFunc {
 			}
 		}
 
-		// if !strings.Contains(accessLogMap["request_uri"], "getRequestInfo") {
-		// 	err := sql.InsertLogInfo(accessLogMap)
-		// 	if err != nil {
-		// 		log.Println(err)
-		// 	}
-		// }
 	}
 }
 

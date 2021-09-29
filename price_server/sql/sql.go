@@ -126,13 +126,15 @@ func GetLogInfo(idx int, pageSize int) (LOG_INFOS, error) {
 }
 
 type REQ_RSP_LOG_INFO struct {
-	ReqUrl   string `json:"reqUrl" db:"request_url"`
-	Response string `json:"response" db:"request_response"`
+	ReqUrl      string `json:"reqUrl" db:"request_url"`
+	Response    string `json:"response" db:"request_response"`
+	Ip          string `json:"ip" db:"client_ip"`
+	RequestTime string `json:"request_time" db:"request_time"`
 }
 
 func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INFO, error) {
 	var logInfos []REQ_RSP_LOG_INFO
-	querySql := "select request_url,request_response from " +
+	querySql := "select client_ip,request_url,request_time,request_response from " +
 		TABLE_LOG_INFO + " where request_response like '%" + symbol + "%'" +
 		" or request_url like '%" + symbol + "%'" + " and use_symbol = 1 order by id desc limit ?,?;"
 	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
