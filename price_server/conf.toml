@@ -8,17 +8,13 @@ user = "root"
 password = "49ba59abbe56e057"
 proxy = "http://127.0.0.1:7890/"
 
-symbols = ["btc-usdt", "eth-usdt", "ada-usdt", "xrp-usdt", "sol-usdt", "dot-usdt", "doge-usdt", 
-"avax-usdt", "luna-usdt", "uni-usdt", "ltc-usdt", "bch-usdt", "link-usdt", "ftt-usdt",
-"atom-usdt", "fil-usdt", "matic-usdt", "trx-usdt", "xlm-usdt", "vet-usdt", "icp-usdt",
-"etc-usdt", "theta-usdt", "algo-usdt", "xmr-usdt", "xtz-usdt", "eos-usdt", "egld-usdt",
-"axs-usdt", "aave-usdt", "iota-usdt", "ftm-usdt", "ksm-usdt", "hbar-usdt", "neo-usdt",
-"waves-usdt", "mkr-usdt", "near-usdt", "btt-usdt", "dash-usdt", "snx-usdt", "chz-usdt",
-"comp-usdt", "stx-usdt", "dcr-usdt", "xem-usdt", "omg-usdt", "zec-usdt", "sushi-usdt",
-"enj-usdt", "mana-usdt", "yfi-usdt", "iost-usdt", "qtum-usdt", "bat-usdt", "zil-usdt",
-"icx-usdt", "grt-usdt", "celo-usdt", "zen-usdt", "ren-usdt", "sc-usdt", "zrx-usdt",
-"ont-usdt", "nano-usdt", "crv-usdt", "bnt-usdt", "fet-usdt", "uma-usdt", "iotx-usdt",
-"lrc-usdt", "sand-usdt", "srm-usdt", "1INCH-usdt", "kava-usdt"]
+symbols = ["btc-usdt", "eth-usdt", "link-usdt", "snx-usdt", "1inch-usdt", "dot-usdt", "aave-usdt",
+"bch-usdt", "bnb-usdt", "comp-usdt", "dash-usdt", "eos-usdt", "etc-usdt", "fil-usdt", "ht-usdt",
+"knc-usdt", "ltc-usdt", "uni-usdt", "xrp-usdt", "xtz-usdt", "ada-usdt", "bnt-usdt", "doge-usdt",
+"matic-usdt", "mkr-usdt", "omg-usdt", "ont-usdt", "sushi-usdt", "trx-usdt", "xmr-usdt", "yfi-usdt",
+"zec-usdt", "bat-usdt", "crv-usdt", "ksm-usdt", "lrc-usdt", "near-usdt", "okb-usdt", "zrx-usdt",
+"sol-usdt", "atom-usdt", "xlm-usdt", "icp-usdt", "algo-usdt", "neo-usdt", "ftm-usdt", "dcr-usdt",
+"mana-usdt", "iost-usdt", "qtum-usdt", "zil-usdt"]
 
 [mysql]
 server = "127.0.0.1"
