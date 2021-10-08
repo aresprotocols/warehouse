@@ -104,6 +104,7 @@ type PriceAllInfo struct {
 	Symbol    string  `json:"symbol"`
 	Price     float64 `json:"price"`
 	Timestamp int64   `json:"timestamp"`
+	Weight    int64   `json:"weight"`
 }
 
 func HandleGetPriceAll(context *gin.Context) {
@@ -125,6 +126,7 @@ func HandleGetPriceAll(context *gin.Context) {
 				Symbol:    info.Symbol,
 				Price:     info.Price,
 				Timestamp: info.TimeStamp,
+				Weight:    info.Weight,
 			}
 			priceAll = append(priceAll, priceAllInfo)
 		}
@@ -417,6 +419,7 @@ type PRICE_EXCHANGE_INFO struct {
 	Price     float64 `json:"price"`
 	Timestamp int64   `json:"timestamp"`
 	Exchange  string  `json:"exchange"`
+	Weight    int64   `json:"weight"`
 }
 
 type PRICE_EXCHANGE_WEIGHT_INFO struct {
@@ -465,7 +468,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]
 			for _, priceInfo := range priceInfoLists {
 				info := priceInfo.(map[string]interface{})
 				priceExchangeInfo := PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
-					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64))}
+					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64)), Weight: int64(info["weight"].(float64))}
 				priceAllInfos.PriceInfos = append(priceAllInfos.PriceInfos, priceExchangeInfo)
 			}
 			retPriceInfos["getPriceAll"] = append(retPriceInfos["getPriceAll"], priceAllInfos)

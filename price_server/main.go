@@ -129,7 +129,7 @@ func showIgnoreSymbols(cfg conf.Config, gRequestPriceConfs map[string][]conf.Exc
 		}
 		ignoreSymbols[symbol] = exchanges
 	}
-	log.Println(ignoreSymbols)
+	log.Println("ignore symbols and exchange:", ignoreSymbols)
 }
 
 type bodyLogWriter struct {
