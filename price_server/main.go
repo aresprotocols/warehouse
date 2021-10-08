@@ -50,6 +50,8 @@ func main() {
 	}
 	log.Println("request init over")
 
+	showIgnoreSymbols(cfg, gRequestPriceConfs)
+
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
@@ -99,6 +101,35 @@ func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 		}
 		time.Sleep(time.Second * time.Duration(cfg.Interval))
 	}
+}
+
+func showIgnoreSymbols(cfg conf.Config, gRequestPriceConfs map[string][]conf.ExchangeConfig) {
+	ignoreSymbols := make(map[string][]string)
+	for _, symbol := range cfg.Symbols {
+		var exchanges []string
+		existSymbols, ok := gRequestPriceConfs[symbol]
+		if ok {
+			for _, exchangeConf := range cfg.Exchanges {
+				//check config exchange if have symbol
+				bFind := false
+				for _, existSymbol := range existSymbols {
+					if exchangeConf.Name == existSymbol.Name {
+						//find it
+						bFind = true
+					}
+				}
+				if !bFind {
+					exchanges = append(exchanges, exchangeConf.Name)
+				}
+			}
+		} else {
+			for _, exchangeConf := range cfg.Exchanges {
+				exchanges = append(exchanges, exchangeConf.Name)
+			}
+		}
+		ignoreSymbols[symbol] = exchanges
+	}
+	log.Println(ignoreSymbols)
 }
 
 type bodyLogWriter struct {

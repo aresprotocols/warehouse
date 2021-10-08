@@ -186,7 +186,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 	}
 
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		if bRemberDb {
 			err = sql.InsertHttpError(exchange.Url, symbol, err.Error())
 			if err != nil {
@@ -201,48 +201,63 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 	if lowName == "binance" {
 		price, err = parseBinancePrice(resJson)
 		if err != nil {
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else if lowName == "huobi" {
 		price, err = parseHuobiPrice(resJson)
 		if err != nil {
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else if lowName == "bitfinex" {
 		price, err = parseBitfinexPrice(resJson)
 		if err != nil {
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else if lowName == "ok" {
 		price, err = parseOkPrice(resJson)
 		if err != nil {
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else if lowName == "cryptocompare" {
 		price, err = parseCryptoComparePrice(resJson)
 		if err != nil {
-			log.Println(resJson)
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else if lowName == "coinbase" {
 		price, err = parseCoinbasePrice(resJson)
 		if err != nil {
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else if lowName == "bitstamp" {
 		price, err = parseBitStampPrice(resJson)
 		if err != nil {
-			log.Println(err)
+			if bRemberDb {
+				log.Println("response:", resJson, " err:", err)
+			}
 			return 0
 		}
 	} else {
-		log.Println("unknow exchange name:", exchange.Name)
+		if bRemberDb {
+			log.Println("unknow exchange name:", exchange.Name)
+		}
 		return 0
 	}
 	return price
