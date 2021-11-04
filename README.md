@@ -87,9 +87,9 @@ Run
 ## Api
 ### Get exchange price
 >
-> http://127.0.0.1:5566/api/getPrice/$symbol/$market
+> http://127.0.0.1:5566/api/getprice/$symbol/$market
 >
-> example: http://127.0.0.1:5566/api/getPrice/btcusdt/huobi
+> example: http://127.0.0.1:5566/api/getprice/btcusdt/huobi
 
 **Return**
 
