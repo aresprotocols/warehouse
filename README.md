@@ -171,9 +171,9 @@ Run
 
 ### Get log info
 
-> http://127.0.0.1:5566/api/getRequestInfo?index={}
+> http://127.0.0.1:5566/api/getRequestInfo?index={}&user=root&password=49ba59abbe56e057
 >
-> example:http://127.0.0.1:5566/api/getRequestInfo?index=0
+> example:http://127.0.0.1:5566/api/getRequestInfo?index=0&user=root&password=49ba59abbe56e057
 >
  **Return** 
 
