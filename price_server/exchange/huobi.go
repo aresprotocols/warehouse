@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"encoding/json"
+	"log"
 
 	"golang.org/x/xerrors"
 )
@@ -27,6 +28,9 @@ func parseHuobiPrice(priceJson string) (float64, error) {
 	if huobiPriceInfo.Status == "error" {
 		return 0, xerrors.New("some error")
 	} else {
+		if len(huobiPriceInfo.Tick.Ask) == 0 {
+			log.Println("response:", huobiPriceInfo.Status, " Tick:", huobiPriceInfo.Tick)
+		}
 		return huobiPriceInfo.Tick.Ask[0], nil
 	}
 }
