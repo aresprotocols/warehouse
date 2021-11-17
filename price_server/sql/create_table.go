@@ -27,7 +27,7 @@ create table if not exists t_log_info
      client_ip varchar(20) not null,
 	 request_time varchar(64) not null,
 	 user_agent varchar(256) not null,
-	 request_url varchar(64) not null,
+	 request_url varchar(256) not null,
 	 response_time varchar(64) not null,
 	 use_symbol integer not null,
 	 request_response text not null
