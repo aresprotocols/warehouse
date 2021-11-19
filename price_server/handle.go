@@ -298,6 +298,45 @@ func HandleGetBulkPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetBulkCurrencyPrices(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+	currency, exist := context.GetQuery("currency")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	symbols := strings.Split(symbol, "_")
+
+	m.RLock()
+	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
+	m.RUnlock()
+
+	mSymbolPriceInfo := make(map[string]PRICE_INFO)
+	for _, symbol := range symbols {
+		token := symbol + currency
+		bFind, partyPriceData := partyPrice(latestInfos.PriceInfos, token, true)
+		if !bFind {
+			mSymbolPriceInfo[token] = PRICE_INFO{Price: 0, Timestamp: 0}
+		} else {
+			mSymbolPriceInfo[token] = PRICE_INFO{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
+		}
+	}
+
+	response.Data = mSymbolPriceInfo
+	context.JSON(http.StatusOK, response)
+}
+
 func HandleGetReqConfig(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
