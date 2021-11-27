@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"testing"
+	"time"
 )
 
 func TestGet(t *testing.T) {
@@ -52,4 +53,18 @@ func TestGetAres(t *testing.T) {
 	body, err := ioutil.ReadAll(resp.Body)
 	fmt.Println(string(body))
 	fmt.Println(resp.StatusCode)
+}
+
+func TestTime(t *testing.T) {
+	fmt.Println("", time.Now())
+	fmt.Println("", time.Now().Minute())
+	var aresShowInfo AresShowInfo
+	fmt.Println("", aresShowInfo)
+	info, _ := GetGateAresInfo("")
+	fmt.Println("info ", info)
+	info, _ = GetGateAresInfo("")
+	fmt.Println("info ", info)
+	time.Sleep(time.Minute)
+	info, _ = GetGateAresInfo("")
+	fmt.Println("info Sleep ", info)
 }

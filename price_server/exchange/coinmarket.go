@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"strconv"
+	"time"
 )
 
 //{"status":{"timestamp":"2021-08-25T03:09:41.060Z","error_code":0,"error_message":null,"elapsed":23,"credit_count":1,"notice":null},"data":{"8702":{"id":8702,"name":"Ares Protocol","symbol":"ARES","slug":"ares-protocol","num_market_pairs":7,"date_added":"2021-03-06T00:00:00.000Z","tags":["oracles","smart-contracts","substrate","polkadot-ecosystem","duckstarter"],"max_supply":1000000000,"circulating_supply":153866975.90409997,"total_supply":1000000000,"platform":{"id":1027,"name":"Ethereum","symbol":"ETH","slug":"ethereum","token_address":"0x358AA737e033F34df7c54306960a38d09AaBd523"},"is_active":1,"cmc_rank":1100,"is_fiat":0,"last_updated":"2021-08-25T03:07:15.000Z","quote":{"USD":{"price":0.04314443190181,"volume_24h":757997.31058595,"percent_change_1h":0.27304841,"percent_change_24h":-4.82047334,"percent_change_7d":-6.93738111,"percent_change_30d":-11.27392811,"percent_change_60d":-28.08850153,"percent_change_90d":-70.30226632,"market_cap":6638503.263831881,"market_cap_dominance":0.0003,"fully_diluted_market_cap":43144431.9,"last_updated":"2021-08-25T03:07:15.000Z"}}}}}
@@ -77,8 +78,16 @@ func GetAresInfo(proxy string) (AresShowInfo, error) {
 	return aresShowInfo, nil
 }
 
+var aresShowInfo *AresShowInfo
+var minute = 0
+
 func GetGateAresInfo(proxy string) (AresShowInfo, error) {
 	var aresInfo AresGateShowInfo
+
+	if aresShowInfo != nil && time.Now().Minute() == minute {
+		return *aresShowInfo, nil
+	}
+	minute = time.Now().Minute()
 
 	resJson, err := getPrice(ARES_Gate_URL, proxy)
 	if err != nil {
@@ -95,11 +104,13 @@ func GetGateAresInfo(proxy string) (AresShowInfo, error) {
 	marketCap, _ := strconv.ParseFloat(aresInfo.MarketCap, 64)
 	volume, _ := strconv.ParseFloat(aresInfo.Volume, 64)
 
-	return AresShowInfo{
+	aresShowInfo = &AresShowInfo{
 		Price:         price,
 		PercentChange: percentChange,
 		Rank:          1427,
 		MarketCap:     marketCap,
 		Volume:        volume,
-	}, nil
+	}
+
+	return *aresShowInfo, nil
 }
