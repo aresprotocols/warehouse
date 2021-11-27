@@ -733,7 +733,7 @@ func HandleSetWeight(context *gin.Context) {
 
 func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
-	aresShowInfo, err := exchange.GetAresInfo(gCfg.Proxy)
+	aresShowInfo, err := exchange.GetGateAresInfo(gCfg.Proxy)
 	if err != nil {
 		response.Code = GET_ARES_INFO_ERROR
 		response.Message = err.Error()
