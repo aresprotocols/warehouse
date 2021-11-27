@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"testing"
 )
 
@@ -25,6 +26,19 @@ func TestGet(t *testing.T) {
 	err = json.Unmarshal(body, &aresInfo)
 	fmt.Println("aresInfo ", aresInfo.Price)
 	fmt.Println("aresInfo ", aresInfo)
+
+	price, _ := strconv.ParseFloat(aresInfo.Price, 64)
+	percentChange, _ := strconv.ParseFloat(aresInfo.PercentChange, 64)
+	marketCap, _ := strconv.ParseFloat(aresInfo.MarketCap, 64)
+	volume, _ := strconv.ParseFloat(aresInfo.Volume, 64)
+
+	v := AresShowInfo{
+		Price:         price,
+		PercentChange: percentChange,
+		MarketCap:     marketCap,
+		Volume:        volume,
+	}
+	fmt.Println("v ", v)
 }
 
 func TestGetAres(t *testing.T) {
