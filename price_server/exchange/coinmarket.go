@@ -90,7 +90,6 @@ func GetGateAresInfo(proxy string) (AresShowInfo, error) {
 	if err != nil {
 		return AresShowInfo{}, err
 	}
-	aresInfo.Rank = 1427
 	price, _ := strconv.ParseFloat(aresInfo.Price, 64)
 	percentChange, _ := strconv.ParseFloat(aresInfo.PercentChange, 64)
 	marketCap, _ := strconv.ParseFloat(aresInfo.MarketCap, 64)
@@ -99,6 +98,7 @@ func GetGateAresInfo(proxy string) (AresShowInfo, error) {
 	return AresShowInfo{
 		Price:         price,
 		PercentChange: percentChange,
+		Rank:          1427,
 		MarketCap:     marketCap,
 		Volume:        volume,
 	}, nil
