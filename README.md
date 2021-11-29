@@ -169,6 +169,19 @@ Run
 {"code":0,"message":"OK","data":{"arrusdt":{"price":0,"timestamp":0}}}
 ```
 
+
+### Get symbol price
+
+> http://127.0.0.1:5566/api/getBulkCurrencyPrices?symbol={}
+>
+> example:https://api.aresprotocol.io/api/getBulkCurrencyPrices?symbol=btc_eth_dot_link&currency=usdt
+>
+ **Return** 
+
+```javascript
+{"code":0,"message":"OK","data":{"btcusdt":{"price":57465.51,"timestamp":1638167488},"dotusdt":{"price":36.158,"timestamp":1638167488},"ethusdt":{"price":4335.455,"timestamp":1638167488},"linkusdt":{"price":25.005,"timestamp":1638167488}}}
+```
+
 ### Get log info
 
 > http://127.0.0.1:5566/api/getRequestInfo?index={}&user=root&password=49ba59abbe56e057
