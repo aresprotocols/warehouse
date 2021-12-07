@@ -6,7 +6,9 @@ import (
 	"net/http"
 	conf "price_api/price_server/config"
 	"price_api/price_server/exchange"
+	"price_api/price_server/jwt"
 	"price_api/price_server/sql"
+	"price_api/price_server/util"
 	"sort"
 	"strconv"
 	"strings"
@@ -375,29 +377,6 @@ func HandleGetRequestInfo(context *gin.Context) {
 		return
 	}
 
-	user, exist := context.GetQuery("user")
-	if !exist {
-		response.Code = PARAM_NOT_TRUE_ERROR
-		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	password, exist := context.GetQuery("password")
-	if !exist {
-		response.Code = PARAM_NOT_TRUE_ERROR
-		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	if user != gCfg.User || password != gCfg.Password {
-		response.Code = CHECK_USER_ERROR
-		response.Message = MSG_CHECK_USER_ERROR
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
 	logInfos, err := sql.GetLogInfo(idx, int(gCfg.PageSize))
 	if err != nil {
 		response.Code = GET_LOG_INFO_ERROR
@@ -653,65 +632,33 @@ func HandleGetLocalPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+type SetWeightReq struct {
+	Weight   int    `json:"weight"`
+	Symbol   string `json:"symbol"`
+	Exchange string `json:"exchange"`
+}
+
 func HandleSetWeight(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
-	weightStr, exist := context.GetQuery("weight")
-	if !exist {
+	var setWeightReq SetWeightReq
+	err := context.ShouldBind(&setWeightReq)
+
+	if len(setWeightReq.Symbol) == 0 {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
 		context.JSON(http.StatusOK, response)
 		return
 	}
 
-	weight, err := strconv.Atoi(weightStr)
-	if err != nil {
-		response.Code = PARSE_PARAM_ERROR
-		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	symbol, exist := context.GetQuery("symbol")
-	if !exist {
+	if len(setWeightReq.Exchange) == 0 {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
 		context.JSON(http.StatusOK, response)
 		return
 	}
 
-	user, exist := context.GetQuery("user")
-	if !exist {
-		response.Code = PARAM_NOT_TRUE_ERROR
-		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	password, exist := context.GetQuery("password")
-	if !exist {
-		response.Code = PARAM_NOT_TRUE_ERROR
-		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	if user != gCfg.User || password != gCfg.Password {
-		response.Code = CHECK_USER_ERROR
-		response.Message = MSG_CHECK_USER_ERROR
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	exchange, exist := context.GetQuery("exchange")
-	if !exist {
-		response.Code = PARAM_NOT_TRUE_ERROR
-		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
-		return
-	}
-
-	err = sql.SetWeight(symbol, exchange, weight)
+	err = sql.SetWeight(setWeightReq.Symbol, setWeightReq.Exchange, setWeightReq.Weight)
 	if err != nil {
 		response.Code = SET_WEIGHT_ERROR
 		response.Message = err.Error()
@@ -720,9 +667,9 @@ func HandleSetWeight(context *gin.Context) {
 	}
 
 	m.Lock()
-	for i, conf := range gRequestPriceConfs[symbol] {
-		if conf.Name == exchange {
-			gRequestPriceConfs[symbol][i].Weight = int64(weight)
+	for i, conf := range gRequestPriceConfs[setWeightReq.Symbol] {
+		if conf.Name == setWeightReq.Exchange {
+			gRequestPriceConfs[setWeightReq.Symbol][i].Weight = int64(setWeightReq.Weight)
 			break
 		}
 	}
@@ -742,4 +689,90 @@ func HandleGetAresAll(context *gin.Context) {
 
 	response.Data = aresShowInfo
 	context.JSON(http.StatusOK, response)
+}
+
+type AdminUser struct {
+	User     string `json:"user"`
+	Password string `json:"password"`
+}
+
+func HandleAuth(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	var user AdminUser
+	err := context.ShouldBind(&user)
+	if err != nil {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	if len(user.User) == 0 {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	if len(user.Password) == 0 {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusOK, response)
+		return
+	}
+
+	md5Password := util.Md5Str(gCfg.Password)
+
+	if user.User != gCfg.User || user.Password != md5Password {
+		response.Code = CHECK_USER_ERROR
+		response.Message = MSG_CHECK_USER_ERROR
+		context.JSON(http.StatusOK, response)
+		return
+	}
+	authToken, err := jwt.GenToken(user.User, []byte(gCfg.Password))
+	if err != nil {
+		response.Code = ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusOK, response)
+	}
+	response.Data = authToken
+	context.JSON(http.StatusOK, response)
+
+}
+
+func JWTAuthMiddleware() func(c *gin.Context) {
+	return func(c *gin.Context) {
+		response := RESPONSE{Code: 0, Message: "OK"}
+
+		authHeader := c.Request.Header.Get("Authorization")
+		if authHeader == "" {
+			response.Code = CHECK_USER_ERROR
+			response.Message = MSG_CHECK_USER_ERROR
+			c.JSON(http.StatusUnauthorized, response)
+			c.Abort()
+			return
+		}
+
+		parts := strings.SplitN(authHeader, " ", 2)
+		if !(len(parts) == 2 && parts[0] == "Bearer") {
+			response.Code = CHECK_USER_ERROR
+			response.Message = MSG_CHECK_USER_ERROR
+			c.JSON(http.StatusUnauthorized, response)
+			c.Abort()
+			return
+		}
+
+		mc, err := jwt.ParseToken(parts[1], []byte(gCfg.Password))
+		if err != nil {
+			response.Code = CHECK_USER_ERROR
+			response.Message = MSG_CHECK_USER_ERROR
+			c.JSON(http.StatusUnauthorized, response)
+			c.Abort()
+			return
+		}
+
+		c.Set("username", mc.Username)
+		c.Next()
+	}
 }
