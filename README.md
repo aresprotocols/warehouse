@@ -184,9 +184,14 @@ Run
 
 ### Get log info
 
-> http://127.0.0.1:5566/api/getRequestInfo?index={}&user=root&password=49ba59abbe56e057
+> http://127.0.0.1:5566/api/getRequestInfo?index={}
 >
-> example:http://127.0.0.1:5566/api/getRequestInfo?index=0&user=root&password=49ba59abbe56e057
+> Header:
+>
+>     Authorization: Bearer TOKEN
+>
+> 
+> example:http://127.0.0.1:5566/api/getRequestInfo?index=0
 >
  **Return** 
 
@@ -231,7 +236,13 @@ Run
 
 ### set weight
 
-> http://127.0.0.1:5566/api/setWeight?exchange={}&symbol={}&weight={}
+> POST http://127.0.0.1:5566/api/setWeight
+> 
+> Header:  
+> 
+>       Authorization: Bearer TOKEN
+> 
+> Body: {"symbol":"btc-usdt", "exchange":"huobi", "weight":2 }
 >
 > example:http://127.0.0.1:5566/api/setWeight?exchange=coinbase&symbol=btc-usdt&weight=3
 >
@@ -253,3 +264,16 @@ Run
 {"code":0,"message":"OK","data":{"getBulkPrices":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-29 11:03:26"},"price_info":{"price":41700.786666666674,"timestamp":1632884557}}],"getHistoryPrice":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-29 11:02:55"},"price_info":{"price":45287.56999999999,"timestamp":1629268984},"price_infos":[{"price":45286.2,"timestamp":1629268984,"exchange":"ok","weight":1},{"price":45295,"timestamp":1629268984,"exchange":"bitfinex","weight":1},{"price":45283.32,"timestamp":1629268984,"exchange":"huobi","weight":1},{"price":45290.2,"timestamp":1629268984,"exchange":"bitstamp","weight":1},{"price":45283.13,"timestamp":1629268984,"exchange":"binance","weight":1}]}],"getPartyPrice":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-29 14:00:27"},"price_info":{"price":42288.427500000005,"timestamp":1632895181},"price_infos":[{"price":42291.66,"timestamp":1632895181,"exchange":"huobi","weight":2},{"price":42294.39,"timestamp":1632895181,"exchange":"binance","weight":1},{"price":42276,"timestamp":1632895181,"exchange":"ok","weight":1}]},{"client":{"ip":"127.0.0.1","request_time":"2021-09-28 16:54:31"},"price_info":{"price":41721.92571428571,"timestamp":1632819233},"price_infos":[{"price":41679.61,"timestamp":1632819233,"exchange":"huobi","weight":2},{"price":41939.72,"timestamp":1632819233,"exchange":"bitstamp","weight":1},{"price":41750,"timestamp":1632819233,"exchange":"bitfinex","weight":1},{"price":41668.18,"timestamp":1632819233,"exchange":"coinbase","weight":3}]}],"getPrice":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-28 16:55:53"},"price_info":{"price":41724,"timestamp":1632819294}}],"getPriceAll":[{"client":{"ip":"127.0.0.1","request_time":"2021-10-08 15:42:38"},"price_infos":[{"price":54398.9,"timestamp":1633678924,"exchange":"ok","weight":1},{"price":54431,"timestamp":1633678924,"exchange":"bitfinex","weight":1},{"price":54393.67,"timestamp":1633678924,"exchange":"binance","weight":1},{"price":54396,"timestamp":1633678924,"exchange":"huobi","weight":2},{"price":54368.34,"timestamp":1633678924,"exchange":"bitstamp","weight":1}]}]}}
 ```
 
+### auth
+
+> POST http://127.0.0.1:5566/api/auth
+>
+> body: {"user":"root", "password":"xxxxxx"}
+> 
+> password need md5
+> 
+**Return**
+
+```javascript
+{"code": 0, "message": "OK", "data": null }
+```
