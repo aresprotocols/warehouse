@@ -44,7 +44,7 @@ func HandleGetPrice(context *gin.Context) {
 		log.Println("not true param name", context.Param("name")[1:])
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -70,7 +70,7 @@ func HandleGetPrice(context *gin.Context) {
 		log.Println("symbol or exchange not find, symbol:", symbol, " exchange:", exchange)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusNotFound, response)
 		return
 	}
 
@@ -93,7 +93,7 @@ func HandleGetPartyPrice(context *gin.Context) {
 		log.Println("symbol or exchange not find, symbol:", symbol)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusNotFound, response)
 		return
 	}
 
@@ -139,7 +139,7 @@ func HandleGetPriceAll(context *gin.Context) {
 		log.Println("symbol or exchange not find, symbol:", symbol)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusNotFound, response)
 		return
 	}
 
@@ -209,7 +209,7 @@ func HandleGetHistoryPrice(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -217,7 +217,7 @@ func HandleGetHistoryPrice(context *gin.Context) {
 	if err != nil {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -227,7 +227,7 @@ func HandleGetHistoryPrice(context *gin.Context) {
 		log.Println("symbol or exchange not find, symbol:", symbol)
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusNotFound, response)
 		return
 	}
 
@@ -276,7 +276,7 @@ func HandleGetBulkPrices(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -307,14 +307,14 @@ func HandleGetBulkCurrencyPrices(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 	currency, exist := context.GetQuery("currency")
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -365,7 +365,7 @@ func HandleGetRequestInfo(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -373,7 +373,7 @@ func HandleGetRequestInfo(context *gin.Context) {
 	if err != nil {
 		response.Code = PARSE_PARAM_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -381,7 +381,7 @@ func HandleGetRequestInfo(context *gin.Context) {
 	if err != nil {
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -396,7 +396,7 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -404,7 +404,7 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 	if err != nil {
 		response.Code = PARSE_PARAM_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -412,7 +412,7 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -420,7 +420,7 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 	if err != nil {
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
@@ -550,7 +550,7 @@ func HandleGetHttpErrorInfo(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -558,7 +558,7 @@ func HandleGetHttpErrorInfo(context *gin.Context) {
 	if err != nil {
 		response.Code = PARSE_PARAM_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -566,7 +566,7 @@ func HandleGetHttpErrorInfo(context *gin.Context) {
 	if err != nil {
 		response.Code = GET_HTTP_ERROR_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
@@ -581,7 +581,7 @@ func HandleGetLocalPrices(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -589,7 +589,7 @@ func HandleGetLocalPrices(context *gin.Context) {
 	if err != nil {
 		response.Code = PARSE_PARAM_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -600,7 +600,7 @@ func HandleGetLocalPrices(context *gin.Context) {
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -647,14 +647,14 @@ func HandleSetWeight(context *gin.Context) {
 	if len(setWeightReq.Symbol) == 0 {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	if len(setWeightReq.Exchange) == 0 {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -662,7 +662,7 @@ func HandleSetWeight(context *gin.Context) {
 	if err != nil {
 		response.Code = SET_WEIGHT_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
@@ -684,7 +684,7 @@ func HandleGetAresAll(context *gin.Context) {
 	if err != nil {
 		response.Code = GET_ARES_INFO_ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 	}
 
 	response.Data = aresShowInfo
@@ -704,21 +704,21 @@ func HandleAuth(context *gin.Context) {
 	if err != nil {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	if len(user.User) == 0 {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
 	if len(user.Password) == 0 {
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusBadRequest, response)
 		return
 	}
 
@@ -727,14 +727,14 @@ func HandleAuth(context *gin.Context) {
 	if user.User != gCfg.User || user.Password != md5Password {
 		response.Code = CHECK_USER_ERROR
 		response.Message = MSG_CHECK_USER_ERROR
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusUnauthorized, response)
 		return
 	}
 	authToken, err := jwt.GenToken(user.User, []byte(gCfg.Password))
 	if err != nil {
 		response.Code = ERROR
 		response.Message = err.Error()
-		context.JSON(http.StatusOK, response)
+		context.JSON(http.StatusInternalServerError, response)
 	}
 	response.Data = authToken
 	context.JSON(http.StatusOK, response)
