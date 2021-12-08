@@ -175,6 +175,9 @@ func Cors() gin.HandlerFunc {
 		if c.Request.Method == "POST" {
 			c.Request.ParseForm()
 		}
+		if bodyLogWriter.Status() != http.StatusOK { // not insert log if http status not ok
+			return
+		}
 
 		accessLogMap := make(map[string]string)
 
@@ -214,7 +217,7 @@ func Check() gin.HandlerFunc {
 		if infoLen == 0 {
 			response.Code = -1
 			response.Message = MSG_PRICE_NOT_READY
-			context.JSON(http.StatusOK, response)
+			context.JSON(http.StatusInternalServerError, response)
 			context.Abort()
 			return
 		}
