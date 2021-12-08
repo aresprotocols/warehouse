@@ -275,5 +275,5 @@ Run
 **Return**
 
 ```javascript
-{"code": 0, "message": "OK", "data": null }
+{"code": 0, "message": "OK", "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJleHAiOjE2Mzg5MzY3MTEsImlzcyI6ImdldC1wcmljZSJ9.LEgHx3ZfbCNIf6UMxYFNDmg8cd5lu2oqLUk2Eb1TwOw"}
 ```
