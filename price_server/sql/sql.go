@@ -132,6 +132,20 @@ type REQ_RSP_LOG_INFO struct {
 	RequestTime string `json:"request_time" db:"request_time"`
 }
 
+func GetTotalLogInfoBySymbol(symbol string) (int, error) {
+	var total int
+	querySql := "select count(1) from " +
+		TABLE_LOG_INFO + " where request_response like '%" + symbol + "%'" +
+		" or request_url like '%" + symbol + "%'" + " and use_symbol = 1 ;"
+	log.Println("sql:", querySql)
+	err := db.QueryRow(querySql).Scan(&total)
+	if err != nil {
+		return total, err
+	}
+
+	return total, nil
+}
+
 func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INFO, error) {
 	var logInfos []REQ_RSP_LOG_INFO
 	querySql := "select client_ip,request_url,request_time,request_response from " +

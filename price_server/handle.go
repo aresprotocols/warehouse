@@ -418,13 +418,27 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 
 	logInfos, err := sql.GetLogInfoBySymbol(idx, int(gCfg.PageSize), symbol)
 	if err != nil {
+		log.Println(err)
+		response.Code = GET_LOG_INFO_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	total, err := sql.GetTotalLogInfoBySymbol(symbol)
+	if err != nil {
+		log.Println(err)
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)
 		return
 	}
 
-	response.Data = parseLogInfos(logInfos, symbol)
+	items := parseLogInfos(logInfos, symbol)
+	response.Data = Pagination{
+		CurPage:  idx,
+		TotalNum: total,
+		Items:    items,
+	}
 	context.JSON(http.StatusOK, response)
 }
 
@@ -682,6 +696,7 @@ func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 	aresShowInfo, err := exchange.GetGateAresInfo(gCfg.Proxy)
 	if err != nil {
+		log.Println(err)
 		response.Code = GET_ARES_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusBadRequest, response)
@@ -702,6 +717,7 @@ func HandleAuth(context *gin.Context) {
 	var user AdminUser
 	err := context.ShouldBind(&user)
 	if err != nil {
+		log.Println(err)
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
 		context.JSON(http.StatusBadRequest, response)
@@ -732,6 +748,7 @@ func HandleAuth(context *gin.Context) {
 	}
 	authToken, err := jwt.GenToken(user.User, []byte(gCfg.Password))
 	if err != nil {
+		log.Println(err)
 		response.Code = ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)

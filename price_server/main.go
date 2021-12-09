@@ -231,3 +231,9 @@ type RESPONSE struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
+
+type Pagination struct {
+	CurPage  int         `json:"curPage"`
+	TotalNum int         `json:"totalNum"`
+	Items    interface{} `json:"items"`
+}
