@@ -205,6 +205,39 @@ func TestStakingErc20(t *testing.T) {
 	fmt.Println("addr balance BalanceOf", total, " ", util.ToEth(total))
 }
 
+func TestSupplyErc20(t *testing.T) {
+	url := "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+
+	client, url := dialConn(url)
+
+	ens, err := NewToken(common.HexToAddress("0x358AA737e033F34df7c54306960a38d09AaBd523"), client)
+	if err != nil {
+		t.Fatalf("can't NewContract: %v", err)
+	}
+	arrs := []common.Address{
+		common.HexToAddress("0x5823d913646ec6bc5d14cb0a0c8705395710df5c"),
+		common.HexToAddress("0x9408953119fea0612e6a7bd8b9af03cd66baeb56"),
+		common.HexToAddress("0x065c4b7de1c25aeb1ab021461a0f6f56cc38b7cf"),
+		common.HexToAddress("0x83779cfb3816301b06f526b726328304e191f39c"),
+		common.HexToAddress("0x8631d23d4a6a4648fe352dbdb28640740765e95d"),
+		common.HexToAddress("0x9593dfa32d4be014834c6369be43a91b63f5d066"),
+		common.HexToAddress("0xbcaf727812a103a7350554b814afa940b9f8b87d"),
+	}
+	total := new(big.Int)
+	for _, arr := range arrs {
+		balance, err := ens.BalanceOf(nil, arr)
+		if err != nil {
+			log.Error("Failed to retrieve token ", "name: %v", err)
+		}
+		total.Add(total, balance)
+	}
+	val, _ := util.ToEth(total).Uint64()
+
+	surplus := uint64(1000000000) - val
+
+	fmt.Println("addr balance BalanceOf", total, " val ", val, " surplus ", surplus)
+}
+
 func dialConn(url string) (*ethclient.Client, string) {
 	ip := "165.227.99.131"
 	port := 8545
