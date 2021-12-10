@@ -5,16 +5,23 @@ import (
 	"fmt"
 	"math/big"
 	"testing"
+	"time"
 )
 
 func TestUniswapPair(t *testing.T) {
+	now := time.Now().Unix()
 	url := "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
 	client, url := dialConn(url)
+	now1 := time.Now().Unix()
+	fmt.Println("now1", now1-now)
 
 	aresVal, err := calAresEthPrice("0x7a646ee13eb104853c651e1d90d143acc9e72cdb", client)
 	if err != nil {
 		fmt.Println("GetReserves err", err)
 	}
+	now2 := time.Now().Unix()
+	fmt.Println("now1", now1-now, " now2", now2-now1)
+
 	fmt.Println("aresVal", aresVal)
 
 	val, err := calEthPrice("0x0d4a11d5eeaac28ec3f61d100daf4d40471f1852", client)
