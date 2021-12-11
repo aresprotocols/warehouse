@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	conf "price_api/price_server/config"
@@ -12,8 +13,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 const MSG_URL_NOT_FIND = "url not find"
@@ -35,6 +34,28 @@ const (
 	CHECK_USER_ERROR
 	SET_WEIGHT_ERROR
 )
+
+var (
+	handle *Handle
+)
+
+type Handle struct {
+	fetcher *exchange.Fetcher
+}
+
+func InitHandle(cfg conf.Config) *Handle {
+	handle = &Handle{
+		fetcher: exchange.InitFetcher(cfg),
+	}
+
+	handle.fetcher.Start()
+
+	return handle
+}
+
+func (h *Handle) Stop() {
+	h.fetcher.Stop()
+}
 
 func HandleGetPrice(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
@@ -694,13 +715,25 @@ func HandleSetWeight(context *gin.Context) {
 
 func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
+
 	aresShowInfo, err := exchange.GetGateAresInfo(gCfg.Proxy)
+	aresShowInfo.Rank = handle.fetcher.GetCMCInfo().Rank
+
 	if err != nil {
 		log.Println(err)
 		response.Code = GET_ARES_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusBadRequest, response)
 	}
+
+	response.Data = aresShowInfo
+	context.JSON(http.StatusOK, response)
+}
+
+func HandleGetDexPrice(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	aresShowInfo := handle.fetcher.GetDexPrice()
 
 	response.Data = aresShowInfo
 	context.JSON(http.StatusOK, response)

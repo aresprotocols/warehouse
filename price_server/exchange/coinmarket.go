@@ -51,7 +51,7 @@ type AresShowInfo struct {
 	Volume        float64 `json:"volume"`
 }
 
-func GetAresInfo(proxy string) (AresShowInfo, error) {
+func getCMCAresInfo(proxy string) (AresShowInfo, error) {
 	var aresInfo AresInfo
 
 	resJson, err := getPrice(ARES_URL, proxy)

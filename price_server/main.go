@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	conf "price_api/price_server/config"
 	exchange "price_api/price_server/exchange"
 	"price_api/price_server/sql"
@@ -43,6 +45,8 @@ func main() {
 
 	log.Println("mysql init over")
 
+	handle := InitHandle(cfg)
+
 	gRequestPriceConfs, err = exchange.InitRequestPriceConf(cfg)
 	if err != nil {
 		log.Println(err)
@@ -70,10 +74,18 @@ func main() {
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
 	router.POST("/api/setWeight", JWTAuthMiddleware(), Check(), HandleSetWeight)
 	router.GET("/api/getAresAll", HandleGetAresAll)
+	router.GET("/api/getDexPrice", HandleGetDexPrice)
 	router.POST("/api/auth", HandleAuth)
 
 	go updatePrice(cfg, gRequestPriceConfs)
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
+
+	abortChan := make(chan os.Signal, 1)
+	signal.Notify(abortChan, os.Interrupt)
+
+	sig := <-abortChan
+	handle.Stop()
+	log.Println("Exiting...", "signal", sig)
 }
 
 func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {

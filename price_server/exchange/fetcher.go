@@ -15,13 +15,13 @@ var (
 )
 
 type DexPrice struct {
-	Uni     *BasePrice
-	Pancake *BasePrice
+	Uni     *BasePrice `json:"uni"`
+	Pancake *BasePrice `json:"pancake"`
 }
 
 type BasePrice struct {
-	Price     *big.Float
-	TimeStamp int64
+	Price     string `json:"price"`
+	TimeStamp int64  `json:"timestamp"`
 }
 
 type announce struct {
@@ -32,26 +32,29 @@ type announce struct {
 }
 
 type announceCMC struct {
-	CASI AresShowInfo
-	err  error
+	CASI      AresShowInfo
+	TimeStamp int64
+	err       error
 }
 
 type Fetcher struct {
 	quit       chan struct{}
 	blockMutex *sync.Mutex //block mutex
-	Price      *DexPrice
+	price      *DexPrice
 	notify     chan *announce
-	proxy      string
-	CASI       AresShowInfo
+	notifyCMC  chan *announceCMC
+	casi       AresShowInfo
+	cfg        conf.Config
 }
 
-func InitFetcher(cfg conf.Config, proxy string) *Fetcher {
+func InitFetcher(cfg conf.Config) *Fetcher {
 	fetcher = &Fetcher{
 		notify:     make(chan *announce),
-		Price:      &DexPrice{},
+		notifyCMC:  make(chan *announceCMC),
+		price:      &DexPrice{},
 		blockMutex: new(sync.Mutex),
 		quit:       make(chan struct{}),
-		proxy:      proxy,
+		cfg:        cfg,
 	}
 	return fetcher
 }
@@ -60,7 +63,14 @@ func (f *Fetcher) GetDexPrice() *DexPrice {
 	f.blockMutex.Lock()
 	defer f.blockMutex.Unlock()
 
-	return f.Price
+	return f.price
+}
+
+func (f *Fetcher) GetCMCInfo() *AresShowInfo {
+	f.blockMutex.Lock()
+	defer f.blockMutex.Unlock()
+
+	return &f.casi
 }
 
 // Start boots up the announcement based synchroniser, accepting and processing
@@ -68,6 +78,7 @@ func (f *Fetcher) GetDexPrice() *DexPrice {
 func (f *Fetcher) Start() {
 	go f.calUniswapPrice(true)
 	go f.calUniswapPrice(false)
+	go f.calGateCMCAresInfo()
 	go f.loop()
 }
 
@@ -95,23 +106,26 @@ func (f *Fetcher) loop() {
 		case notification := <-f.notify:
 			if notification.err == nil {
 				base := &BasePrice{
-					Price:     new(big.Float).Set(notification.Price),
+					Price:     notification.Price.String(),
 					TimeStamp: notification.TimeStamp,
 				}
 
 				if notification.UniSwap {
-					f.Price.Uni = base
+					f.price.Uni = base
 				} else {
-					f.Price.Uni = base
-					f.Price.Pancake = base
+					f.price.Pancake = base
 				}
+			}
+		case notification := <-f.notifyCMC:
+			if notification.err == nil {
+				f.casi = notification.CASI
 			}
 		}
 	}
 }
 
 func (f *Fetcher) calUniswapPrice(uniswap bool) {
-	timer1 := time.NewTicker(10 * time.Second)
+	timer1 := time.NewTicker(10 * time.Minute)
 	for {
 		select {
 		case <-timer1.C:
@@ -145,11 +159,25 @@ func (f *Fetcher) calUniswapPrice(uniswap bool) {
 }
 
 func (f *Fetcher) calGateCMCAresInfo() {
-	timer1 := time.NewTicker(20 * time.Second)
+	timer1 := time.NewTicker(30 * time.Minute)
 	for {
 		select {
 		case <-timer1.C:
-			GetAresInfo(f.proxy)
+			for i := 0; i < 2; i++ {
+				var ann = &announceCMC{}
+				info, err := getCMCAresInfo(f.cfg.Proxy)
+				if err == nil {
+					ann.CASI = info
+					ann.TimeStamp = time.Now().Unix()
+					f.notifyCMC <- ann
+					break
+				}
+				if i == 1 && err != nil {
+					ann.err = err
+					ann.TimeStamp = time.Now().Unix()
+					f.notifyCMC <- ann
+				}
+			}
 		case <-f.quit:
 			return
 		}
