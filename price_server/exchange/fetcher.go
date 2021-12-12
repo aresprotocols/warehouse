@@ -2,6 +2,7 @@ package exchange
 
 import (
 	"errors"
+	"log"
 	"math/big"
 	conf "price_api/price_server/config"
 	"price_api/price_server/dex"
@@ -76,9 +77,9 @@ func (f *Fetcher) GetCMCInfo() *AresShowInfo {
 // Start boots up the announcement based synchroniser, accepting and processing
 // hash notifications and block fetches until termination requested.
 func (f *Fetcher) Start() {
-	go f.calUniswapPrice(true)
-	go f.calUniswapPrice(false)
-	go f.calGateCMCAresInfo()
+	go f.calUniswapPriceTimer(true)
+	go f.calUniswapPriceTimer(false)
+	go f.calGateCMCAresInfoTimer()
 	go f.loop()
 }
 
@@ -124,34 +125,54 @@ func (f *Fetcher) loop() {
 	}
 }
 
-func (f *Fetcher) calUniswapPrice(uniswap bool) {
+func (f *Fetcher) calUniswapPriceTimer(uniswap bool) {
+	go f.calUniswapPrice(uniswap)
+
 	timer1 := time.NewTicker(10 * time.Minute)
 	for {
 		select {
 		case <-timer1.C:
-			var ann = &announce{
-				UniSwap: uniswap,
-			}
-			var value *big.Float
-			var err error
-			for i := 0; i < 2; i++ {
-				if uniswap {
-					value, err = dex.GetUniswapAresPrice()
-				} else {
-					value, err = dex.GetPancakeAresPrice()
-				}
-				if value != nil {
-					ann.Price = value
-					ann.TimeStamp = time.Now().Unix()
-					f.notify <- ann
-					break
-				}
-				if i == 1 && err != nil {
-					ann.err = err
-					ann.TimeStamp = time.Now().Unix()
-					f.notify <- ann
-				}
-			}
+			go f.calUniswapPrice(uniswap)
+		case <-f.quit:
+			return
+		}
+	}
+}
+
+func (f *Fetcher) calUniswapPrice(uniswap bool) {
+	var ann = &announce{
+		UniSwap: uniswap,
+	}
+	var value *big.Float
+	var err error
+	for i := 0; i < 2; i++ {
+		if uniswap {
+			value, err = dex.GetUniswapAresPrice()
+		} else {
+			value, err = dex.GetPancakeAresPrice()
+		}
+		if value != nil {
+			ann.Price = value
+			ann.TimeStamp = time.Now().Unix()
+			f.notify <- ann
+			break
+		}
+		if i == 1 && err != nil {
+			ann.err = err
+			ann.TimeStamp = time.Now().Unix()
+			f.notify <- ann
+		}
+	}
+}
+
+func (f *Fetcher) calGateCMCAresInfoTimer() {
+	go f.calGateCMCAresInfo()
+
+	timer1 := time.NewTicker(30 * time.Minute)
+	for {
+		select {
+		case <-timer1.C:
+			go f.calGateCMCAresInfo()
 		case <-f.quit:
 			return
 		}
@@ -159,27 +180,20 @@ func (f *Fetcher) calUniswapPrice(uniswap bool) {
 }
 
 func (f *Fetcher) calGateCMCAresInfo() {
-	timer1 := time.NewTicker(30 * time.Minute)
-	for {
-		select {
-		case <-timer1.C:
-			for i := 0; i < 2; i++ {
-				var ann = &announceCMC{}
-				info, err := getCMCAresInfo(f.cfg.Proxy)
-				if err == nil {
-					ann.CASI = info
-					ann.TimeStamp = time.Now().Unix()
-					f.notifyCMC <- ann
-					break
-				}
-				if i == 1 && err != nil {
-					ann.err = err
-					ann.TimeStamp = time.Now().Unix()
-					f.notifyCMC <- ann
-				}
-			}
-		case <-f.quit:
-			return
+	for i := 0; i < 2; i++ {
+		var ann = &announceCMC{}
+		log.Println("cal gate CMC ares info")
+		info, err := getCMCAresInfo(f.cfg.Proxy)
+		if err == nil {
+			ann.CASI = info
+			ann.TimeStamp = time.Now().Unix()
+			f.notifyCMC <- ann
+			break
+		}
+		if i == 1 {
+			ann.err = err
+			ann.TimeStamp = time.Now().Unix()
+			f.notifyCMC <- ann
 		}
 	}
 }

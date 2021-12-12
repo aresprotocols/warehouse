@@ -10,10 +10,12 @@ import (
 	"price_api/price_server/dex/erc20"
 	pair "price_api/price_server/dex/uniswapV2Pair"
 	"price_api/price_server/util"
-	"time"
 )
 
+var debug = false
+
 func GetUniswapAresPrice() (*big.Float, error) {
+	log.Println("get uniswap ares price")
 	url := "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
 	client, url := dialConn(url)
 
@@ -33,6 +35,7 @@ func GetUniswapAresPrice() (*big.Float, error) {
 }
 
 func GetPancakeAresPrice() (*big.Float, error) {
+	log.Println("get pancake ares price")
 	url := "https://bsc-dataseed1.ninicoin.io"
 	client, url := dialConn(url)
 
@@ -62,32 +65,40 @@ func calAresEthPrice(pairAddr string, client *ethclient.Client) (*big.Float, err
 	if err != nil {
 		fmt.Println("GetReserves err", err)
 	}
-	fmt.Println(time.Unix(int64(res.BlockTimestampLast), 0))
+	//fmt.Println(time.Unix(int64(res.BlockTimestampLast), 0))
 
 	token0, err := eth.Token0(nil)
 	if err != nil {
 		fmt.Println("GetReserves err", err)
 	}
-	weth := printErc20(token0, client)
+	weth, err := printErc20(token0, client)
 
 	token1, err := eth.Token1(nil)
 	if err != nil {
-		fmt.Println("GetReserves err", err)
+		fmt.Println("GetReserves token0 err", err)
 		return nil, err
 	}
 
-	usdt := printErc20(token1, client)
+	usdt, err := printErc20(token1, client)
+	if err != nil {
+		fmt.Println("GetReserves token1 err", err)
+		return nil, err
+	}
 	if weth.Symbol == "ARES" {
 		ethVal := util.ToDecimalsEth(res.Reserve0, weth.Decimals.Int64())
 		usdtVal := util.ToDecimalsEth(res.Reserve1, usdt.Decimals.Int64())
 		result := new(big.Float).Quo(usdtVal, ethVal)
-		fmt.Println("ares", ethVal, " usdtVal ", usdtVal, " result ", result)
+		if debug {
+			fmt.Println("ares", ethVal, " usdtVal ", usdtVal, " result ", result)
+		}
 		return result, nil
 	} else if usdt.Symbol == "ARES" {
 		ethVal := util.ToDecimalsEth(res.Reserve1, weth.Decimals.Int64())
 		usdtVal := util.ToDecimalsEth(res.Reserve0, usdt.Decimals.Int64())
 		result := new(big.Float).Quo(usdtVal, ethVal)
-		fmt.Println("ares", ethVal, " usdtVal ", usdtVal, " result ", result)
+		if debug {
+			fmt.Println("ares", ethVal, " usdtVal ", usdtVal, " result ", result)
+		}
 		return result, nil
 	}
 
@@ -110,26 +121,35 @@ func calEthPrice(pairAddr string, client *ethclient.Client) (*big.Float, error) 
 	if err != nil {
 		fmt.Println("GetReserves err", err)
 	}
-	weth := printErc20(token0, client)
+	weth, err := printErc20(token0, client)
 
 	token1, err := eth.Token1(nil)
 	if err != nil {
-		fmt.Println("GetReserves err", err)
+		fmt.Println("GetReserves token0 err", err)
 		return nil, err
 	}
 
-	usdt := printErc20(token1, client)
+	usdt, err := printErc20(token1, client)
+	if err != nil {
+		fmt.Println("GetReserves token1 err", err)
+		return nil, err
+	}
+
 	if weth.Symbol == "WETH" {
 		ethVal := util.ToDecimalsEth(res.Reserve0, weth.Decimals.Int64())
 		usdtVal := util.ToDecimalsEth(res.Reserve1, usdt.Decimals.Int64())
 		result := new(big.Float).Quo(usdtVal, ethVal)
-		fmt.Println("ethVal", ethVal, " usdtVal ", usdtVal, " result ", result)
+		if debug {
+			fmt.Println("ethVal", ethVal, " usdtVal ", usdtVal, " result ", result)
+		}
 		return result, nil
 	} else if usdt.Symbol == "WBNB" {
 		ethVal := util.ToDecimalsEth(res.Reserve1, weth.Decimals.Int64())
 		usdtVal := util.ToDecimalsEth(res.Reserve0, usdt.Decimals.Int64())
 		result := new(big.Float).Quo(usdtVal, ethVal)
-		fmt.Println("ethVal", ethVal, " usdtVal ", usdtVal, " result ", result)
+		if debug {
+			fmt.Println("ethVal", ethVal, " usdtVal ", usdtVal, " result ", result)
+		}
 		return result, nil
 	}
 	return nil, errors.New("not find")
@@ -141,7 +161,7 @@ type Erc20 struct {
 	Decimals *big.Int
 }
 
-func printErc20(addr common.Address, client *ethclient.Client) (erc Erc20) {
+func printErc20(addr common.Address, client *ethclient.Client) (erc Erc20, err error) {
 
 	ens, err := erc20.NewToken(addr, client)
 	if err != nil {
@@ -166,9 +186,11 @@ func printErc20(addr common.Address, client *ethclient.Client) (erc Erc20) {
 	if err != nil {
 		fmt.Println("Failed to retrieve token ", "name: %v", err)
 	}
-	fmt.Println("addr", addr, " Token name:", name, " Token symbol:", symbol, " Token decimals:", decimals)
+	if debug {
+		fmt.Println("addr", addr, " Token name:", name, " Token symbol:", symbol, " Token decimals:", decimals)
+	}
 	erc.Decimals = decimals
-	return erc
+	return erc, err
 }
 
 func dialConn(url string) (*ethclient.Client, string) {
