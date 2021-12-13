@@ -160,6 +160,29 @@ func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INF
 	return logInfos, nil
 }
 
+func GetTotalHistoryBySymbol(symbol string) (int, error) {
+	var total int
+	querySql := "select count(1) from `" + TABLE_COIN_PRICE + "` where symbol = ?;"
+	log.Println("sql:", querySql, "symbol", symbol)
+	err := db.QueryRow(querySql, symbol).Scan(&total)
+	if err != nil {
+		return total, err
+	}
+	return total, nil
+}
+
+func GetHistoryBySymbol(idx int, pageSize int, symbol string) ([]conf.PriceInfo, error) {
+	var infos []conf.PriceInfo
+	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where symbol = ? order by id desc limit ?,? ;"
+	log.Println("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+
+	err := db.Select(&infos, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	if err != nil {
+		return infos, err
+	}
+	return infos, nil
+}
+
 func GetHistoryBySymbolTimestamp(symbol string, timestamp int64) ([]conf.PriceInfo, error) {
 	var dbTimestamp int64
 	querySql := "select timestamp from " + TABLE_COIN_PRICE + " where timestamp <= ? order by timestamp desc;"

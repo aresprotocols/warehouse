@@ -667,6 +667,58 @@ func HandleGetLocalPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetHistoryPrices(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	index, exist := context.GetQuery("index")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	idx, err := strconv.Atoi(index)
+	if err != nil {
+		response.Code = PARSE_PARAM_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	infos, err := sql.GetHistoryBySymbol(idx, int(gCfg.PageSize), symbol)
+	if err != nil {
+		log.Println(err)
+		response.Code = GET_LOG_INFO_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	total, err := sql.GetTotalHistoryBySymbol(symbol)
+	if err != nil {
+		log.Println(err)
+		response.Code = GET_LOG_INFO_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusInternalServerError, response)
+		return
+	}
+
+	response.Data = Pagination{
+		CurPage:  idx,
+		TotalNum: total,
+		Items:    infos,
+	}
+	context.JSON(http.StatusOK, response)
+}
+
 type SetWeightReq struct {
 	Weight   int    `json:"weight"`
 	Symbol   string `json:"symbol"`
