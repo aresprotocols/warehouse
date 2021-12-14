@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -77,6 +78,7 @@ func main() {
 	router.GET("/api/getAresAll", HandleGetAresAll)
 	router.GET("/api/getDexPrice", HandleGetDexPrice)
 	router.POST("/api/auth", HandleAuth)
+	router.GET("/api/getResources/:symbol", Check(), HandleGetResourcesPrice)
 
 	go updatePrice(cfg, gRequestPriceConfs)
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
@@ -93,6 +95,7 @@ func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 	idx := 0
 
 	for {
+		log.Println(fmt.Sprintf("start new round update price,timestamp:%s", time.Now().Format("2006-01-02 15:04:05 ")))
 		infos, err := exchange.GetExchangePrice(reqConf, cfg)
 		if err != nil {
 			log.Println(err)
@@ -114,7 +117,9 @@ func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 				idx = 0
 			}
 		}
+		log.Println(fmt.Sprintf("end this round update price,timestamp:%s", time.Now().Format("2006-01-02 15:04:05 ")))
 		time.Sleep(time.Second * time.Duration(cfg.Interval))
+
 	}
 }
 
