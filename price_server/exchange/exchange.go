@@ -140,6 +140,12 @@ func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, er
 	for _, exchange := range cfg.Exchanges {
 		for _, symbol := range cfg.Symbols {
 			go initRequestPrice(exchange, symbol, cfg)
+			if exchange.Name == "coinbase" {
+				time.Sleep(110 * time.Millisecond)
+			}
+			if exchange.Name == "bitfinex" {
+				time.Sleep(110 * time.Millisecond)
+			}
 		}
 	}
 
@@ -182,11 +188,14 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		if err == nil {
 			break
 		}
+		if err != nil && strings.Contains(err.Error(), "404") { // skip retry when catch 404 error
+			break
+		}
 		time.Sleep(time.Second * 3)
 	}
 
 	if err != nil {
-		//log.Println(err)
+		log.Println(err)
 		if bRemberDb {
 			err = sql.InsertHttpError(exchange.Url, symbol, err.Error())
 			if err != nil {

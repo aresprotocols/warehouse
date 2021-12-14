@@ -93,7 +93,7 @@ func main() {
 
 func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 	idx := 0
-
+	time.Sleep(time.Second * 2) // run update for the first time,  need to sleep , because you have just completed initialization and have already requested data once
 	for {
 		log.Println(fmt.Sprintf("start new round update price,timestamp:%s", time.Now().Format("2006-01-02 15:04:05 ")))
 		infos, err := exchange.GetExchangePrice(reqConf, cfg)

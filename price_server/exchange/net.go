@@ -2,7 +2,9 @@ package exchange
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -34,6 +36,7 @@ func getPrice(exchangeUrl string, proxyAddr string) (string, error) {
 
 	res, err := httpClient.Get(exchangeUrl)
 	if err != nil {
+		log.Println(fmt.Sprintf("getPrice error:%v", err))
 		return "", err
 	}
 	defer res.Body.Close()
