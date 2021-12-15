@@ -73,7 +73,7 @@ func main() {
 	router.GET("/api/getRequestInfoBySymbol", HandleGetRequestInfoBySymbol)
 	router.GET("/api/getHttpErrorInfo", HandleGetHttpErrorInfo)
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
-	router.GET("/api/getHistoryPrices", HandleGetHistoryPrices)
+	router.GET("/api/getUpdatePriceHistory", HandleGetUpdatePriceHistory)
 	router.POST("/api/setWeight", JWTAuthMiddleware(), Check(), HandleSetWeight)
 	router.GET("/api/getAresAll", HandleGetAresAll)
 	router.GET("/api/getDexPrice", HandleGetDexPrice)

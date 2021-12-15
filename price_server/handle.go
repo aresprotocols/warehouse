@@ -709,7 +709,7 @@ func HandleGetLocalPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func HandleGetHistoryPrices(context *gin.Context) {
+func HandleGetUpdatePriceHistory(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
 	index, exist := context.GetQuery("index")
