@@ -540,13 +540,15 @@ type CLIENT_PRICEALL_INFO struct {
 }
 
 type PARTY_PRICE_INFO struct {
+	Type       string                       `json:"type"`
 	Client     CLIENT_INFO                  `json:"client"`
 	PriceInfo  PRICE_INFO                   `json:"price_info"`
 	PriceInfos []PRICE_EXCHANGE_WEIGHT_INFO `json:"price_infos"`
 }
 
-func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]interface{} {
-	retPriceInfos := make(map[string][]interface{})
+func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE_INFO {
+	//retPriceInfos := make(map[string][]interface{})
+	retPriceInfos := make([]PARTY_PRICE_INFO, 0)
 
 	for _, logInfo := range logInfos {
 		var rsp RESPONSE
@@ -557,26 +559,43 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]
 		}
 
 		if strings.Contains(logInfo.ReqUrl, "getPriceAll") {
+			var historyPriceInfo PARTY_PRICE_INFO
+			historyPriceInfo.Type = "getPriceAll"
+
 			priceInfoLists := rsp.Data.([]interface{})
-			var priceAllInfos CLIENT_PRICEALL_INFO
-			priceAllInfos.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
-			for _, priceInfo := range priceInfoLists {
+
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+
+			for index, priceInfo := range priceInfoLists {
 				info := priceInfo.(map[string]interface{})
-				priceExchangeInfo := PRICE_EXCHANGE_INFO{Price: info["price"].(float64),
-					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64)), Weight: int64(info["weight"].(float64))}
-				priceAllInfos.PriceInfos = append(priceAllInfos.PriceInfos, priceExchangeInfo)
+				if index == 0 {
+					historyPriceInfo.PriceInfo = PRICE_INFO{Price: info["price"].(float64), Timestamp: int64(info["timestamp"].(float64))}
+				}
+				weightExchangeInfo := PRICE_EXCHANGE_WEIGHT_INFO{Price: info["price"].(float64),
+					Exchange: info["name"].(string), Timestamp: int64(info["timestamp"].(float64)), Weight: int(info["weight"].(float64))}
+				historyPriceInfo.PriceInfos = append(historyPriceInfo.PriceInfos, weightExchangeInfo)
+
 			}
-			retPriceInfos["getPriceAll"] = append(retPriceInfos["getPriceAll"], priceAllInfos)
+
+			retPriceInfos = append(retPriceInfos, historyPriceInfo)
+
 		} else if strings.Contains(logInfo.ReqUrl, "getPrice") {
+			var historyPriceInfo PARTY_PRICE_INFO
+			historyPriceInfo.Type = "getPrice"
+
 			mapPriceInfo := rsp.Data.(map[string]interface{})
-			var getPriceInfo CLIENT_PRICE_INFO
-			getPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
-			getPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))}
-			retPriceInfos["getPrice"] = append(retPriceInfos["getPrice"], getPriceInfo)
+
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))}
+			historyPriceInfo.PriceInfos = make([]PRICE_EXCHANGE_WEIGHT_INFO, 0)
+
+			retPriceInfos = append(retPriceInfos, historyPriceInfo)
 		} else if strings.Contains(logInfo.ReqUrl, "getPartyPrice") {
 			mapPriceInfo := rsp.Data.(map[string]interface{})
 			var historyPriceInfo PARTY_PRICE_INFO
 
+			historyPriceInfo.Type = "getPartyPrice"
+
 			timestamp := int64(mapPriceInfo["timestamp"].(float64))
 			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
 			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp}
@@ -588,11 +607,14 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]
 					Exchange: info["exchangeName"].(string), Timestamp: timestamp, Weight: int(info["weight"].(float64))}
 				historyPriceInfo.PriceInfos = append(historyPriceInfo.PriceInfos, weightExchangeInfo)
 			}
-			retPriceInfos["getPartyPrice"] = append(retPriceInfos["getPartyPrice"], historyPriceInfo)
+
+			retPriceInfos = append(retPriceInfos, historyPriceInfo)
 		} else if strings.Contains(logInfo.ReqUrl, "getHistoryPrice") {
 			mapPriceInfo := rsp.Data.(map[string]interface{})
 			var historyPriceInfo PARTY_PRICE_INFO
 
+			historyPriceInfo.Type = "getHistoryPrice"
+
 			timestamp := int64(mapPriceInfo["timestamp"].(float64))
 			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
 			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp}
@@ -604,14 +626,18 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) map[string][]
 					Exchange: info["exchangeName"].(string), Timestamp: timestamp, Weight: int(info["weight"].(float64))}
 				historyPriceInfo.PriceInfos = append(historyPriceInfo.PriceInfos, weightExchangeInfo)
 			}
-			retPriceInfos["getHistoryPrice"] = append(retPriceInfos["getHistoryPrice"], historyPriceInfo)
+			retPriceInfos = append(retPriceInfos, historyPriceInfo)
 		} else if strings.Contains(logInfo.ReqUrl, "getBulkPrices") {
+			var historyPriceInfo PARTY_PRICE_INFO
+			historyPriceInfo.Type = "getBulkPrices"
+
 			mapPriceInfo := rsp.Data.(map[string]interface{})
 			symbolPriceInfo := mapPriceInfo[symbol].(map[string]interface{})
-			var getBulkPriceInfo CLIENT_PRICE_INFO
-			getBulkPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
-			getBulkPriceInfo.PriceInfo = PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
-			retPriceInfos["getBulkPrices"] = append(retPriceInfos["getBulkPrices"], getBulkPriceInfo)
+
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.PriceInfo = PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
+			historyPriceInfo.PriceInfos = make([]PRICE_EXCHANGE_WEIGHT_INFO, 0)
+			retPriceInfos = append(retPriceInfos, historyPriceInfo)
 		} else {
 			//log.Println("unknow logInfo", logInfo)
 			continue
