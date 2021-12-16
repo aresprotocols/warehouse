@@ -71,7 +71,7 @@ func main() {
 	router.GET("/api/getReqConfig", HandleGetReqConfig)
 	router.GET("/api/getRequestInfo", JWTAuthMiddleware(), HandleGetRequestInfo)
 	router.GET("/api/getRequestInfoBySymbol", HandleGetRequestInfoBySymbol)
-	router.GET("/api/getHttpErrorInfo", HandleGetHttpErrorInfo)
+	router.GET("/api/getHttpErrorInfo/:symbol", HandleGetHttpErrorInfo)
 	router.GET("/api/getLocalPrices", Check(), HandleGetLocalPrices)
 	router.GET("/api/getUpdatePriceHistory", HandleGetUpdatePriceHistory)
 	router.POST("/api/setWeight", JWTAuthMiddleware(), Check(), HandleSetWeight)

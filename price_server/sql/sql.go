@@ -208,21 +208,27 @@ type HTTP_ERROR_INFO struct {
 	Timestamp int64  `db:"timestamp" jsoon:"timestamp"`
 }
 
-type HTTP_ERROR_INFOS struct {
-	Infos []HTTP_ERROR_INFO `json:"infos"`
-}
-
-func GetHttpErrorInfo(idx int, pageSize int) (HTTP_ERROR_INFOS, error) {
-	var httpErrorInfos HTTP_ERROR_INFOS
+func GetHttpErrorInfo(idx int, symbol string, pageSize int) ([]HTTP_ERROR_INFO, error) {
+	var infos = make([]HTTP_ERROR_INFO, 0)
 	querySql := "select url,symbol,error,timestamp from " +
-		TABLE_HTTP_ERROR + " order by id desc limit ?,?;"
-	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
-	err := db.Select(&httpErrorInfos.Infos, querySql, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+		TABLE_HTTP_ERROR + " where symbol = ? order by id desc limit ?,?;"
+	log.Println("sql:", querySql, "symbol: ", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	err := db.Select(&infos, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	if err != nil {
-		return HTTP_ERROR_INFOS{}, err
+		return nil, err
 	}
 
-	return httpErrorInfos, nil
+	return infos, nil
+}
+func GetTotalHttpErrorInfo(symbol string) (int, error) {
+	var total int
+	querySql := "select count(1) from " + TABLE_HTTP_ERROR + " where symbol = ?;"
+	log.Println("sql:", querySql, "symbol: ", symbol)
+	err := db.QueryRow(querySql, symbol).Scan(&total)
+	if err != nil {
+		return total, err
+	}
+	return total, nil
 }
 
 //check symbo exchangeName in db, if not, update. if in. get weight return

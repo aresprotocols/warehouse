@@ -649,6 +649,14 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 func HandleGetHttpErrorInfo(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
+	symbol := context.Param("symbol")
+	symbol = strings.ToLower(symbol)
+	if !strings.Contains(symbol, "-") {
+		if strings.HasSuffix(symbol, "usdt") {
+			symbol = strings.ReplaceAll(symbol, "usdt", "-usdt")
+		}
+	}
+
 	index, exist := context.GetQuery("index")
 	if !exist {
 		response.Code = PARAM_NOT_TRUE_ERROR
@@ -665,7 +673,7 @@ func HandleGetHttpErrorInfo(context *gin.Context) {
 		return
 	}
 
-	httpErrorInfos, err := sql.GetHttpErrorInfo(idx, int(gCfg.PageSize))
+	total, err := sql.GetTotalHttpErrorInfo(symbol)
 	if err != nil {
 		response.Code = GET_HTTP_ERROR_ERROR
 		response.Message = err.Error()
@@ -673,7 +681,18 @@ func HandleGetHttpErrorInfo(context *gin.Context) {
 		return
 	}
 
-	response.Data = httpErrorInfos
+	httpErrorInfos, err := sql.GetHttpErrorInfo(idx, symbol, int(gCfg.PageSize))
+	if err != nil {
+		response.Code = GET_HTTP_ERROR_ERROR
+		response.Message = err.Error()
+		context.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	response.Data = Pagination{
+		CurPage:  idx,
+		TotalNum: total,
+		Items:    httpErrorInfos,
+	}
 	context.JSON(http.StatusOK, response)
 }
 
