@@ -122,48 +122,6 @@ func HandleGetPartyPrice(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
-func HandleGetResourcesPrice(context *gin.Context) {
-	response := RESPONSE{Code: 0, Message: "OK"}
-
-	symbol := context.Param("symbol")
-
-	m.RLock()
-	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
-	m.RUnlock()
-
-	weightInfos := getResources(latestInfos.PriceInfos, symbol)
-	response.Data = weightInfos
-	context.JSON(http.StatusOK, response)
-}
-
-func getResources(infos []conf.PriceInfo, symbol string) []WeightInfo {
-	var symbolPriceInfo []conf.PriceInfo
-	for _, info := range infos {
-		if strings.EqualFold(info.Symbol, symbol) {
-			symbolPriceInfo = append(symbolPriceInfo, info)
-		}
-	}
-
-	weightInfos := make([]WeightInfo, 0)
-	infosLen := len(symbolPriceInfo)
-	if infosLen == 0 {
-		return weightInfos
-	}
-
-	sort.Slice(symbolPriceInfo, func(i, j int) bool {
-		if symbolPriceInfo[i].Price > infos[j].Price {
-			return true
-		} else {
-			return false
-		}
-	})
-
-	for _, info := range symbolPriceInfo {
-		weightInfos = append(weightInfos, WeightInfo{Price: info.Price, Weight: info.Weight, ExchangeName: info.PriceOrigin})
-	}
-	return weightInfos
-}
-
 type PriceAllInfo struct {
 	Name      string  `json:"name"`
 	Symbol    string  `json:"symbol"`
