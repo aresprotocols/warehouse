@@ -810,6 +810,48 @@ func HandleSetWeight(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+type HEARTBEAT_INFO struct {
+	ExpectResources int   `json:"expect_resources"`
+	ActualResources int   `json:"actual_resources"`
+	LatestTimestamp int64 `json:"latest_timestamp"`
+}
+
+func HandleGetUpdatePriceHeartbeat(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	symbol := context.Param("symbol")
+
+	m.RLock()
+	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
+	m.RUnlock()
+
+	var symbolPriceInfo = make([]conf.PriceInfo, 0)
+	for _, info := range latestInfos.PriceInfos {
+		if strings.EqualFold(info.Symbol, symbol) {
+			symbolPriceInfo = append(symbolPriceInfo, info)
+		}
+	}
+
+	if len(symbolPriceInfo) == 0 {
+		log.Println("symbol not find, symbol:", symbol)
+		response.Code = NO_MATCH_FORMAT_ERROR
+		response.Message = MSG_URL_NOT_FIND
+		context.JSON(http.StatusNotFound, response)
+		return
+	}
+
+	tokenSymbol := strings.ReplaceAll(symbol, "usdt", "-usdt")
+
+	exchangeConfs := gRequestPriceConfs[tokenSymbol]
+
+	response.Data = HEARTBEAT_INFO{
+		ExpectResources: len(exchangeConfs),
+		ActualResources: len(symbolPriceInfo),
+		LatestTimestamp: symbolPriceInfo[0].TimeStamp,
+	}
+	context.JSON(http.StatusOK, response)
+}
+
 func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 

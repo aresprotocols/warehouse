@@ -78,6 +78,7 @@ func main() {
 	router.GET("/api/getAresAll", HandleGetAresAll)
 	router.GET("/api/getDexPrice", HandleGetDexPrice)
 	router.POST("/api/auth", HandleAuth)
+	router.GET("/api/getUpdatePriceHeartbeat/:symbol", Check(), HandleGetUpdatePriceHeartbeat)
 
 	go updatePrice(cfg, gRequestPriceConfs)
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
