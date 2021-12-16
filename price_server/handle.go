@@ -483,8 +483,9 @@ type PRICE_EXCHANGE_WEIGHT_INFO struct {
 }
 
 type CLIENT_INFO struct {
-	Ip          string `json:"ip"`
-	RequestTime string `json:"request_time"`
+	Ip               string `json:"ip"`
+	RequestTime      string `json:"request_time"`
+	RequestTimestamp int64  `json:"request_timestamp"`
 }
 
 type CLIENT_PRICE_INFO struct {
@@ -522,7 +523,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 
 			priceInfoLists := rsp.Data.([]interface{})
 
-			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime, RequestTimestamp: logInfo.RequestTimestamp}
 
 			for index, priceInfo := range priceInfoLists {
 				info := priceInfo.(map[string]interface{})
@@ -543,7 +544,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 
 			mapPriceInfo := rsp.Data.(map[string]interface{})
 
-			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime, RequestTimestamp: logInfo.RequestTimestamp}
 			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: int64(mapPriceInfo["timestamp"].(float64))}
 			historyPriceInfo.PriceInfos = make([]PRICE_EXCHANGE_WEIGHT_INFO, 0)
 
@@ -555,7 +556,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 			historyPriceInfo.Type = "getPartyPrice"
 
 			timestamp := int64(mapPriceInfo["timestamp"].(float64))
-			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime, RequestTimestamp: logInfo.RequestTimestamp}
 			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp}
 
 			priceInfoLists := mapPriceInfo["infos"].([]interface{})
@@ -574,7 +575,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 			historyPriceInfo.Type = "getHistoryPrice"
 
 			timestamp := int64(mapPriceInfo["timestamp"].(float64))
-			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.Client = CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime, RequestTimestamp: logInfo.RequestTimestamp}
 			historyPriceInfo.PriceInfo = PRICE_INFO{Price: mapPriceInfo["price"].(float64), Timestamp: timestamp}
 
 			priceInfoLists := mapPriceInfo["infos"].([]interface{})

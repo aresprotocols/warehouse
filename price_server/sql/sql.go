@@ -72,13 +72,13 @@ func InsertPriceInfo(cfg conf.PriceInfos) error {
 	return nil
 }
 
-func InsertLogInfo(mapInfo map[string]string, t int) error {
+func InsertLogInfo(mapInfo map[string]interface{}, t int) error {
 	insertSql := "insert into " + TABLE_LOG_INFO + " (client_ip,request_time,user_agent,request_url," +
-		"response_time,request_response, use_symbol)" +
+		"response_time,request_response, use_symbol,request_timestamp,response_timestamp)" +
 		" values(?,?,?,?," +
-		"?,?,?)"
+		"?,?,?,?,?)"
 	_, err := db.Exec(insertSql, mapInfo["request_client_ip"], mapInfo["request_time"], mapInfo["request_ua"], mapInfo["request_uri"],
-		mapInfo["response_time"], mapInfo["response"], t)
+		mapInfo["response_time"], mapInfo["response"], t, mapInfo["request_timestamp"], mapInfo["response_timestamp"])
 	if err != nil {
 		return err
 	}
@@ -126,10 +126,11 @@ func GetLogInfo(idx int, pageSize int) (LOG_INFOS, error) {
 }
 
 type REQ_RSP_LOG_INFO struct {
-	ReqUrl      string `json:"reqUrl" db:"request_url"`
-	Response    string `json:"response" db:"request_response"`
-	Ip          string `json:"ip" db:"client_ip"`
-	RequestTime string `json:"request_time" db:"request_time"`
+	ReqUrl           string `json:"reqUrl" db:"request_url"`
+	Response         string `json:"response" db:"request_response"`
+	Ip               string `json:"ip" db:"client_ip"`
+	RequestTime      string `json:"request_time" db:"request_time"`
+	RequestTimestamp int64  `json:"request_timestamp" db:"request_timestamp"`
 }
 
 func GetTotalLogInfoBySymbol(symbol string) (int, error) {
@@ -148,7 +149,7 @@ func GetTotalLogInfoBySymbol(symbol string) (int, error) {
 
 func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INFO, error) {
 	var logInfos []REQ_RSP_LOG_INFO
-	querySql := "select client_ip,request_url,request_time,request_response from " +
+	querySql := "select client_ip,request_url,request_time,request_response,request_timestamp from " +
 		TABLE_LOG_INFO + " where ( request_response like '%" + symbol + "%'" +
 		" or request_url like '%" + symbol + "%'" + " ) and use_symbol = 1 order by id desc limit ?,?;"
 	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))

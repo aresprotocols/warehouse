@@ -184,11 +184,13 @@ func Cors() gin.HandlerFunc {
 		c.Writer = bodyLogWriter
 
 		startTime := time.Now().Format("2006-01-02 15:04:05")
+		startTimeStamp := time.Now().Unix()
 		c.Next()
 
 		responseBody := bodyLogWriter.body.String()
 
 		endTime := time.Now().Format("2006-01-02 15:04:05")
+		endTimeStamp := time.Now().Unix()
 
 		if c.Request.Method == "POST" {
 			c.Request.ParseForm()
@@ -197,20 +199,24 @@ func Cors() gin.HandlerFunc {
 			return
 		}
 
-		accessLogMap := make(map[string]string)
+		accessLogMap := make(map[string]interface{})
+
+		requestUri := c.Request.RequestURI
 
 		accessLogMap["request_time"] = startTime
-		accessLogMap["request_uri"] = c.Request.RequestURI
+		accessLogMap["request_uri"] = requestUri
 		accessLogMap["request_ua"] = c.Request.UserAgent()
 		accessLogMap["request_client_ip"] = c.ClientIP()
 
 		accessLogMap["response_time"] = endTime
 		accessLogMap["response"] = responseBody
+		accessLogMap["request_timestamp"] = startTimeStamp
+		accessLogMap["response_timestamp"] = endTimeStamp
 
-		if strings.Contains(accessLogMap["request_uri"], "getPrice") ||
-			strings.Contains(accessLogMap["request_uri"], "getPartyPrice") ||
-			strings.Contains(accessLogMap["request_uri"], "getHistoryPrice") ||
-			strings.Contains(accessLogMap["request_uri"], "getBulkPrices") {
+		if strings.Contains(requestUri, "getPrice") ||
+			strings.Contains(requestUri, "getPartyPrice") ||
+			strings.Contains(requestUri, "getHistoryPrice") ||
+			strings.Contains(requestUri, "getBulkPrices") {
 			err := sql.InsertLogInfo(accessLogMap, 1)
 			if err != nil {
 				log.Println(err)
