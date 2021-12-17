@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"log"
+	logger "github.com/sirupsen/logrus"
 	"net/http"
 	conf "price_api/price_server/config"
 	"price_api/price_server/exchange"
@@ -62,7 +62,7 @@ func HandleGetPrice(context *gin.Context) {
 
 	lastIndex := strings.LastIndex(context.Param("name")[1:], "/")
 	if lastIndex == -1 {
-		log.Println("not true param name", context.Param("name")[1:])
+		logger.Infoln("not true param name", context.Param("name")[1:])
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
 		context.JSON(http.StatusBadRequest, response)
@@ -88,7 +88,7 @@ func HandleGetPrice(context *gin.Context) {
 	m.RUnlock()
 
 	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol, " exchange:", exchange)
+		logger.Infoln("symbol or exchange not find, symbol:", symbol, " exchange:", exchange)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
 		context.JSON(http.StatusNotFound, response)
@@ -111,7 +111,7 @@ func HandleGetPartyPrice(context *gin.Context) {
 	bFind, partyPriceData := partyPrice(latestInfos.PriceInfos, symbol, true)
 
 	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol)
+		logger.Infoln("symbol or exchange not find, symbol:", symbol)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
 		context.JSON(http.StatusNotFound, response)
@@ -157,7 +157,7 @@ func HandleGetPriceAll(context *gin.Context) {
 	m.RUnlock()
 
 	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol)
+		logger.Infoln("symbol or exchange not find, symbol:", symbol)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
 		context.JSON(http.StatusNotFound, response)
@@ -245,7 +245,7 @@ func HandleGetHistoryPrice(context *gin.Context) {
 	bFind, partyPriceData := getHistoryPrice(symbol, timestamp, true)
 
 	if !bFind {
-		log.Println("symbol or exchange not find, symbol:", symbol)
+		logger.Infoln("symbol or exchange not find, symbol:", symbol)
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
 		context.JSON(http.StatusNotFound, response)
@@ -283,7 +283,7 @@ func getHistoryPrice(symbol string, timestamp int64, bAverage bool) (bool, Party
 
 	dbPriceInfos, err := sql.GetHistoryBySymbolTimestamp(symbol, timestamp)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get history by symbol timestamp error,symbol:%s", symbol)
 		return false, PartyPriceInfo{}
 	}
 
@@ -439,7 +439,7 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 
 	logInfos, err := sql.GetLogInfoBySymbol(idx, int(gCfg.PageSize), symbol)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get log info by symbol occur error,symbol:%s,index:%d", symbol, idx)
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)
@@ -447,7 +447,7 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 	}
 	total, err := sql.GetTotalLogInfoBySymbol(symbol)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get total log info by symbol occur error,symbol:%s", symbol)
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)
@@ -513,7 +513,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 		var rsp RESPONSE
 		err := json.Unmarshal([]byte(logInfo.Response), &rsp)
 		if err != nil {
-			log.Println(err)
+			logger.WithError(err).Errorf("unmarshal logInfo response occur error")
 			continue
 		}
 
@@ -598,7 +598,7 @@ func parseLogInfos(logInfos []sql.REQ_RSP_LOG_INFO, symbol string) []PARTY_PRICE
 			historyPriceInfo.PriceInfos = make([]PRICE_EXCHANGE_WEIGHT_INFO, 0)
 			retPriceInfos = append(retPriceInfos, historyPriceInfo)
 		} else {
-			//log.Println("unknow logInfo", logInfo)
+			logger.Infoln("unknow logInfo", logInfo)
 			continue
 		}
 	}
@@ -742,7 +742,7 @@ func HandleGetUpdatePriceHistory(context *gin.Context) {
 
 	infos, err := sql.GetHistoryBySymbol(idx, int(gCfg.PageSize), symbol)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get history by symbol occur error,symbol:%s,index:%d", symbol, idx)
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)
@@ -750,7 +750,7 @@ func HandleGetUpdatePriceHistory(context *gin.Context) {
 	}
 	total, err := sql.GetTotalHistoryBySymbol(symbol)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get total history by symbol occur error,symbol:%s", symbol)
 		response.Code = GET_LOG_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)
@@ -834,7 +834,7 @@ func HandleGetUpdatePriceHeartbeat(context *gin.Context) {
 	}
 
 	if len(symbolPriceInfo) == 0 {
-		log.Println("symbol not find, symbol:", symbol)
+		logger.Infoln("symbol not find, symbol:", symbol)
 		response.Code = NO_MATCH_FORMAT_ERROR
 		response.Message = MSG_URL_NOT_FIND
 		context.JSON(http.StatusNotFound, response)
@@ -860,7 +860,7 @@ func HandleGetAresAll(context *gin.Context) {
 	aresShowInfo.Rank = handle.fetcher.GetCMCInfo().Rank
 
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get gate ares info occur error")
 		response.Code = GET_ARES_INFO_ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusBadRequest, response)
@@ -890,7 +890,7 @@ func HandleAuth(context *gin.Context) {
 	var user AdminUser
 	err := context.ShouldBind(&user)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("bind user occur error")
 		response.Code = PARAM_NOT_TRUE_ERROR
 		response.Message = MSG_PARAM_NOT_TRUE
 		context.JSON(http.StatusBadRequest, response)
@@ -921,7 +921,7 @@ func HandleAuth(context *gin.Context) {
 	}
 	authToken, err := jwt.GenToken(user.User, []byte(gCfg.Password))
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Error("generate jwt token occur error")
 		response.Code = ERROR
 		response.Message = err.Error()
 		context.JSON(http.StatusInternalServerError, response)

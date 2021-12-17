@@ -2,13 +2,13 @@ package exchange
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 )
 
 func getPrice(exchangeUrl string, proxyAddr string) (string, error) {
@@ -36,7 +36,7 @@ func getPrice(exchangeUrl string, proxyAddr string) (string, error) {
 
 	res, err := httpClient.Get(exchangeUrl)
 	if err != nil {
-		log.Println(fmt.Sprintf("getPrice error:%v", err))
+		logger.WithError(err).Error("getPrice error")
 		return "", err
 	}
 	defer res.Body.Close()

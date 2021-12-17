@@ -3,7 +3,7 @@ package exchange
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	logger "github.com/sirupsen/logrus"
 	"strconv"
 	"time"
 )
@@ -56,7 +56,7 @@ func getCMCAresInfo(proxy string) (AresShowInfo, error) {
 
 	resJson, err := getPrice(ARES_URL, proxy)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Error("get ares error")
 		return AresShowInfo{}, err
 	}
 
@@ -91,7 +91,7 @@ func GetGateAresInfo(proxy string) (AresShowInfo, error) {
 
 	resJson, err := getPrice(ARES_Gate_URL, proxy)
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Error("get ares price error")
 		return AresShowInfo{}, err
 	}
 

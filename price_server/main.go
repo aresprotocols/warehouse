@@ -2,21 +2,19 @@ package main
 
 import (
 	"bytes"
-	"fmt"
+	"github.com/gin-gonic/gin"
+	logger "github.com/sirupsen/logrus"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	conf "price_api/price_server/config"
-	exchange "price_api/price_server/exchange"
+	"price_api/price_server/exchange"
 	"price_api/price_server/sql"
-	"strings"
-
 	"strconv"
+	"strings"
 	"sync"
 	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 var gPriceInfosCache conf.PriceInfosCache
@@ -24,36 +22,45 @@ var m *sync.RWMutex
 var gCfg conf.Config
 var gRequestPriceConfs map[string][]conf.ExchangeConfig
 
+func init() {
+	config := DefaultConfiguration()
+	err := InitLogrusLogger(config)
+	if err != nil {
+		log.Fatalf("Could not instantiate log %s", err.Error())
+	}
+
+}
+
 func main() {
 	m = new(sync.RWMutex)
 	//gRequestPriceConfs = make(map[string][]conf.ExchangeConfig)
 
-	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	//log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 	cfg, err := conf.GetConfig()
 	if err != nil {
-		log.Println(err)
+		logger.Errorf("get config occur err:%v", err)
 		return
 	}
 
 	gCfg = cfg
-	log.Println("config load over:", cfg)
+	logger.Infof("config load over:%v", cfg)
 
 	err = sql.InitMysqlDB(cfg)
 	if err != nil {
-		log.Println(err)
+		logger.Errorf("Init mysql db occur err:%v", err)
 		return
 	}
 
-	log.Println("mysql init over")
+	logger.Info("mysql init over")
 
 	handle := InitHandle(cfg)
 
 	gRequestPriceConfs, err = exchange.InitRequestPriceConf(cfg)
 	if err != nil {
-		log.Println(err)
+		logger.Errorf("Init request price conf occur err:%v", err)
 		return
 	}
-	log.Println("request init over")
+	logger.Info("request init over")
 
 	showIgnoreSymbols(cfg, gRequestPriceConfs)
 
@@ -88,17 +95,17 @@ func main() {
 
 	sig := <-abortChan
 	handle.Stop()
-	log.Println("Exiting...", "signal", sig)
+	logger.Infof("Exiting... signal %v", sig)
 }
 
 func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 	idx := 0
 	time.Sleep(time.Second * 2) // run update for the first time,  need to sleep , because you have just completed initialization and have already requested data once
 	for {
-		log.Println(fmt.Sprintf("start new round update price,timestamp:%s", time.Now().Format("2006-01-02 15:04:05 ")))
+		logger.Infof("start new round update price")
 		infos, err := exchange.GetExchangePrice(reqConf, cfg)
 		if err != nil {
-			log.Println(err)
+			logger.WithError(err).Errorf("get exchange price occur error")
 		} else {
 			idx++
 			m.Lock()
@@ -112,12 +119,12 @@ func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 		if idx >= int(cfg.InsertInterval) {
 			err = sql.InsertPriceInfo(infos)
 			if err != nil {
-				log.Println(err)
+				logger.Errorf("insert price info occur err:%v", err)
 			} else {
 				idx = 0
 			}
 		}
-		log.Println(fmt.Sprintf("end this round update price,timestamp:%s", time.Now().Format("2006-01-02 15:04:05 ")))
+		logger.Infof("end this round update price")
 		time.Sleep(time.Second * time.Duration(cfg.Interval))
 
 	}
@@ -149,7 +156,7 @@ func showIgnoreSymbols(cfg conf.Config, gRequestPriceConfs map[string][]conf.Exc
 		}
 		ignoreSymbols[symbol] = exchanges
 	}
-	log.Println("ignore symbols and exchange:", ignoreSymbols)
+	logger.Infof("ignore symbols and exchange:", ignoreSymbols)
 }
 
 type bodyLogWriter struct {
@@ -219,12 +226,12 @@ func Cors() gin.HandlerFunc {
 			strings.Contains(requestUri, "getBulkPrices") {
 			err := sql.InsertLogInfo(accessLogMap, 1)
 			if err != nil {
-				log.Println(err)
+				logger.Errorf("insert log info occur err:%v", err)
 			}
 		} else {
 			err := sql.InsertLogInfo(accessLogMap, 0)
 			if err != nil {
-				log.Println(err)
+				logger.Errorf("insert log info occur err:%v", err)
 			}
 		}
 

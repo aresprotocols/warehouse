@@ -2,7 +2,7 @@ package exchange
 
 import (
 	"errors"
-	"log"
+	logger "github.com/sirupsen/logrus"
 	"math/big"
 	conf "price_api/price_server/config"
 	"price_api/price_server/dex"
@@ -182,7 +182,7 @@ func (f *Fetcher) calGateCMCAresInfoTimer() {
 func (f *Fetcher) calGateCMCAresInfo() {
 	for i := 0; i < 2; i++ {
 		var ann = &announceCMC{}
-		log.Println("cal gate CMC ares info")
+		logger.Info("cal gate CMC ares info")
 		info, err := getCMCAresInfo(f.cfg.Proxy)
 		if err == nil {
 			ann.CASI = info

@@ -2,8 +2,7 @@ package exchange
 
 import (
 	"encoding/json"
-	"log"
-
+	logger "github.com/sirupsen/logrus"
 	"golang.org/x/xerrors"
 )
 
@@ -29,7 +28,8 @@ func parseHuobiPrice(priceJson string) (float64, error) {
 		return 0, xerrors.New("some error")
 	} else {
 		if len(huobiPriceInfo.Tick.Ask) == 0 {
-			log.Println("response:", huobiPriceInfo.Status, " Tick:", huobiPriceInfo.Tick)
+			logger.Infoln("response:", huobiPriceInfo.Status, " Tick:", huobiPriceInfo.Tick)
+
 		}
 		return huobiPriceInfo.Tick.Ask[0], nil
 	}

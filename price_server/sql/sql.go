@@ -2,7 +2,7 @@ package sql
 
 import (
 	"fmt"
-	"log"
+	logger "github.com/sirupsen/logrus"
 	conf "price_api/price_server/config"
 	"strconv"
 	"strings"
@@ -116,7 +116,7 @@ func GetLogInfo(idx int, pageSize int) (LOG_INFOS, error) {
 	querySql := "select client_ip," +
 		"request_time,user_agent,request_url,response_time,request_response from " +
 		TABLE_LOG_INFO + " order by id desc limit ?,?;"
-	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	logger.Infoln("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	err := db.Select(&logInfos.Infos, querySql, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	if err != nil {
 		return LOG_INFOS{}, err
@@ -138,7 +138,7 @@ func GetTotalLogInfoBySymbol(symbol string) (int, error) {
 	querySql := "select count(1) from " +
 		TABLE_LOG_INFO + " where ( request_response like '%" + symbol + "%'" +
 		" or request_url like '%" + symbol + "%'" + " ) and use_symbol = 1 ;"
-	log.Println("sql:", querySql)
+	logger.Infoln("sql:", querySql)
 	err := db.QueryRow(querySql).Scan(&total)
 	if err != nil {
 		return total, err
@@ -152,7 +152,7 @@ func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INF
 	querySql := "select client_ip,request_url,request_time,request_response,request_timestamp from " +
 		TABLE_LOG_INFO + " where ( request_response like '%" + symbol + "%'" +
 		" or request_url like '%" + symbol + "%'" + " ) and use_symbol = 1 order by id desc limit ?,?;"
-	log.Println("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	logger.Infoln("sql:", querySql, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	err := db.Select(&logInfos, querySql, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	if err != nil {
 		return logInfos, err
@@ -164,7 +164,7 @@ func GetLogInfoBySymbol(idx int, pageSize int, symbol string) ([]REQ_RSP_LOG_INF
 func GetTotalHistoryBySymbol(symbol string) (int, error) {
 	var total int
 	querySql := "select count(1) from `" + TABLE_COIN_PRICE + "` where symbol = ?;"
-	log.Println("sql:", querySql, "symbol", symbol)
+	logger.Infoln("sql:", querySql, "symbol", symbol)
 	err := db.QueryRow(querySql, symbol).Scan(&total)
 	if err != nil {
 		return total, err
@@ -175,7 +175,7 @@ func GetTotalHistoryBySymbol(symbol string) (int, error) {
 func GetHistoryBySymbol(idx int, pageSize int, symbol string) ([]conf.PriceInfo, error) {
 	var infos []conf.PriceInfo
 	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where symbol = ? order by id desc limit ?,? ;"
-	log.Println("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	logger.Infoln("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 
 	err := db.Select(&infos, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	if err != nil {
@@ -213,7 +213,7 @@ func GetHttpErrorInfo(idx int, symbol string, pageSize int) ([]HTTP_ERROR_INFO, 
 	var infos = make([]HTTP_ERROR_INFO, 0)
 	querySql := "select url,symbol,error,timestamp from " +
 		TABLE_HTTP_ERROR + " where symbol = ? order by id desc limit ?,?;"
-	log.Println("sql:", querySql, "symbol: ", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	logger.Infoln("sql:", querySql, "symbol: ", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	err := db.Select(&infos, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 	if err != nil {
 		return nil, err
@@ -224,7 +224,7 @@ func GetHttpErrorInfo(idx int, symbol string, pageSize int) ([]HTTP_ERROR_INFO, 
 func GetTotalHttpErrorInfo(symbol string) (int, error) {
 	var total int
 	querySql := "select count(1) from " + TABLE_HTTP_ERROR + " where symbol = ?;"
-	log.Println("sql:", querySql, "symbol: ", symbol)
+	logger.Infoln("sql:", querySql, "symbol: ", symbol)
 	err := db.QueryRow(querySql, symbol).Scan(&total)
 	if err != nil {
 		return total, err

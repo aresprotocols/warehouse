@@ -2,7 +2,7 @@ package exchange
 
 import (
 	"errors"
-	"log"
+	logger "github.com/sirupsen/logrus"
 	conf "price_api/price_server/config"
 	"price_api/price_server/sql"
 	"strings"
@@ -195,11 +195,11 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 	}
 
 	if err != nil {
-		log.Println(err)
+		logger.WithError(err).Errorf("get price by symbol exchange error,symbol:%s,exchange:%s", symbol, exchange.Name)
 		if bRemberDb {
 			err = sql.InsertHttpError(exchange.Url, symbol, err.Error())
 			if err != nil {
-				log.Println(err)
+				logger.WithError(err).Errorf("insert http error to db occur error")
 			}
 		}
 		return 0
@@ -211,7 +211,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseBinancePrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
@@ -219,7 +219,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseHuobiPrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
@@ -227,7 +227,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseBitfinexPrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
@@ -235,7 +235,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseOkPrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
@@ -243,7 +243,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseCryptoComparePrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
@@ -251,7 +251,7 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseCoinbasePrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
@@ -259,13 +259,13 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		price, err = parseBitStampPrice(resJson)
 		if err != nil {
 			if bRemberDb {
-				log.Println("response:", resJson, " err:", err)
+				logger.Errorln("response:", resJson, " err:", err)
 			}
 			return 0
 		}
 	} else {
 		if bRemberDb {
-			log.Println("unknow exchange name:", exchange.Name)
+			logger.Errorln("response:", resJson, " err:", err)
 		}
 		return 0
 	}
