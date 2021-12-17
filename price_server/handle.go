@@ -853,6 +853,52 @@ func HandleGetUpdatePriceHeartbeat(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+func HandleGetBulkSymbolsState(context *gin.Context) {
+	response := RESPONSE{Code: 0, Message: "OK"}
+
+	symbol, exist := context.GetQuery("symbol")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+	currency, exist := context.GetQuery("currency")
+	if !exist {
+		response.Code = PARAM_NOT_TRUE_ERROR
+		response.Message = MSG_PARAM_NOT_TRUE
+		context.JSON(http.StatusBadRequest, response)
+		return
+	}
+
+	symbols := strings.Split(symbol, "_")
+
+	m.RLock()
+	latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
+	m.RUnlock()
+
+	mSymbolState := make(map[string]bool)
+	for _, symbol := range symbols {
+		token := symbol + currency
+		var symbolPriceInfo = make([]conf.PriceInfo, 0)
+		for _, info := range latestInfos.PriceInfos {
+			if strings.EqualFold(info.Symbol, token) {
+				symbolPriceInfo = append(symbolPriceInfo, info)
+			}
+		}
+		actualResourcesLens := len(symbolPriceInfo)
+
+		tokenSymbol := symbol + "-" + currency
+		exchangeConfs := gRequestPriceConfs[tokenSymbol]
+		expectResourcesLens := len(exchangeConfs)
+
+		mSymbolState[token] = actualResourcesLens > expectResourcesLens/2
+	}
+
+	response.Data = mSymbolState
+	context.JSON(http.StatusOK, response)
+}
+
 func HandleGetAresAll(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
