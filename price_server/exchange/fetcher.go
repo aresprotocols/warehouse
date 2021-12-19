@@ -128,7 +128,7 @@ func (f *Fetcher) loop() {
 func (f *Fetcher) calUniswapPriceTimer(uniswap bool) {
 	go f.calUniswapPrice(uniswap)
 
-	timer1 := time.NewTicker(10 * time.Minute)
+	timer1 := time.NewTicker(5 * time.Minute)
 	for {
 		select {
 		case <-timer1.C:
