@@ -11,7 +11,7 @@ import (
 func TestUniswapPair(t *testing.T) {
 	now := time.Now().Unix()
 	url := "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
-	client, url := dialConn(url)
+	client, url, err := dialConn(url)
 	now1 := time.Now().Unix()
 	fmt.Println("now1", now1-now)
 
@@ -35,7 +35,7 @@ func TestUniswapPair(t *testing.T) {
 
 func TestPanckeswapPair(t *testing.T) {
 	url := "https://bsc-dataseed1.ninicoin.io"
-	client, url := dialConn(url)
+	client, url, err := dialConn(url)
 	num, _ := client.BlockNumber(context.Background())
 	fmt.Println("num", num)
 
