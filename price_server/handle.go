@@ -713,6 +713,13 @@ func HandleGetLocalPrices(context *gin.Context) {
 	context.JSON(http.StatusOK, response)
 }
 
+type UpdatePriceHistoryResp struct {
+	Timestamp int64            `json:"timestamp"`
+	Symbol    string           `json:"symbol"`
+	Price     float64          `json:"price"`
+	Infos     []conf.PriceInfo `json:"infos"`
+}
+
 func HandleGetUpdatePriceHistory(context *gin.Context) {
 	response := RESPONSE{Code: 0, Message: "OK"}
 
@@ -740,7 +747,7 @@ func HandleGetUpdatePriceHistory(context *gin.Context) {
 		return
 	}
 
-	infos, err := sql.GetHistoryBySymbol(idx, int(gCfg.PageSize), symbol)
+	histories, err := sql.GetUpdatePriceHistoryBySymbol(idx, int(gCfg.PageSize), symbol)
 	if err != nil {
 		logger.WithError(err).Errorf("get history by symbol occur error,symbol:%s,index:%d", symbol, idx)
 		response.Code = GET_LOG_INFO_ERROR
@@ -748,7 +755,7 @@ func HandleGetUpdatePriceHistory(context *gin.Context) {
 		context.JSON(http.StatusInternalServerError, response)
 		return
 	}
-	total, err := sql.GetTotalHistoryBySymbol(symbol)
+	total, err := sql.GetTotalUpdatePriceHistoryBySymbol(symbol)
 	if err != nil {
 		logger.WithError(err).Errorf("get total history by symbol occur error,symbol:%s", symbol)
 		response.Code = GET_LOG_INFO_ERROR
@@ -757,10 +764,40 @@ func HandleGetUpdatePriceHistory(context *gin.Context) {
 		return
 	}
 
+	historyResps := make([]UpdatePriceHistoryResp, 0)
+	for _, history := range histories {
+
+		infos, err := sql.GetHistoryBySymbolAndTimestamp(history.Symbol, history.Timestamp)
+		if err != nil {
+			logger.WithError(err).Errorf("get history by symbol and timestamp occur error,symbol:%s", symbol)
+			response.Code = GET_LOG_INFO_ERROR
+			response.Message = err.Error()
+			context.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		bFind, partyPriceData := partyPrice(infos, symbol, true)
+
+		if !bFind {
+			logger.Infoln("partyPrice error, symbol:", symbol)
+			response.Code = GET_LOG_INFO_ERROR
+			response.Message = "not found"
+			context.JSON(http.StatusInternalServerError, response)
+			return
+		}
+
+		historyResp := UpdatePriceHistoryResp{
+			Timestamp: history.Timestamp,
+			Symbol:    history.Symbol,
+			Price:     partyPriceData.Price,
+			Infos:     infos,
+		}
+		historyResps = append(historyResps, historyResp)
+	}
 	response.Data = Pagination{
 		CurPage:  idx,
 		TotalNum: total,
-		Items:    infos,
+		Items:    historyResps,
 	}
 	context.JSON(http.StatusOK, response)
 }

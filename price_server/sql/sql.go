@@ -57,6 +57,7 @@ const TABLE_COIN_PRICE = "t_coin_history_info"
 const TABLE_LOG_INFO = "t_log_info"
 const TABLE_HTTP_ERROR = "t_http_error"
 const TABLE_WEIGH_INFO = "t_weight_info"
+const VIEW_UPDATE_PRICE_HISTORY = "v_update_price_history"
 
 func InsertPriceInfo(cfg conf.PriceInfos) error {
 	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbol,timestamp,price,price_origin,weight)" +
@@ -178,6 +179,46 @@ func GetHistoryBySymbol(idx int, pageSize int, symbol string) ([]conf.PriceInfo,
 	logger.Infoln("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 
 	err := db.Select(&infos, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	if err != nil {
+		return infos, err
+	}
+	return infos, nil
+}
+
+type UpdatePirceHistory struct {
+	Timestamp int64  `json:"timestamp" db:"timestamp"`
+	Symbol    string `json:"symbol" db:"symbol"`
+}
+
+func GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error) {
+	var total int
+	querySql := "select count(1) from `" + VIEW_UPDATE_PRICE_HISTORY + "` where symbol = ?;"
+	logger.Infoln("sql:", querySql, "symbol", symbol)
+	err := db.QueryRow(querySql, symbol).Scan(&total)
+	if err != nil {
+		return total, err
+	}
+	return total, nil
+}
+
+func GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]UpdatePirceHistory, error) {
+	var histories []UpdatePirceHistory
+	querySql := "select symbol, timestamp  from `" + VIEW_UPDATE_PRICE_HISTORY + "` where symbol = ? order by timestamp desc limit ?,? ;"
+	logger.Infoln("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+
+	err := db.Select(&histories, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	if err != nil {
+		return histories, err
+	}
+	return histories, nil
+}
+
+func GetHistoryBySymbolAndTimestamp(symbol string, timestamp int64) ([]conf.PriceInfo, error) {
+	var infos []conf.PriceInfo
+	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where symbol = ? and timestamp = ? order by id desc ;"
+	logger.Infoln("sql:", querySql, "symbol", symbol, "timestamp", timestamp)
+
+	err := db.Select(&infos, querySql, symbol, timestamp)
 	if err != nil {
 		return infos, err
 	}

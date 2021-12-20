@@ -1,11 +1,11 @@
 package conf
 
 type PriceInfo struct {
-	Symbol      string  `db:"symbol"`
-	Price       float64 `db:"price"`
-	PriceOrigin string  `db:"price_origin"`
-	Weight      int64   `db:"weight"`
-	TimeStamp   int64   `db:"timestamp"`
+	Symbol      string  `json:"symbol" db:"symbol" `
+	Price       float64 `json:"price" db:"price"`
+	PriceOrigin string  `json:"priceOrigin" db:"price_origin"`
+	Weight      int64   `json:"weight" db:"weight"`
+	TimeStamp   int64   `json:"timestamp" db:"timestamp"`
 }
 
 type PriceInfos struct {
