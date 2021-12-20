@@ -73,6 +73,11 @@ func calAresEthPrice(pairAddr string, client *ethclient.Client) (*big.Float, err
 	if err != nil {
 		logger.WithError(err).Error("GetReserves err")
 	}
+	if res.Reserve0 == nil && res.Reserve1 == nil {
+		logger.WithError(err).Error("GetReserves token1 err")
+		return nil, errors.New("reserve == nil")
+	}
+
 	//fmt.Println(time.Unix(int64(res.BlockTimestampLast), 0))
 
 	token0, err := eth.Token0(nil)
@@ -123,6 +128,10 @@ func calEthPrice(pairAddr string, client *ethclient.Client) (*big.Float, error) 
 	res, err := eth.GetReserves(nil)
 	if err != nil {
 		logger.WithError(err).Error("GetReserves err")
+	}
+	if res.Reserve0 == nil && res.Reserve1 == nil {
+		logger.WithError(err).Error("GetReserves token1 err")
+		return nil, errors.New("reserve == nil")
 	}
 
 	token0, err := eth.Token0(nil)
