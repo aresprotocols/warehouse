@@ -17,7 +17,11 @@ var debug = false
 func GetUniswapAresPrice() (*big.Float, error) {
 	logger.Info("get uniswap ares price")
 	url := "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
-	client, url := dialConn(url)
+	client, url, err := dialConn(url)
+	if err != nil {
+		logger.WithError(err).Error("dialConn err")
+		return nil, err
+	}
 
 	aresVal, err := calAresEthPrice("0x7a646ee13eb104853c651e1d90d143acc9e72cdb", client)
 	if err != nil {
@@ -37,7 +41,11 @@ func GetUniswapAresPrice() (*big.Float, error) {
 func GetPancakeAresPrice() (*big.Float, error) {
 	logger.Info("get pancake ares price")
 	url := "https://bsc-dataseed1.ninicoin.io"
-	client, url := dialConn(url)
+	client, url, err := dialConn(url)
+	if err != nil {
+		logger.WithError(err).Error("dialConn err")
+		return nil, err
+	}
 
 	aresVal, err := calAresEthPrice("0x66e03400e47843ad396ee0a44dec403db8afeee0", client)
 	if err != nil {
@@ -193,7 +201,7 @@ func printErc20(addr common.Address, client *ethclient.Client) (erc Erc20, err e
 	return erc, err
 }
 
-func dialConn(url string) (*ethclient.Client, string) {
+func dialConn(url string) (*ethclient.Client, string, error) {
 	ip := "165.227.99.131"
 	port := 8545
 
@@ -209,5 +217,5 @@ func dialConn(url string) (*ethclient.Client, string) {
 	if err != nil {
 		logger.WithError(err).Errorln("dialConn", "Failed to connect to the ethereum client")
 	}
-	return conn, url
+	return conn, url, err
 }
