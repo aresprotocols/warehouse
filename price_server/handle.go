@@ -815,6 +815,7 @@ type HEARTBEAT_INFO struct {
 	ExpectResources int   `json:"expect_resources"`
 	ActualResources int   `json:"actual_resources"`
 	LatestTimestamp int64 `json:"latest_timestamp"`
+	Interval        int64 `json:"interval"`
 }
 
 func HandleGetUpdatePriceHeartbeat(context *gin.Context) {
@@ -849,6 +850,7 @@ func HandleGetUpdatePriceHeartbeat(context *gin.Context) {
 		ExpectResources: len(exchangeConfs),
 		ActualResources: len(symbolPriceInfo),
 		LatestTimestamp: symbolPriceInfo[0].TimeStamp,
+		Interval:        gCfg.Interval,
 	}
 	context.JSON(http.StatusOK, response)
 }
