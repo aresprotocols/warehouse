@@ -57,11 +57,38 @@ const TABLE_COIN_PRICE = "t_coin_history_info"
 const TABLE_LOG_INFO = "t_log_info"
 const TABLE_HTTP_ERROR = "t_http_error"
 const TABLE_WEIGH_INFO = "t_weight_info"
-const VIEW_UPDATE_PRICE_HISTORY = "v_update_price_history"
+const TABLE_UPDATE_PRICE_HISTORY = "t_update_price_history"
 
 func InsertPriceInfo(cfg conf.PriceInfos) error {
 	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbol,timestamp,price,price_origin,weight)" +
 		" values(?,?,?,?,?)"
+
+	insertUpdateHistorySql := "insert into " + TABLE_UPDATE_PRICE_HISTORY + "(timestamp,symbol) value (?,?)"
+
+	historyMap := make(map[int64]map[string]struct{})
+
+	for _, info := range cfg.PriceInfos {
+		if _, timestampOk := historyMap[info.TimeStamp]; timestampOk {
+			symbolMap := historyMap[info.TimeStamp]
+			if _, symbolOk := symbolMap[info.Symbol]; !symbolOk {
+				symbolMap[info.Symbol] = struct{}{}
+			}
+		} else {
+			symbolMap := make(map[string]struct{})
+			symbolMap[info.Symbol] = struct{}{}
+			historyMap[info.TimeStamp] = symbolMap
+		}
+	}
+
+	for kTimestamp, _ := range historyMap {
+		for kSymbol, _ := range historyMap[kTimestamp] {
+			_, err := db.Exec(insertUpdateHistorySql, kTimestamp, kSymbol)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	for _, info := range cfg.PriceInfos {
 		//TODO battle
 		_, err := db.Exec(insertSql, info.Symbol, info.TimeStamp, info.Price, info.PriceOrigin, info.Weight)
@@ -192,7 +219,7 @@ type UpdatePirceHistory struct {
 
 func GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error) {
 	var total int
-	querySql := "select count(1) from `" + VIEW_UPDATE_PRICE_HISTORY + "` where symbol = ?;"
+	querySql := "select count(1) from `" + TABLE_UPDATE_PRICE_HISTORY + "` where symbol = ?;"
 	logger.Infoln("sql:", querySql, "symbol", symbol)
 	err := db.QueryRow(querySql, symbol).Scan(&total)
 	if err != nil {
@@ -203,7 +230,7 @@ func GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error) {
 
 func GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]UpdatePirceHistory, error) {
 	var histories []UpdatePirceHistory
-	querySql := "select symbol, timestamp  from `" + VIEW_UPDATE_PRICE_HISTORY + "` where symbol = ? order by timestamp desc limit ?,? ;"
+	querySql := "select symbol, timestamp  from `" + TABLE_UPDATE_PRICE_HISTORY + "` where symbol = ? order by timestamp desc limit ?,? ;"
 	logger.Infoln("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 
 	err := db.Select(&histories, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))

@@ -57,6 +57,15 @@ create table if not exists t_weight_info
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 `
 
+var t_update_price_history = `
+create table if not exists t_update_price_history
+(
+    timestamp int         not null,
+    symbol    varchar(20) not null,
+    primary key (timestamp, symbol)
+)ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+`
+
 func createOrderTables(db *sqlx.DB, dbName string) {
 	db.MustExec(db_create)
 	db.MustExec("USE " + dbName)
@@ -64,4 +73,5 @@ func createOrderTables(db *sqlx.DB, dbName string) {
 	db.MustExec(t_log_info)
 	db.MustExec(t_http_error)
 	db.MustExec(t_weight_info)
+	db.MustExec(t_update_price_history)
 }
