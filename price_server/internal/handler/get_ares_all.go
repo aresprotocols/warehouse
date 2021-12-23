@@ -15,6 +15,8 @@ func HandleGetAresAll(context *gin.Context) {
 
 	aresShowInfo, err := exchange.GetGateAresInfo(conf.GCfg.Proxy)
 	aresShowInfo.Rank = handle.fetcher.GetCMCInfo().Rank
+	aresShowInfo.MarketCap = handle.fetcher.GetCMCInfo().MarketCap
+	aresShowInfo.Volume = handle.fetcher.GetCMCInfo().Volume
 
 	if err != nil {
 		logger.WithError(err).Errorf("get gate ares info occur error")
