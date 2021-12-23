@@ -124,6 +124,12 @@ func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, 
 		} else {
 			return "", errors.New("symbol not find in bitstamp url")
 		}
+	} else if lowName == "kucoin" {
+		if strings.Contains(url, "{$symbol}") {
+			return getPrice(strings.Replace(url, "{$symbol}", strings.ToUpper(symbol), -1), proxy)
+		} else {
+			return "", errors.New("symbol not find in bitstamp url")
+		}
 	} else {
 		return "", errors.New("unknow exchangeName:" + exchangeName)
 	}
@@ -209,63 +215,53 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 	if lowName == "binance" {
 		price, err = parseBinancePrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else if lowName == "huobi" {
 		price, err = parseHuobiPrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else if lowName == "bitfinex" {
 		price, err = parseBitfinexPrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else if lowName == "ok" {
 		price, err = parseOkPrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else if lowName == "cryptocompare" {
 		price, err = parseCryptoComparePrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else if lowName == "coinbase" {
 		price, err = parseCoinbasePrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else if lowName == "bitstamp" {
 		price, err = parseBitStampPrice(resJson)
 		if err != nil {
-			if bRemberDb {
-				logger.Errorln("response:", resJson, " err:", err)
-			}
+			logger.Errorln("response:", resJson, " err:", err)
+			return 0
+		}
+	} else if lowName == "kucoin" {
+		price, err = parseKucoinPrice(resJson)
+		if err != nil {
+			logger.Errorln("response:", resJson, " err:", err)
 			return 0
 		}
 	} else {
-		if bRemberDb {
-			logger.Errorln("response:", resJson, " err:", err)
-		}
+		logger.Errorf("unknown exchange,symbol:%s,exchange:%s, response:%s", symbol, exchange.Name, resJson)
 		return 0
 	}
 	return price
