@@ -4,20 +4,15 @@ import (
 	"errors"
 	logger "github.com/sirupsen/logrus"
 	conf "price_api/price_server/config"
-	"price_api/price_server/sql"
+	"price_api/price_server/internal/service"
+	"price_api/price_server/internal/vo"
 	"strings"
 	"time"
 )
 
 var gCh = make(chan conf.PriceInfo)
 
-type RESPONSE_PRICE_CONF struct {
-	Price  float64
-	Conf   conf.ExchangeConfig
-	Symbol string
-}
-
-var gResPriceConfCH = make(chan RESPONSE_PRICE_CONF)
+var gResPriceConfCH = make(chan vo.RESPONSE_PRICE_CONF)
 
 func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config) (conf.PriceInfos, error) {
 	var retPriceInfos conf.PriceInfos
@@ -156,9 +151,11 @@ func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, er
 		}
 	}
 
+	weightInfoService := service.Svc.WeightInfo()
+
 	for symbol, configs := range retRequestPriceConf {
 		for i, config := range configs {
-			weight, err := sql.CheckUpdateWeight(symbol, config.Name, config.Weight)
+			weight, err := weightInfoService.CheckUpdateWeight(symbol, config.Name, config.Weight)
 			if err != nil {
 				return retRequestPriceConf, err
 			}
@@ -170,7 +167,7 @@ func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, er
 }
 
 func initRequestPrice(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) {
-	resPriceConf := RESPONSE_PRICE_CONF{Conf: exchange, Symbol: symbol}
+	resPriceConf := vo.RESPONSE_PRICE_CONF{Conf: exchange, Symbol: symbol}
 	defer func() {
 		gResPriceConfCH <- resPriceConf
 	}()
@@ -194,10 +191,12 @@ func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config
 		time.Sleep(time.Second * 3)
 	}
 
+	httpErrorService := service.Svc.HttpError()
+
 	if err != nil {
 		logger.WithError(err).Errorf("get price by symbol exchange error,symbol:%s,exchange:%s", symbol, exchange.Name)
 		if bRemberDb {
-			err = sql.InsertHttpError(exchange.Url, symbol, err.Error())
+			err = httpErrorService.InsertHttpError(exchange.Url, symbol, err.Error())
 			if err != nil {
 				logger.WithError(err).Errorf("insert http error to db occur error")
 			}

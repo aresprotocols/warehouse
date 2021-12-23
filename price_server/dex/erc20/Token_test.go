@@ -8,7 +8,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"os"
-	"price_api/price_server/util"
+	"price_api/price_server/internal/util"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

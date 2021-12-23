@@ -7,6 +7,9 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+var GCfg Config
+var GRequestPriceConfs map[string][]ExchangeConfig
+
 type MysqlConfig struct {
 	Server   string
 	Port     int64
