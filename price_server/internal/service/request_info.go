@@ -124,7 +124,7 @@ func (s *RequestInfoService) parseLogInfos(logInfos []vo.REQ_RSP_LOG_INFO, symbo
 			mapPriceInfo := rsp.Data.(map[string]interface{})
 			symbolPriceInfo := mapPriceInfo[symbol].(map[string]interface{})
 
-			historyPriceInfo.Client = vo.CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.Client = vo.CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime, RequestTimestamp: logInfo.RequestTimestamp}
 			historyPriceInfo.PriceInfo = vo.PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
 			historyPriceInfo.PriceInfos = make([]vo.PRICE_EXCHANGE_WEIGHT_INFO, 0)
 			retPriceInfos = append(retPriceInfos, historyPriceInfo)
@@ -137,7 +137,7 @@ func (s *RequestInfoService) parseLogInfos(logInfos []vo.REQ_RSP_LOG_INFO, symbo
 
 			timestamp := int64(symbolPriceInfo["timestamp"].(float64))
 
-			historyPriceInfo.Client = vo.CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.Client = vo.CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime, RequestTimestamp: logInfo.RequestTimestamp}
 			historyPriceInfo.PriceInfo = vo.PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
 
 			priceInfoListsValue := symbolPriceInfo["infos"]
