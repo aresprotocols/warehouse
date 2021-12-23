@@ -8,6 +8,9 @@ import (
 
 //[["tETHBTC",0.068768,60.457862539999994,0.068782,87.18505796000001,-0.000422,-0.0061,0.068768,4345.75880076,0.069731,0.0683]]
 func parseBitfinexPrice(priceJson string) (float64, error) {
+	if priceJson == "[]" {
+		return 0, nil
+	}
 	firstIdx := strings.Index(priceJson, ",")
 	if firstIdx == -1 {
 		return 0, errors.New("unknow rsp format:" + priceJson)
