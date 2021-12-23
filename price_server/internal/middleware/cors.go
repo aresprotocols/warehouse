@@ -76,7 +76,7 @@ func Cors() gin.HandlerFunc {
 		if strings.Contains(requestUri, "getPrice") ||
 			strings.Contains(requestUri, "getPartyPrice") ||
 			strings.Contains(requestUri, "getHistoryPrice") ||
-			strings.Contains(requestUri, "getBulkPrices") {
+			strings.Contains(requestUri, "getBulkCurrencyPrices") {
 			err := requestInfoService.InsertLogInfo(accessLogMap, 1)
 			if err != nil {
 				logger.Errorf("insert log info occur err:%v", err)

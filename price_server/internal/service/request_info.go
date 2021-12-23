@@ -128,6 +128,31 @@ func (s *RequestInfoService) parseLogInfos(logInfos []vo.REQ_RSP_LOG_INFO, symbo
 			historyPriceInfo.PriceInfo = vo.PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
 			historyPriceInfo.PriceInfos = make([]vo.PRICE_EXCHANGE_WEIGHT_INFO, 0)
 			retPriceInfos = append(retPriceInfos, historyPriceInfo)
+		} else if strings.Contains(logInfo.ReqUrl, "getBulkCurrencyPrices") {
+			var historyPriceInfo vo.PARTY_PRICE_INFO
+			historyPriceInfo.Type = "getBulkCurrencyPrices"
+
+			mapPriceInfo := rsp.Data.(map[string]interface{})
+			symbolPriceInfo := mapPriceInfo[symbol].(map[string]interface{})
+
+			timestamp := int64(symbolPriceInfo["timestamp"].(float64))
+
+			historyPriceInfo.Client = vo.CLIENT_INFO{Ip: logInfo.Ip, RequestTime: logInfo.RequestTime}
+			historyPriceInfo.PriceInfo = vo.PRICE_INFO{Price: symbolPriceInfo["price"].(float64), Timestamp: int64(symbolPriceInfo["timestamp"].(float64))}
+
+			priceInfoListsValue := symbolPriceInfo["infos"]
+			if priceInfoListsValue == nil {
+				historyPriceInfo.PriceInfos = make([]vo.PRICE_EXCHANGE_WEIGHT_INFO, 0)
+			} else {
+				priceInfoLists := priceInfoListsValue.([]interface{})
+				for _, priceInfo := range priceInfoLists {
+					info := priceInfo.(map[string]interface{})
+					weightExchangeInfo := vo.PRICE_EXCHANGE_WEIGHT_INFO{Price: info["price"].(float64),
+						Exchange: info["exchangeName"].(string), Timestamp: timestamp, Weight: int(info["weight"].(float64))}
+					historyPriceInfo.PriceInfos = append(historyPriceInfo.PriceInfos, weightExchangeInfo)
+				}
+			}
+			retPriceInfos = append(retPriceInfos, historyPriceInfo)
 		} else {
 			logger.Infoln("unknow logInfo", logInfo)
 			continue

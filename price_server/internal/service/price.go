@@ -22,20 +22,20 @@ func newPrice(svc *service) *PriceService {
 	}
 }
 
-func (s *PriceService) GetBulkCurrencyPrices(symbol string, currency string) map[string]vo.PRICE_INFO {
+func (s *PriceService) GetBulkCurrencyPrices(symbol string, currency string) map[string]vo.PartyPriceInfo {
 
 	symbols := strings.Split(symbol, "_")
 
 	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
 
-	mSymbolPriceInfo := make(map[string]vo.PRICE_INFO)
+	mSymbolPriceInfo := make(map[string]vo.PartyPriceInfo)
 	for _, symbolTemp := range symbols {
 		token := symbolTemp + currency
 		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, token, true)
 		if !bFind {
-			mSymbolPriceInfo[token] = vo.PRICE_INFO{Price: 0, Timestamp: 0}
+			mSymbolPriceInfo[token] = partyPriceData
 		} else {
-			mSymbolPriceInfo[token] = vo.PRICE_INFO{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
+			mSymbolPriceInfo[token] = partyPriceData
 		}
 	}
 	return mSymbolPriceInfo
