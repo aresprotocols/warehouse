@@ -9,7 +9,7 @@ import (
 	"math/big"
 	"price_api/price_server/dex/erc20"
 	pair "price_api/price_server/dex/uniswapV2Pair"
-	"price_api/price_server/util"
+	"price_api/price_server/internal/util"
 )
 
 var debug = false
