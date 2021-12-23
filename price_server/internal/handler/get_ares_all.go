@@ -19,7 +19,7 @@ func HandleGetAresAll(context *gin.Context) {
 	if err != nil {
 		logger.WithError(err).Errorf("get gate ares info occur error")
 		response.Code = constant.GET_ARES_INFO_ERROR
-		response.Message = err.Error()
+		response.Message = constant.MSG_GET_ARES_ERROR
 		context.JSON(http.StatusBadRequest, response)
 	}
 

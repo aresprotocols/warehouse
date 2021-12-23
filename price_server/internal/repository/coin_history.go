@@ -32,8 +32,8 @@ func (r *CoinHistoryRepository) InsertPriceInfo(cfg conf.PriceInfos) error {
 		}
 	}
 
-	for kTimestamp, _ := range historyMap {
-		for kSymbol, _ := range historyMap[kTimestamp] {
+	for kTimestamp := range historyMap {
+		for kSymbol := range historyMap[kTimestamp] {
 			_, err := r.DB.Exec(insertUpdateHistorySql, kTimestamp, kSymbol)
 			if err != nil {
 				return err

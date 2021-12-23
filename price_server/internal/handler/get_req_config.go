@@ -17,8 +17,8 @@ func HandleGetReqConfig(context *gin.Context) {
 
 	data := make(map[string][]EXCHANGE_WEIGHT_INFO)
 	for symbol, confList := range conf.GRequestPriceConfs {
-		for _, conf := range confList {
-			data[symbol] = append(data[symbol], EXCHANGE_WEIGHT_INFO{Exchange: conf.Name, Weight: conf.Weight})
+		for _, confTemp := range confList {
+			data[symbol] = append(data[symbol], EXCHANGE_WEIGHT_INFO{Exchange: confTemp.Name, Weight: confTemp.Weight})
 		}
 	}
 

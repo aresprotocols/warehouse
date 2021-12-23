@@ -12,11 +12,8 @@ import (
 	"price_api/price_server/internal/routers"
 	"price_api/price_server/internal/service"
 	"strconv"
-	"sync"
 	"time"
 )
-
-var m *sync.RWMutex
 
 func init() {
 	config := DefaultConfiguration()
@@ -28,7 +25,6 @@ func init() {
 }
 
 func main() {
-	m = new(sync.RWMutex)
 	//gRequestPriceConfs = make(map[string][]conf.ExchangeConfig)
 
 	//log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
@@ -129,5 +125,5 @@ func showIgnoreSymbols(cfg conf.Config, gRequestPriceConfs map[string][]conf.Exc
 		}
 		ignoreSymbols[symbol] = exchanges
 	}
-	logger.Infof("ignore symbols and exchange:", ignoreSymbols)
+	logger.Infoln("ignore symbols and exchange:", ignoreSymbols)
 }

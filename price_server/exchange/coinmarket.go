@@ -21,7 +21,7 @@ type InfoDetail struct {
 			Volume        float64 `json:"volume_24h"`
 			PercentChange float64 `json:"percent_change_24h"`
 			MarketCap     float64 `json:"market_cap"`
-		} `json:"USD`
+		} `json:"USD"`
 	} `json:"quote"`
 }
 

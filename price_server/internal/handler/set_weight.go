@@ -16,7 +16,7 @@ func HandleSetWeight(context *gin.Context) {
 	err := context.ShouldBind(&setWeightReq)
 	if err != nil {
 		response.Code = constant.PARAM_NOT_TRUE_ERROR
-		response.Message = constant.MSG_PARAM_NOT_TRUE
+		response.Message = constant.MSG_PARSE_PARAM_ERROR
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
