@@ -97,7 +97,7 @@ func TestCoinHistoryRepository_GetHistoryBySymbolAndTimestamp(t *testing.T) {
 		db.Close()
 	}()
 
-	arg1 := args{
+	args1 := args{
 		symbol:    "btcusd",
 		timestamp: 1640330341,
 	}
@@ -107,7 +107,7 @@ func TestCoinHistoryRepository_GetHistoryBySymbolAndTimestamp(t *testing.T) {
 	rows := sqlmock.NewRows([]string{"symbol", "timestamp", "price", "weight", "price_origin"}).
 		AddRow(priceInfo.Symbol, priceInfo.TimeStamp, priceInfo.Price, priceInfo.Weight, priceInfo.PriceOrigin)
 
-	mock.ExpectQuery(regexp.QuoteMeta(querySql)).WithArgs(arg1.symbol, arg1.timestamp).WillReturnRows(rows)
+	mock.ExpectQuery(regexp.QuoteMeta(querySql)).WithArgs(args1.symbol, args1.timestamp).WillReturnRows(rows)
 
 	tests := []struct {
 		name    string
@@ -119,7 +119,7 @@ func TestCoinHistoryRepository_GetHistoryBySymbolAndTimestamp(t *testing.T) {
 		{
 			name:   "basic",
 			fields: fields{DB: db},
-			args:   arg1,
+			args:   args1,
 			want: []conf.PriceInfo{
 				priceInfo,
 			},
@@ -210,7 +210,7 @@ func TestCoinHistoryRepository_GetTotalHistoryBySymbol(t *testing.T) {
 		db.Close()
 	}()
 
-	arg1 := args{symbol: priceInfo.Symbol}
+	args1 := args{symbol: priceInfo.Symbol}
 	querySql := "select count(1) from `" + TABLE_COIN_PRICE + "` where symbol = ?;"
 	rows := sqlmock.NewRows([]string{"count(1)"}).
 		AddRow(10)
@@ -226,7 +226,7 @@ func TestCoinHistoryRepository_GetTotalHistoryBySymbol(t *testing.T) {
 		{
 			name:    "basic",
 			fields:  fields{DB: db},
-			args:    arg1,
+			args:    args1,
 			want:    10,
 			wantErr: false,
 		},
@@ -261,7 +261,7 @@ func TestCoinHistoryRepository_InsertPriceInfo(t *testing.T) {
 		db.Close()
 	}()
 
-	arg1 := args{cfg: conf.PriceInfos{PriceInfos: []conf.PriceInfo{priceInfo}}}
+	args1 := args{cfg: conf.PriceInfos{PriceInfos: []conf.PriceInfo{priceInfo}}}
 
 	insertSql := "insert into " + TABLE_COIN_PRICE + " (symbol,timestamp,price,price_origin,weight)" +
 		" values(?,?,?,?,?)"
@@ -285,7 +285,7 @@ func TestCoinHistoryRepository_InsertPriceInfo(t *testing.T) {
 		{
 			name:    "basic",
 			fields:  fields{DB: db},
-			args:    arg1,
+			args:    args1,
 			wantErr: false,
 		},
 	}
