@@ -2,6 +2,9 @@ package repository
 
 import (
 	"fmt"
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/jmoiron/sqlx"
+	"log"
 	"strings"
 	"testing"
 )
@@ -14,4 +17,15 @@ func TestUrlLength(t *testing.T) {
 	fmt.Println(len(arrs), " ", len([]byte("_")))
 	fmt.Println(443 / 4)
 	fmt.Println("", len(arrs), " ", arrs[0]+"usdt")
+}
+
+func NewMock() (*sqlx.DB, sqlmock.Sqlmock) {
+	//sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		log.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	sqlxDb := sqlx.NewDb(db, "sqlmock")
+
+	return sqlxDb, mock
 }

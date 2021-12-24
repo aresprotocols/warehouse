@@ -90,7 +90,7 @@ func (r *CoinHistoryRepository) GetHistoryBySymbolAndTimestamp(symbol string, ti
 func (r *CoinHistoryRepository) GetHistoryByTimestamp(timestamp int64) ([]conf.PriceInfo, error) {
 
 	dbPriceInfos := make([]conf.PriceInfo, 0)
-	querySql := "select symbol, timestamp, price, weight, price_origin from `t_coin_history_info` where timestamp = ?;"
+	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where timestamp = ?;"
 	err := r.DB.Select(&dbPriceInfos, querySql, timestamp)
 	if err != nil {
 		return []conf.PriceInfo{}, err
