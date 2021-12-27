@@ -1,6 +1,7 @@
 package util
 
 import (
+	"github.com/shopspring/decimal"
 	conf "price_api/price_server/config"
 	"price_api/price_server/internal/vo"
 	"sort"
@@ -23,7 +24,7 @@ func PartyPrice(infos []conf.PriceInfo, symbol string, bAverage bool) (bool, vo.
 	}
 
 	sort.Slice(symbolPriceInfo, func(i, j int) bool {
-		if symbolPriceInfo[i].Price > infos[j].Price {
+		if symbolPriceInfo[i].Price > symbolPriceInfo[j].Price {
 			return true
 		} else {
 			return false
@@ -35,15 +36,17 @@ func PartyPrice(infos []conf.PriceInfo, symbol string, bAverage bool) (bool, vo.
 	}
 
 	var partyPriceInfo vo.PartyPriceInfo
-	totalPrice := 0.0
-	totalWeight := int64(0)
+	totalPrice := decimal.NewFromFloat(0)
+	totalWeight := decimal.NewFromFloat(0)
 	for _, info := range symbolPriceInfo {
-		totalPrice += info.Price * float64(info.Weight)
-		totalWeight += info.Weight
+		//totalPrice += info.Price * float64(info.Weight)
+		totalPrice = totalPrice.Add(decimal.NewFromFloat(info.Price).Mul(decimal.NewFromInt(info.Weight)))
+		//totalWeight += info.Weight
+		totalWeight = totalWeight.Add(decimal.NewFromInt(info.Weight))
 
 		partyPriceInfo.Infos = append(partyPriceInfo.Infos, vo.WeightInfo{Price: info.Price, Weight: info.Weight, ExchangeName: info.PriceOrigin})
 	}
-	partyPriceInfo.Price = totalPrice / float64(totalWeight)
+	partyPriceInfo.Price = totalPrice.Div(totalWeight).InexactFloat64()
 	partyPriceInfo.Timestamp = symbolPriceInfo[0].TimeStamp
 
 	return true, partyPriceInfo
