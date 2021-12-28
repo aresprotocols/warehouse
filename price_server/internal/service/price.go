@@ -18,7 +18,7 @@ type PriceService struct {
 func newPrice(svc *service) *PriceService {
 	return &PriceService{
 		gPriceInfosCache: svc.globalCache,
-		coinHistoryRepo:  repository.CoinHistoryRepository{DB: svc.db},
+		coinHistoryRepo:  repository.NewCoinHistoryRepository(svc.db),
 	}
 }
 

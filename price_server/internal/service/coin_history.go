@@ -21,7 +21,7 @@ func newCoinHistory(svc *service) *CoinHistoryService {
 	return &CoinHistoryService{
 		gPriceInfosCache: svc.globalCache,
 		updatePriceRepo:  repository.UpdatePriceRepository{DB: svc.db},
-		coinHistoryRepo:  repository.CoinHistoryRepository{DB: svc.db},
+		coinHistoryRepo:  repository.NewCoinHistoryRepository(svc.db),
 	}
 }
 

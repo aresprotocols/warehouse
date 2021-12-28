@@ -68,8 +68,8 @@ func TestCoinHistoryRepository_GetHistoryBySymbol(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &CoinHistoryRepository{
-				DB: tt.fields.DB,
+			r := &coinHistoryRepository{
+				db: tt.fields.DB,
 			}
 			got, err := r.GetHistoryBySymbol(tt.args.idx, tt.args.pageSize, tt.args.symbol)
 			if (err != nil) != tt.wantErr {
@@ -128,8 +128,8 @@ func TestCoinHistoryRepository_GetHistoryBySymbolAndTimestamp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &CoinHistoryRepository{
-				DB: tt.fields.DB,
+			r := &coinHistoryRepository{
+				db: tt.fields.DB,
 			}
 			got, err := r.GetHistoryBySymbolAndTimestamp(tt.args.symbol, tt.args.timestamp)
 			if (err != nil) != tt.wantErr {
@@ -182,8 +182,8 @@ func TestCoinHistoryRepository_GetHistoryByTimestamp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &CoinHistoryRepository{
-				DB: tt.fields.DB,
+			r := &coinHistoryRepository{
+				db: tt.fields.DB,
 			}
 			got, err := r.GetHistoryByTimestamp(tt.args.timestamp)
 			if (err != nil) != tt.wantErr {
@@ -233,8 +233,8 @@ func TestCoinHistoryRepository_GetTotalHistoryBySymbol(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &CoinHistoryRepository{
-				DB: tt.fields.DB,
+			r := &coinHistoryRepository{
+				db: tt.fields.DB,
 			}
 			got, err := r.GetTotalHistoryBySymbol(tt.args.symbol)
 			if (err != nil) != tt.wantErr {
@@ -292,8 +292,8 @@ func TestCoinHistoryRepository_InsertPriceInfo(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &CoinHistoryRepository{
-				DB: tt.fields.DB,
+			r := &coinHistoryRepository{
+				db: tt.fields.DB,
 			}
 			if err := r.InsertPriceInfo(tt.args.cfg); (err != nil) != tt.wantErr {
 				t.Errorf("InsertPriceInfo() error = %v, wantErr %v", err, tt.wantErr)

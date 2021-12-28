@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	conf "price_api/price_server/config"
 	"price_api/price_server/internal/constant"
 	"price_api/price_server/internal/service"
 	"price_api/price_server/internal/vo"
@@ -39,7 +40,7 @@ func HandleGetHttpErrorInfo(context *gin.Context) {
 
 	httpErrorService := service.Svc.HttpError()
 
-	total, httpErrorInfos, err := httpErrorService.GetHttpErrorsByPage(idx, symbol)
+	total, httpErrorInfos, err := httpErrorService.GetHttpErrorsByPage(idx, int(conf.GCfg.PageSize), symbol)
 	if err != nil {
 		response.Code = constant.GET_HTTP_ERROR_ERROR
 		response.Message = err.Error()
