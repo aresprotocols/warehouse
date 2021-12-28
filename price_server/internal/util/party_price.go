@@ -46,7 +46,7 @@ func PartyPrice(infos []conf.PriceInfo, symbol string, bAverage bool) (bool, vo.
 
 		partyPriceInfo.Infos = append(partyPriceInfo.Infos, vo.WeightInfo{Price: info.Price, Weight: info.Weight, ExchangeName: info.PriceOrigin})
 	}
-	partyPriceInfo.Price = totalPrice.Div(totalWeight).InexactFloat64()
+	partyPriceInfo.Price = KeepValidDecimals(totalPrice.Div(totalWeight), 6)
 	partyPriceInfo.Timestamp = symbolPriceInfo[0].TimeStamp
 
 	return true, partyPriceInfo

@@ -7,64 +7,51 @@ import (
 	"testing"
 )
 
-func TestPartyPrice(t *testing.T) {
+func TestPartyPrice2(t *testing.T) {
 	type args struct {
 		infos    []conf.PriceInfo
 		symbol   string
 		bAverage bool
 	}
 
-	bitfinexPriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50814,
-		PriceOrigin: "bitfinex",
-		Weight:      1,
-		TimeStamp:   1640592554,
+	huobiPriceInfo := conf.PriceInfo{
+		Symbol:      "bttusdt",
+		Price:       0.00274154,
+		PriceOrigin: "huobi",
+		Weight:      2,
+		TimeStamp:   1640681206,
 	}
 
 	kucoinPriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50789,
+		Symbol:      "bttusdt",
+		Price:       0.00273997,
 		PriceOrigin: "kucoin",
-		Weight:      1,
-		TimeStamp:   1640592554,
-	}
-	huobiPriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50787.31,
-		PriceOrigin: "huobi",
-		Weight:      2,
-		TimeStamp:   1640592554,
-	}
-
-	binancePriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50787.44,
-		PriceOrigin: "binance",
-		Weight:      1,
-		TimeStamp:   1640592554,
+		Weight:      3,
+		TimeStamp:   1640681206,
 	}
 
 	okPriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50785,
+		Symbol:      "bttusdt",
+		Price:       0.0027403,
 		PriceOrigin: "ok",
 		Weight:      1,
-		TimeStamp:   1640592554,
+		TimeStamp:   1640681206,
 	}
-	bitstampPriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50734.34,
-		PriceOrigin: "bitstamp",
+
+	binancePriceInfo := conf.PriceInfo{
+		Symbol:      "bttusdt",
+		Price:       0.00274,
+		PriceOrigin: "binance",
 		Weight:      1,
-		TimeStamp:   1640592554,
+		TimeStamp:   1640681206,
 	}
-	coinbasePriceInfo := conf.PriceInfo{
-		Symbol:      "btcusdt",
-		Price:       50781.23,
-		PriceOrigin: "coinbase",
-		Weight:      3,
-		TimeStamp:   1640592554,
+
+	bitfinexPriceInfo := conf.PriceInfo{
+		Symbol:      "bttusdt",
+		Price:       0.0027392,
+		PriceOrigin: "bitfinex",
+		Weight:      1,
+		TimeStamp:   1640681206,
 	}
 
 	tests := []struct {
@@ -74,40 +61,12 @@ func TestPartyPrice(t *testing.T) {
 		want1 vo.PartyPriceInfo
 	}{
 		{
-			name: "infos length is empty",
-			args: args{
-				infos:    []conf.PriceInfo{},
-				symbol:   "btcusdt",
-				bAverage: false,
-			},
-			want:  false,
-			want1: vo.PartyPriceInfo{},
-		},
-		{
-			name: "infos not contain symbol",
-			args: args{
-				infos: []conf.PriceInfo{
-					bitfinexPriceInfo,
-					kucoinPriceInfo,
-					huobiPriceInfo,
-					binancePriceInfo,
-					okPriceInfo,
-					bitstampPriceInfo,
-					coinbasePriceInfo,
-				},
-				symbol:   "ethusdt",
-				bAverage: true,
-			},
-			want:  false,
-			want1: vo.PartyPriceInfo{},
-		},
-		{
 			name: "infos length = 1 and average = true",
 			args: args{
 				infos: []conf.PriceInfo{
 					bitfinexPriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -127,26 +86,26 @@ func TestPartyPrice(t *testing.T) {
 			name: "infos length = 2 and average = true",
 			args: args{
 				infos: []conf.PriceInfo{
-					coinbasePriceInfo,
+					huobiPriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     50782.1725,
-				Timestamp: coinbasePriceInfo.TimeStamp,
+				Price:     0.00274113,
+				Timestamp: huobiPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
+					{
+						Price:        huobiPriceInfo.Price,
+						Weight:       huobiPriceInfo.Weight,
+						ExchangeName: huobiPriceInfo.PriceOrigin,
+					},
 					{
 						Price:        okPriceInfo.Price,
 						Weight:       okPriceInfo.Weight,
 						ExchangeName: okPriceInfo.PriceOrigin,
-					},
-					{
-						Price:        coinbasePriceInfo.Price,
-						Weight:       coinbasePriceInfo.Weight,
-						ExchangeName: coinbasePriceInfo.PriceOrigin,
 					},
 				},
 			},
@@ -156,15 +115,15 @@ func TestPartyPrice(t *testing.T) {
 			args: args{
 				infos: []conf.PriceInfo{
 					huobiPriceInfo,
+					kucoinPriceInfo,
 					okPriceInfo,
-					coinbasePriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     50785,
+				Price:     0.0027403,
 				Timestamp: okPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
 					{
@@ -184,21 +143,19 @@ func TestPartyPrice(t *testing.T) {
 					huobiPriceInfo,
 					binancePriceInfo,
 					okPriceInfo,
-					bitstampPriceInfo,
-					coinbasePriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     50784.96875,
-				Timestamp: 1640592554,
+				Price:     0.00274004,
+				Timestamp: okPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
 					{
-						Price:        kucoinPriceInfo.Price,
-						Weight:       kucoinPriceInfo.Weight,
-						ExchangeName: kucoinPriceInfo.PriceOrigin,
+						Price:        okPriceInfo.Price,
+						Weight:       okPriceInfo.Weight,
+						ExchangeName: okPriceInfo.PriceOrigin,
 					},
 					{
 						Price:        binancePriceInfo.Price,
@@ -206,19 +163,9 @@ func TestPartyPrice(t *testing.T) {
 						ExchangeName: binancePriceInfo.PriceOrigin,
 					},
 					{
-						Price:        huobiPriceInfo.Price,
-						Weight:       huobiPriceInfo.Weight,
-						ExchangeName: huobiPriceInfo.PriceOrigin,
-					},
-					{
-						Price:        okPriceInfo.Price,
-						Weight:       okPriceInfo.Weight,
-						ExchangeName: okPriceInfo.PriceOrigin,
-					},
-					{
-						Price:        coinbasePriceInfo.Price,
-						Weight:       coinbasePriceInfo.Weight,
-						ExchangeName: coinbasePriceInfo.PriceOrigin,
+						Price:        kucoinPriceInfo.Price,
+						Weight:       kucoinPriceInfo.Weight,
+						ExchangeName: kucoinPriceInfo.PriceOrigin,
 					},
 				},
 			},
@@ -227,20 +174,20 @@ func TestPartyPrice(t *testing.T) {
 			name: "infos length = 1 and average = false",
 			args: args{
 				infos: []conf.PriceInfo{
-					bitstampPriceInfo,
+					bitfinexPriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     bitstampPriceInfo.Price,
-				Timestamp: bitstampPriceInfo.TimeStamp,
+				Price:     bitfinexPriceInfo.Price,
+				Timestamp: bitfinexPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
 					{
-						Price:        bitstampPriceInfo.Price,
-						Weight:       bitstampPriceInfo.Weight,
-						ExchangeName: bitstampPriceInfo.PriceOrigin,
+						Price:        bitfinexPriceInfo.Price,
+						Weight:       bitfinexPriceInfo.Weight,
+						ExchangeName: bitfinexPriceInfo.PriceOrigin,
 					},
 				},
 			},
@@ -252,23 +199,23 @@ func TestPartyPrice(t *testing.T) {
 					huobiPriceInfo,
 					binancePriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     50787.353333,
+				Price:     0.00274103,
 				Timestamp: huobiPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
-					{
-						Price:        binancePriceInfo.Price,
-						Weight:       binancePriceInfo.Weight,
-						ExchangeName: binancePriceInfo.PriceOrigin,
-					},
 					{
 						Price:        huobiPriceInfo.Price,
 						Weight:       huobiPriceInfo.Weight,
 						ExchangeName: huobiPriceInfo.PriceOrigin,
+					},
+					{
+						Price:        binancePriceInfo.Price,
+						Weight:       binancePriceInfo.Weight,
+						ExchangeName: binancePriceInfo.PriceOrigin,
 					},
 				},
 			},
@@ -278,15 +225,15 @@ func TestPartyPrice(t *testing.T) {
 			args: args{
 				infos: []conf.PriceInfo{
 					huobiPriceInfo,
-					coinbasePriceInfo,
+					binancePriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     50783.885,
+				Price:     0.00274085,
 				Timestamp: okPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
 					{
@@ -299,11 +246,10 @@ func TestPartyPrice(t *testing.T) {
 						Weight:       okPriceInfo.Weight,
 						ExchangeName: okPriceInfo.PriceOrigin,
 					},
-
 					{
-						Price:        coinbasePriceInfo.Price,
-						Weight:       coinbasePriceInfo.Weight,
-						ExchangeName: coinbasePriceInfo.PriceOrigin,
+						Price:        binancePriceInfo.Price,
+						Weight:       binancePriceInfo.Weight,
+						ExchangeName: binancePriceInfo.PriceOrigin,
 					},
 				},
 			},
@@ -317,32 +263,15 @@ func TestPartyPrice(t *testing.T) {
 					huobiPriceInfo,
 					binancePriceInfo,
 					okPriceInfo,
-					bitstampPriceInfo,
-					coinbasePriceInfo,
 				},
-				symbol:   "btcusdt",
+				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
 			want1: vo.PartyPriceInfo{
-				Price:     50782.809,
+				Price:     0.00274031,
 				Timestamp: bitfinexPriceInfo.TimeStamp,
 				Infos: []vo.WeightInfo{
-					{
-						Price:        bitfinexPriceInfo.Price,
-						Weight:       bitfinexPriceInfo.Weight,
-						ExchangeName: bitfinexPriceInfo.PriceOrigin,
-					},
-					{
-						Price:        kucoinPriceInfo.Price,
-						Weight:       kucoinPriceInfo.Weight,
-						ExchangeName: kucoinPriceInfo.PriceOrigin,
-					},
-					{
-						Price:        binancePriceInfo.Price,
-						Weight:       binancePriceInfo.Weight,
-						ExchangeName: binancePriceInfo.PriceOrigin,
-					},
 					{
 						Price:        huobiPriceInfo.Price,
 						Weight:       huobiPriceInfo.Weight,
@@ -354,14 +283,19 @@ func TestPartyPrice(t *testing.T) {
 						ExchangeName: okPriceInfo.PriceOrigin,
 					},
 					{
-						Price:        coinbasePriceInfo.Price,
-						Weight:       coinbasePriceInfo.Weight,
-						ExchangeName: coinbasePriceInfo.PriceOrigin,
+						Price:        binancePriceInfo.Price,
+						Weight:       binancePriceInfo.Weight,
+						ExchangeName: binancePriceInfo.PriceOrigin,
 					},
 					{
-						Price:        bitstampPriceInfo.Price,
-						Weight:       bitstampPriceInfo.Weight,
-						ExchangeName: bitstampPriceInfo.PriceOrigin,
+						Price:        kucoinPriceInfo.Price,
+						Weight:       kucoinPriceInfo.Weight,
+						ExchangeName: kucoinPriceInfo.PriceOrigin,
+					},
+					{
+						Price:        bitfinexPriceInfo.Price,
+						Weight:       bitfinexPriceInfo.Weight,
+						ExchangeName: bitfinexPriceInfo.PriceOrigin,
 					},
 				},
 			},
