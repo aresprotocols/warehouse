@@ -18,6 +18,9 @@ func NewGlobalPriceInfoCache() *GlobalPriceInfoCache {
 
 func (c *GlobalPriceInfoCache) GetLatestPriceInfos() conf.PriceInfos {
 	c.m.RLock()
+	if len(c.gPriceInfosCache.PriceInfosCache) == 0 {
+		return conf.PriceInfos{}
+	}
 	latestInfos := c.gPriceInfosCache.PriceInfosCache[len(c.gPriceInfosCache.PriceInfosCache)-1]
 	c.m.RUnlock()
 	return latestInfos
@@ -59,6 +62,7 @@ func (c *GlobalPriceInfoCache) GetPriceInfosByRange(start, end int) conf.PriceIn
 	return tmpRetData
 }
 
+//todo add unit test
 func (c *GlobalPriceInfoCache) UpdateSymbolWeight(symbol, exchange string, weight int) {
 	c.m.Lock()
 	for i, confTemp := range conf.GRequestPriceConfs[symbol] {
