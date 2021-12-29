@@ -12,16 +12,18 @@ import (
 )
 
 type CoinHistoryService struct {
-	gPriceInfosCache cache.GlobalPriceInfoCache
-	updatePriceRepo  repository.UpdatePriceRepository
-	coinHistoryRepo  repository.CoinHistoryRepository
+	gPriceInfosCache   cache.GlobalPriceInfoCache
+	gReqeustPriceConfs cache.GlobalRequestPriceConfs
+	updatePriceRepo    repository.UpdatePriceRepository
+	coinHistoryRepo    repository.CoinHistoryRepository
 }
 
 func newCoinHistory(svc *service) *CoinHistoryService {
 	return &CoinHistoryService{
-		gPriceInfosCache: svc.globalCache,
-		updatePriceRepo:  repository.UpdatePriceRepository{DB: svc.db},
-		coinHistoryRepo:  repository.NewCoinHistoryRepository(svc.db),
+		gPriceInfosCache:   svc.globalCache,
+		gReqeustPriceConfs: svc.globalRequestPriceConfs,
+		updatePriceRepo:    repository.UpdatePriceRepository{DB: svc.db},
+		coinHistoryRepo:    repository.NewCoinHistoryRepository(svc.db),
 	}
 }
 
@@ -40,7 +42,7 @@ func (s *CoinHistoryService) GetUpdatePriceHeartbeat(symbol string) (vo.HEARTBEA
 		return vo.HEARTBEAT_INFO{}, errors.New("not found symbol")
 	}
 	tokenSymbol := strings.ReplaceAll(symbol, "usdt", "-usdt")
-	exchangeConfs := conf.GRequestPriceConfs[tokenSymbol]
+	exchangeConfs := s.gReqeustPriceConfs.GetConfsBySymbol(tokenSymbol)
 	return vo.HEARTBEAT_INFO{
 		ExpectResources: len(exchangeConfs),
 		ActualResources: len(symbolPriceInfo),

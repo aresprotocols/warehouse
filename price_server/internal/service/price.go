@@ -11,14 +11,16 @@ import (
 )
 
 type PriceService struct {
-	gPriceInfosCache cache.GlobalPriceInfoCache
-	coinHistoryRepo  repository.CoinHistoryRepository
+	gPriceInfosCache   cache.GlobalPriceInfoCache
+	coinHistoryRepo    repository.CoinHistoryRepository
+	gRequestPriceConfs cache.GlobalRequestPriceConfs
 }
 
 func newPrice(svc *service) *PriceService {
 	return &PriceService{
-		gPriceInfosCache: svc.globalCache,
-		coinHistoryRepo:  repository.NewCoinHistoryRepository(svc.db),
+		gPriceInfosCache:   svc.globalCache,
+		coinHistoryRepo:    repository.NewCoinHistoryRepository(svc.db),
+		gRequestPriceConfs: svc.globalRequestPriceConfs,
 	}
 }
 
@@ -75,7 +77,7 @@ func (s *PriceService) GetBulkSymbolsState(symbolStr string, currency string) ma
 		actualResourcesLens := len(symbolPriceInfo)
 
 		tokenSymbol := symbol + "-" + currency
-		exchangeConfs := conf.GRequestPriceConfs[tokenSymbol]
+		exchangeConfs := s.gRequestPriceConfs.GetConfsBySymbol(tokenSymbol)
 		expectResourcesLens := len(exchangeConfs)
 
 		mSymbolState[token] = actualResourcesLens > expectResourcesLens/2

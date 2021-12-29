@@ -49,18 +49,21 @@ func main() {
 
 	handle := handler.InitHandle(cfg)
 
-	conf.GRequestPriceConfs, err = exchange.InitRequestPriceConf(cfg)
+	requestPriceConfService := service.Svc.RequestPriceConf()
+
+	requestPriceConfs, err := exchange.InitRequestPriceConf(cfg)
 	if err != nil {
 		logger.Errorf("Init request price conf occur err:%v", err)
 		return
 	}
+	requestPriceConfService.SetConfs(requestPriceConfs)
 	logger.Info("request init over")
 
-	showIgnoreSymbols(cfg, conf.GRequestPriceConfs)
+	showIgnoreSymbols(cfg, requestPriceConfService.GetConfs())
 
 	router := routers.NewRouter()
 
-	go updatePrice(cfg, conf.GRequestPriceConfs)
+	go updatePrice(cfg, requestPriceConfService.GetConfs())
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
 
 	abortChan := make(chan os.Signal, 1)

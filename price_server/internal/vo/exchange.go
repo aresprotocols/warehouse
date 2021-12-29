@@ -7,3 +7,8 @@ type RESPONSE_PRICE_CONF struct {
 	Conf   conf.ExchangeConfig
 	Symbol string
 }
+
+type EXCHANGE_WEIGHT_INFO struct {
+	Exchange string `json:"exchange"`
+	Weight   int64  `json:"weight"`
+}

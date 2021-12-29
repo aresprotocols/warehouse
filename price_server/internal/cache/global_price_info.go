@@ -9,7 +9,6 @@ type GlobalPriceInfoCache interface {
 	GetLatestPriceInfos() conf.PriceInfos
 	GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos)
 	GetPriceInfosByRange(start, end int) conf.PriceInfosCache
-	UpdateSymbolWeight(symbol, exchange string, weight int)
 	GetCacheLength() int
 	UpdateCachePrice(infos conf.PriceInfos, maxMemTime int)
 }
@@ -69,18 +68,6 @@ func (c *globalPriceInfoCache) GetPriceInfosByRange(start, end int) conf.PriceIn
 	}
 	c.m.RUnlock()
 	return tmpRetData
-}
-
-//todo add unit test
-func (c *globalPriceInfoCache) UpdateSymbolWeight(symbol, exchange string, weight int) {
-	c.m.Lock()
-	for i, confTemp := range conf.GRequestPriceConfs[symbol] {
-		if confTemp.Name == exchange {
-			conf.GRequestPriceConfs[symbol][i].Weight = int64(weight)
-			break
-		}
-	}
-	c.m.Unlock()
 }
 
 func (c *globalPriceInfoCache) GetCacheLength() int {

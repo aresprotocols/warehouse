@@ -8,7 +8,8 @@ import (
 )
 
 var GCfg Config
-var GRequestPriceConfs map[string][]ExchangeConfig
+
+//var GRequestPriceConfs map[string][]ExchangeConfig
 
 type MysqlConfig struct {
 	Server   string

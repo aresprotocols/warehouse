@@ -8,8 +8,9 @@ import (
 )
 
 type WeightInfoService struct {
-	weightInfoRepo   repository.WeightInfoRepository
-	gPriceInfosCache cache.GlobalPriceInfoCache
+	weightInfoRepo     repository.WeightInfoRepository
+	gPriceInfosCache   cache.GlobalPriceInfoCache
+	gRequestPriceConfs cache.GlobalRequestPriceConfs
 }
 
 func newWeightInfo(svc *service) *WeightInfoService {
@@ -27,7 +28,7 @@ func (s *WeightInfoService) SetWeight(setWeightReq vo.SetWeightReq) error {
 		return err
 	}
 
-	s.gPriceInfosCache.UpdateSymbolWeight(setWeightReq.Symbol, setWeightReq.Exchange, setWeightReq.Weight)
+	s.gRequestPriceConfs.UpdateSymbolWeight(setWeightReq.Symbol, setWeightReq.Exchange, setWeightReq.Weight)
 	return nil
 }
 
