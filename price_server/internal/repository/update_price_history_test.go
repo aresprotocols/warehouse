@@ -54,7 +54,7 @@ func TestUpdatePriceRepository_GetTotalUpdatePriceHistoryBySymbol(t *testing.T) 
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &UpdatePriceRepository{
+			r := &updatePriceRepository{
 				DB: tt.fields.DB,
 			}
 			got, err := r.GetTotalUpdatePriceHistoryBySymbol(tt.args.symbol)
@@ -114,7 +114,7 @@ func TestUpdatePriceRepository_GetUpdatePriceHistoryBySymbol(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &UpdatePriceRepository{
+			r := &updatePriceRepository{
 				DB: tt.fields.DB,
 			}
 			got, err := r.GetUpdatePriceHistoryBySymbol(tt.args.idx, tt.args.pageSize, tt.args.symbol)

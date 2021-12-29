@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	logger "github.com/sirupsen/logrus"
 	"net/http"
+	conf "price_api/price_server/config"
 	"price_api/price_server/internal/constant"
 	"price_api/price_server/internal/service"
 	"price_api/price_server/internal/vo"
@@ -15,7 +16,7 @@ func HandleGetUpdatePriceHeartbeat(context *gin.Context) {
 	symbol := context.Param("symbol")
 
 	updatePriceService := service.Svc.CoinHistory()
-	heartbeatInfo, err := updatePriceService.GetUpdatePriceHeartbeat(symbol)
+	heartbeatInfo, err := updatePriceService.GetUpdatePriceHeartbeat(symbol, conf.GCfg.Interval)
 
 	if err != nil {
 		logger.WithError(err).Error("get update price heart beat occur err")

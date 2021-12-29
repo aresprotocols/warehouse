@@ -22,12 +22,12 @@ func newCoinHistory(svc *service) *CoinHistoryService {
 	return &CoinHistoryService{
 		gPriceInfosCache:   svc.globalCache,
 		gReqeustPriceConfs: svc.globalRequestPriceConfs,
-		updatePriceRepo:    repository.UpdatePriceRepository{DB: svc.db},
+		updatePriceRepo:    repository.NewUpdatePriceRepository(svc.db),
 		coinHistoryRepo:    repository.NewCoinHistoryRepository(svc.db),
 	}
 }
 
-func (s *CoinHistoryService) GetUpdatePriceHeartbeat(symbol string) (vo.HEARTBEAT_INFO, error) {
+func (s *CoinHistoryService) GetUpdatePriceHeartbeat(symbol string, interval int64) (vo.HEARTBEAT_INFO, error) {
 
 	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
 
@@ -47,7 +47,7 @@ func (s *CoinHistoryService) GetUpdatePriceHeartbeat(symbol string) (vo.HEARTBEA
 		ExpectResources: len(exchangeConfs),
 		ActualResources: len(symbolPriceInfo),
 		LatestTimestamp: symbolPriceInfo[0].TimeStamp,
-		Interval:        conf.GCfg.Interval,
+		Interval:        interval,
 	}, nil
 }
 

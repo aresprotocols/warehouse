@@ -7,11 +7,20 @@ import (
 	"strconv"
 )
 
-type UpdatePriceRepository struct {
+type UpdatePriceRepository interface {
+	GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error)
+	GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]vo.UpdatePirceHistory, error)
+}
+
+func NewUpdatePriceRepository(db *sqlx.DB) UpdatePriceRepository {
+	return &updatePriceRepository{db}
+}
+
+type updatePriceRepository struct {
 	DB *sqlx.DB
 }
 
-func (r *UpdatePriceRepository) GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error) {
+func (r *updatePriceRepository) GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error) {
 	var total int
 	querySql := "select count(1) from `" + TABLE_UPDATE_PRICE_HISTORY + "` where symbol = ?;"
 	logger.Infoln("sql:", querySql, "symbol", symbol)
@@ -22,7 +31,7 @@ func (r *UpdatePriceRepository) GetTotalUpdatePriceHistoryBySymbol(symbol string
 	return total, nil
 }
 
-func (r *UpdatePriceRepository) GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]vo.UpdatePirceHistory, error) {
+func (r *updatePriceRepository) GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]vo.UpdatePirceHistory, error) {
 	var histories []vo.UpdatePirceHistory
 	querySql := "select symbol, timestamp  from `" + TABLE_UPDATE_PRICE_HISTORY + "` where symbol = ? order by timestamp desc limit ?,? ;"
 	logger.Infoln("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
