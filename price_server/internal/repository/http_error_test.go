@@ -66,10 +66,10 @@ func TestHttpErrorRepository_GetHttpErrorInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HttpErrorRepository{
-				DB: tt.fields.DB,
+			r := &httpErrorRepository{
+				db: tt.fields.DB,
 			}
-			got, err := r.GetHttpErrorInfo(tt.args.idx, tt.args.symbol, tt.args.pageSize)
+			got, err := r.GetHttpErrorInfo(tt.args.idx, tt.args.pageSize, tt.args.symbol)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetHttpErrorInfo() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -117,8 +117,8 @@ func TestHttpErrorRepository_GetTotalHttpErrorInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HttpErrorRepository{
-				DB: tt.fields.DB,
+			r := &httpErrorRepository{
+				db: tt.fields.DB,
 			}
 			got, err := r.GetTotalHttpErrorInfo(tt.args.symbol)
 			if (err != nil) != tt.wantErr {
@@ -175,8 +175,8 @@ func TestHttpErrorRepository_InsertHttpError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &HttpErrorRepository{
-				DB: tt.fields.DB,
+			r := &httpErrorRepository{
+				db: tt.fields.DB,
 			}
 			if err := r.InsertHttpError(tt.args.url, tt.args.symbol, tt.args.errorInfo); (err != nil) != tt.wantErr {
 				t.Errorf("InsertHttpError() error = %v, wantErr %v", err, tt.wantErr)

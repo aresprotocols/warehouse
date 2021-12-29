@@ -37,10 +37,11 @@ func HandleGetRequestInfoBySymbol(context *gin.Context) {
 		context.JSON(http.StatusBadRequest, response)
 		return
 	}
+	ip, exist := context.GetQuery("ip")
 
 	requestLogService := service.Svc.RequestInfo()
 
-	total, logInfos, err := requestLogService.GetRequestInfoBySymbol(idx, int(conf.GCfg.PageSize), symbol)
+	total, logInfos, err := requestLogService.GetRequestInfoBySymbol(idx, int(conf.GCfg.PageSize), symbol, ip)
 
 	if err != nil {
 		logger.WithError(err).Errorf("get log info by symbol occur error,symbol:%s,index:%d", symbol, idx)

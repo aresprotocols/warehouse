@@ -21,13 +21,13 @@ func (s *RequestInfoService) GetLogInfos(idx, pageSize int) (vo.LOG_INFOS, error
 	return s.logInfoRepo.GetLogInfo(idx, pageSize)
 }
 
-func (s *RequestInfoService) GetRequestInfoBySymbol(idx, pageSize int, symbol string) (int, []vo.PARTY_PRICE_INFO, error) {
-	logInfos, err := s.logInfoRepo.GetLogInfoBySymbol(idx, pageSize, symbol)
+func (s *RequestInfoService) GetRequestInfoBySymbol(idx, pageSize int, symbol string, ip string) (int, []vo.PARTY_PRICE_INFO, error) {
+	logInfos, err := s.logInfoRepo.GetLogInfoBySymbol(idx, pageSize, symbol, ip)
 	if err != nil {
 		logger.WithError(err).Errorf("get log info by symbol occur error,symbol:%s,index:%d", symbol, idx)
 		return 0, nil, err
 	}
-	total, err := s.logInfoRepo.GetTotalLogInfoBySymbol(symbol)
+	total, err := s.logInfoRepo.GetTotalLogInfoBySymbol(symbol, ip)
 	if err != nil {
 		logger.WithError(err).Errorf("get total log info by symbol occur error,symbol:%s", symbol)
 		return 0, nil, err

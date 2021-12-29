@@ -98,6 +98,7 @@ func TestLogInfoRepository_GetLogInfoBySymbol(t *testing.T) {
 		idx      int
 		pageSize int
 		symbol   string
+		ip       string
 	}
 
 	symbol := "btcusdt"
@@ -106,6 +107,7 @@ func TestLogInfoRepository_GetLogInfoBySymbol(t *testing.T) {
 		idx:      0,
 		pageSize: 20,
 		symbol:   symbol,
+		ip:       "",
 	}
 
 	db, mock := NewMock()
@@ -150,7 +152,7 @@ func TestLogInfoRepository_GetLogInfoBySymbol(t *testing.T) {
 			r := &LogInfoRepository{
 				DB: tt.fields.DB,
 			}
-			got, err := r.GetLogInfoBySymbol(tt.args.idx, tt.args.pageSize, tt.args.symbol)
+			got, err := r.GetLogInfoBySymbol(tt.args.idx, tt.args.pageSize, tt.args.symbol, tt.args.ip)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetLogInfoBySymbol() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -168,11 +170,12 @@ func TestLogInfoRepository_GetTotalLogInfoBySymbol(t *testing.T) {
 	}
 	type args struct {
 		symbol string
+		ip     string
 	}
 
 	symbol := "btcusdt"
 
-	args1 := args{symbol: symbol}
+	args1 := args{symbol: symbol, ip: ""}
 
 	db, mock := NewMock()
 	defer func() {
@@ -181,7 +184,7 @@ func TestLogInfoRepository_GetTotalLogInfoBySymbol(t *testing.T) {
 
 	querySql := "select count(1) from " +
 		TABLE_LOG_INFO + " where ( request_response like '%" + symbol + "%'" +
-		" or request_url like '%" + symbol + "%'" + " ) and use_symbol = 1 ;"
+		" or request_url like '%" + symbol + "%'" + " ) and use_symbol = 1"
 
 	rows := sqlmock.NewRows([]string{"count(1)"}).AddRow(10)
 	mock.ExpectQuery(regexp.QuoteMeta(querySql)).WillReturnRows(rows)
@@ -206,7 +209,7 @@ func TestLogInfoRepository_GetTotalLogInfoBySymbol(t *testing.T) {
 			r := &LogInfoRepository{
 				DB: tt.fields.DB,
 			}
-			got, err := r.GetTotalLogInfoBySymbol(tt.args.symbol)
+			got, err := r.GetTotalLogInfoBySymbol(tt.args.symbol, tt.args.ip)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetTotalLogInfoBySymbol() error = %v, wantErr %v", err, tt.wantErr)
 				return
