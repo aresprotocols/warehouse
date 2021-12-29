@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+//go:generate mockgen -destination mock/coin_history_mock.go price_api/price_server/internal/repository CoinHistoryRepository
+
 type CoinHistoryRepository interface {
 	InsertPriceInfo(cfg conf.PriceInfos) error
 	GetTotalHistoryBySymbol(symbol string) (int, error)

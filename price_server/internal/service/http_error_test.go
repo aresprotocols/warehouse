@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/golang/mock/gomock"
 	"price_api/price_server/internal/repository"
+	mock_repository "price_api/price_server/internal/repository/mock"
 	"price_api/price_server/internal/vo"
 	"reflect"
 	"testing"
@@ -26,7 +27,7 @@ func TestHttpErrorService_GetHttpErrorsByPage(t *testing.T) {
 
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	httpErrorRepo := repository.NewMockHttpErrorRepository(ctrl)
+	httpErrorRepo := mock_repository.NewMockHttpErrorRepository(ctrl)
 
 	httpErrorRepo.EXPECT().GetTotalHttpErrorInfo(gomock.Eq(args1.symbol)).Return(1, nil)
 	//([]vo.HTTP_ERROR_INFO, error)
@@ -86,7 +87,7 @@ func TestHttpErrorService_InsertHttpError(t *testing.T) {
 	}
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	httpErrorRepo := repository.NewMockHttpErrorRepository(ctrl)
+	httpErrorRepo := mock_repository.NewMockHttpErrorRepository(ctrl)
 
 	httpErrorRepo.EXPECT().InsertHttpError(gomock.Eq(args1.url), gomock.Eq(args1.symbol), gomock.Eq(args1.errorInfo)).Return(nil)
 

@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+//go:generate mockgen -destination mock/global_request_price_confs_mock.go price_api/price_server/internal/cache GlobalRequestPriceConfs
+
 type GlobalRequestPriceConfs interface {
 	SetConfs(conf map[string][]conf.ExchangeConfig)
 	UpdateSymbolWeight(symbol, exchange string, weight int)

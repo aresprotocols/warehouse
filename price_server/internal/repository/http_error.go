@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+//go:generate mockgen -destination mock/http_error_mock.go price_api/price_server/internal/repository HttpErrorRepository
+
 type HttpErrorRepository interface {
 	InsertHttpError(url string, symbol string, errorInfo string) error
 	GetHttpErrorInfo(idx, pageSize int, symbol string) ([]vo.HTTP_ERROR_INFO, error)

@@ -4,7 +4,9 @@ import (
 	"github.com/golang/mock/gomock"
 	conf "price_api/price_server/config"
 	"price_api/price_server/internal/cache"
+	mock_cache "price_api/price_server/internal/cache/mock"
 	"price_api/price_server/internal/repository"
+	mock_repository "price_api/price_server/internal/repository/mock"
 	"price_api/price_server/internal/vo"
 	"reflect"
 	"testing"
@@ -127,10 +129,10 @@ func TestCoinHistoryService_GetUpdatePriceHeartbeat(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	gPriceInfosCache := cache.NewMockGlobalPriceInfoCache(ctrl)
-	gReqeustPriceConfs := cache.NewMockGlobalRequestPriceConfs(ctrl)
-	updatePriceRepo := repository.NewMockUpdatePriceRepository(ctrl)
-	coinHistoryRepo := repository.NewMockCoinHistoryRepository(ctrl)
+	gPriceInfosCache := mock_cache.NewMockGlobalPriceInfoCache(ctrl)
+	gReqeustPriceConfs := mock_cache.NewMockGlobalRequestPriceConfs(ctrl)
+	updatePriceRepo := mock_repository.NewMockUpdatePriceRepository(ctrl)
+	coinHistoryRepo := mock_repository.NewMockCoinHistoryRepository(ctrl)
 
 	gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos1})
 	gReqeustPriceConfs.EXPECT().GetConfsBySymbol(gomock.Eq("btc-usdt")).Return(exchangeConfigs)
@@ -202,10 +204,10 @@ func TestCoinHistoryService_GetUpdatePriceHistory(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	gPriceInfosCache := cache.NewMockGlobalPriceInfoCache(ctrl)
-	gReqeustPriceConfs := cache.NewMockGlobalRequestPriceConfs(ctrl)
-	updatePriceRepo := repository.NewMockUpdatePriceRepository(ctrl)
-	coinHistoryRepo := repository.NewMockCoinHistoryRepository(ctrl)
+	gPriceInfosCache := mock_cache.NewMockGlobalPriceInfoCache(ctrl)
+	gReqeustPriceConfs := mock_cache.NewMockGlobalRequestPriceConfs(ctrl)
+	updatePriceRepo := mock_repository.NewMockUpdatePriceRepository(ctrl)
+	coinHistoryRepo := mock_repository.NewMockCoinHistoryRepository(ctrl)
 
 	updatePriceRepo.EXPECT().GetUpdatePriceHistoryBySymbol(gomock.Eq(args1.idx), gomock.Eq(args1.pageSize), gomock.Eq(args1.symbol)).Return([]vo.UpdatePirceHistory{updatePriceHistory}, nil)
 	updatePriceRepo.EXPECT().GetTotalUpdatePriceHistoryBySymbol(gomock.Eq(args1.symbol)).Return(1, nil)

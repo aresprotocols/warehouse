@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+//go:generate mockgen -destination mock/global_price_info_mock.go price_api/price_server/internal/cache GlobalPriceInfoCache
+
 type GlobalPriceInfoCache interface {
 	GetLatestPriceInfos() conf.PriceInfos
 	GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos)

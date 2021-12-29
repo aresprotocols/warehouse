@@ -7,6 +7,8 @@ import (
 	"strconv"
 )
 
+//go:generate mockgen -destination mock/update_price_history_mock.go price_api/price_server/internal/repository UpdatePriceRepository
+
 type UpdatePriceRepository interface {
 	GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error)
 	GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]vo.UpdatePirceHistory, error)
