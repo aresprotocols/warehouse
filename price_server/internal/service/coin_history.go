@@ -12,7 +12,7 @@ import (
 )
 
 type CoinHistoryService struct {
-	gPriceInfosCache *cache.GlobalPriceInfoCache
+	gPriceInfosCache cache.GlobalPriceInfoCache
 	updatePriceRepo  repository.UpdatePriceRepository
 	coinHistoryRepo  repository.CoinHistoryRepository
 }

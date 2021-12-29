@@ -203,7 +203,7 @@ func TestGlobalPriceInfoCache_GetLatestPriceInfos(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &GlobalPriceInfoCache{
+			c := &globalPriceInfoCache{
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
@@ -285,7 +285,7 @@ func TestGlobalPriceInfoCache_GetPriceInfosEqualTimestamp(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &GlobalPriceInfoCache{
+			c := &globalPriceInfoCache{
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
@@ -388,7 +388,7 @@ func TestGlobalPriceInfoCache_GetPriceInfosByRange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &GlobalPriceInfoCache{
+			c := &globalPriceInfoCache{
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
@@ -428,7 +428,7 @@ func TestGlobalPriceInfoCache_GetCacheLength(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &GlobalPriceInfoCache{
+			c := &globalPriceInfoCache{
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
@@ -484,7 +484,7 @@ func TestGlobalPriceInfoCache_UpdateCachePrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := &GlobalPriceInfoCache{
+			c := &globalPriceInfoCache{
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}

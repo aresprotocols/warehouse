@@ -19,7 +19,7 @@ type Service interface {
 
 type service struct {
 	db          *sqlx.DB
-	globalCache *cache.GlobalPriceInfoCache
+	globalCache cache.GlobalPriceInfoCache
 }
 
 // New init service

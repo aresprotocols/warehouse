@@ -5,18 +5,27 @@ import (
 	"sync"
 )
 
-type GlobalPriceInfoCache struct {
+type GlobalPriceInfoCache interface {
+	GetLatestPriceInfos() conf.PriceInfos
+	GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos)
+	GetPriceInfosByRange(start, end int) conf.PriceInfosCache
+	UpdateSymbolWeight(symbol, exchange string, weight int)
+	GetCacheLength() int
+	UpdateCachePrice(infos conf.PriceInfos, maxMemTime int)
+}
+
+type globalPriceInfoCache struct {
 	gPriceInfosCache conf.PriceInfosCache
 	m                *sync.RWMutex
 }
 
-func NewGlobalPriceInfoCache() *GlobalPriceInfoCache {
-	return &GlobalPriceInfoCache{
+func NewGlobalPriceInfoCache() GlobalPriceInfoCache {
+	return &globalPriceInfoCache{
 		gPriceInfosCache: conf.PriceInfosCache{},
 		m:                new(sync.RWMutex)}
 }
 
-func (c *GlobalPriceInfoCache) GetLatestPriceInfos() conf.PriceInfos {
+func (c *globalPriceInfoCache) GetLatestPriceInfos() conf.PriceInfos {
 	c.m.RLock()
 	if len(c.gPriceInfosCache.PriceInfosCache) == 0 {
 		return conf.PriceInfos{}
@@ -26,7 +35,7 @@ func (c *GlobalPriceInfoCache) GetLatestPriceInfos() conf.PriceInfos {
 	return latestInfos
 }
 
-func (c *GlobalPriceInfoCache) GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos) {
+func (c *globalPriceInfoCache) GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos) {
 	bMemory := false
 	var cacheInfo conf.PriceInfos
 	c.m.RLock()
@@ -48,7 +57,7 @@ func (c *GlobalPriceInfoCache) GetPriceInfosEqualTimestamp(timestamp int64) (boo
 	return bMemory, cacheInfo
 }
 
-func (c *GlobalPriceInfoCache) GetPriceInfosByRange(start, end int) conf.PriceInfosCache {
+func (c *globalPriceInfoCache) GetPriceInfosByRange(start, end int) conf.PriceInfosCache {
 	tmpRetData := conf.PriceInfosCache{}
 	c.m.RLock()
 	if start < len(c.gPriceInfosCache.PriceInfosCache) {
@@ -63,7 +72,7 @@ func (c *GlobalPriceInfoCache) GetPriceInfosByRange(start, end int) conf.PriceIn
 }
 
 //todo add unit test
-func (c *GlobalPriceInfoCache) UpdateSymbolWeight(symbol, exchange string, weight int) {
+func (c *globalPriceInfoCache) UpdateSymbolWeight(symbol, exchange string, weight int) {
 	c.m.Lock()
 	for i, confTemp := range conf.GRequestPriceConfs[symbol] {
 		if confTemp.Name == exchange {
@@ -74,14 +83,14 @@ func (c *GlobalPriceInfoCache) UpdateSymbolWeight(symbol, exchange string, weigh
 	c.m.Unlock()
 }
 
-func (c *GlobalPriceInfoCache) GetCacheLength() int {
+func (c *globalPriceInfoCache) GetCacheLength() int {
 	c.m.RLock()
 	infoLen := len(c.gPriceInfosCache.PriceInfosCache)
 	c.m.RUnlock()
 	return infoLen
 }
 
-func (c *GlobalPriceInfoCache) UpdateCachePrice(infos conf.PriceInfos, maxMemTime int) {
+func (c *globalPriceInfoCache) UpdateCachePrice(infos conf.PriceInfos, maxMemTime int) {
 	c.m.Lock()
 	c.gPriceInfosCache.PriceInfosCache = append(c.gPriceInfosCache.PriceInfosCache, infos)
 	if len(c.gPriceInfosCache.PriceInfosCache) > maxMemTime {
