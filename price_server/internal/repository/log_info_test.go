@@ -75,7 +75,7 @@ func TestLogInfoRepository_GetLogInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &LogInfoRepository{
+			r := &logInfoRepository{
 				DB: tt.fields.DB,
 			}
 			got, err := r.GetLogInfo(tt.args.idx, tt.args.pageSize)
@@ -149,7 +149,7 @@ func TestLogInfoRepository_GetLogInfoBySymbol(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &LogInfoRepository{
+			r := &logInfoRepository{
 				DB: tt.fields.DB,
 			}
 			got, err := r.GetLogInfoBySymbol(tt.args.idx, tt.args.pageSize, tt.args.symbol, tt.args.ip)
@@ -206,7 +206,7 @@ func TestLogInfoRepository_GetTotalLogInfoBySymbol(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &LogInfoRepository{
+			r := &logInfoRepository{
 				DB: tt.fields.DB,
 			}
 			got, err := r.GetTotalLogInfoBySymbol(tt.args.symbol, tt.args.ip)
@@ -275,7 +275,7 @@ func TestLogInfoRepository_InsertLogInfo(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := &LogInfoRepository{
+			r := &logInfoRepository{
 				DB: tt.fields.DB,
 			}
 			if err := r.InsertLogInfo(tt.args.mapInfo, tt.args.t); (err != nil) != tt.wantErr {

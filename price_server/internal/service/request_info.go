@@ -13,7 +13,7 @@ type RequestInfoService struct {
 }
 
 func newRequestInfo(svc *service) *RequestInfoService {
-	return &RequestInfoService{logInfoRepo: repository.LogInfoRepository{DB: svc.db}}
+	return &RequestInfoService{logInfoRepo: repository.NewLogInfoRepository(svc.db)}
 }
 
 func (s *RequestInfoService) GetLogInfos(idx, pageSize int) (vo.LOG_INFOS, error) {

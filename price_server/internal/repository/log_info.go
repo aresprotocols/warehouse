@@ -7,11 +7,24 @@ import (
 	"strconv"
 )
 
-type LogInfoRepository struct {
+//go:generate mockgen -destination mock/log_info_mock.go price_api/price_server/internal/repository LogInfoRepository
+
+type LogInfoRepository interface {
+	InsertLogInfo(mapInfo map[string]interface{}, t int) error
+	GetLogInfo(idx int, pageSize int) (vo.LOG_INFOS, error)
+	GetTotalLogInfoBySymbol(symbol string, ip string) (int, error)
+	GetLogInfoBySymbol(idx int, pageSize int, symbol string, ip string) ([]vo.REQ_RSP_LOG_INFO, error)
+}
+
+func NewLogInfoRepository(db *sqlx.DB) LogInfoRepository {
+	return &logInfoRepository{db}
+}
+
+type logInfoRepository struct {
 	DB *sqlx.DB
 }
 
-func (r *LogInfoRepository) InsertLogInfo(mapInfo map[string]interface{}, t int) error {
+func (r *logInfoRepository) InsertLogInfo(mapInfo map[string]interface{}, t int) error {
 	insertSql := "insert into " + TABLE_LOG_INFO + " (client_ip,request_time,user_agent,request_url," +
 		"response_time,request_response, use_symbol,request_timestamp,response_timestamp)" +
 		" values(?,?,?,?," +
@@ -25,7 +38,7 @@ func (r *LogInfoRepository) InsertLogInfo(mapInfo map[string]interface{}, t int)
 	return nil
 }
 
-func (r *LogInfoRepository) GetLogInfo(idx int, pageSize int) (vo.LOG_INFOS, error) {
+func (r *logInfoRepository) GetLogInfo(idx int, pageSize int) (vo.LOG_INFOS, error) {
 	var logInfos vo.LOG_INFOS
 	querySql := "select client_ip," +
 		"request_time,user_agent,request_url,response_time,request_response from " +
@@ -39,7 +52,7 @@ func (r *LogInfoRepository) GetLogInfo(idx int, pageSize int) (vo.LOG_INFOS, err
 	return logInfos, nil
 }
 
-func (r *LogInfoRepository) GetTotalLogInfoBySymbol(symbol string, ip string) (int, error) {
+func (r *logInfoRepository) GetTotalLogInfoBySymbol(symbol string, ip string) (int, error) {
 	var total int
 	argsArr := make([]interface{}, 0)
 	querySql := "select count(1) from " +
@@ -58,7 +71,7 @@ func (r *LogInfoRepository) GetTotalLogInfoBySymbol(symbol string, ip string) (i
 	return total, nil
 }
 
-func (r *LogInfoRepository) GetLogInfoBySymbol(idx int, pageSize int, symbol string, ip string) ([]vo.REQ_RSP_LOG_INFO, error) {
+func (r *logInfoRepository) GetLogInfoBySymbol(idx int, pageSize int, symbol string, ip string) ([]vo.REQ_RSP_LOG_INFO, error) {
 	var logInfos []vo.REQ_RSP_LOG_INFO
 	argsArr := make([]interface{}, 0)
 
