@@ -9,14 +9,13 @@ import (
 
 type WeightInfoService struct {
 	weightInfoRepo     repository.WeightInfoRepository
-	gPriceInfosCache   cache.GlobalPriceInfoCache
 	gRequestPriceConfs cache.GlobalRequestPriceConfs
 }
 
 func newWeightInfo(svc *service) *WeightInfoService {
 	return &WeightInfoService{
-		weightInfoRepo:   repository.WeightInfoRepository{DB: svc.db},
-		gPriceInfosCache: svc.globalCache,
+		weightInfoRepo:     repository.WeightInfoRepository{DB: svc.db},
+		gRequestPriceConfs: svc.globalRequestPriceConfs,
 	}
 }
 

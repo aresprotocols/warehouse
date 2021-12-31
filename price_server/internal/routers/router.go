@@ -31,5 +31,6 @@ func NewRouter() *gin.Engine {
 	router.POST("/api/auth", handler.HandleAuth)
 	router.GET("/api/getUpdatePriceHeartbeat/:symbol", middleware.Check(), handler.HandleGetUpdatePriceHeartbeat)
 	router.GET("/api/getBulkSymbolsState", middleware.Check(), handler.HandleGetBulkSymbolsState)
+	router.POST("/api/setInterval", middleware.JWTAuthMiddleware(), middleware.Check(), handler.HandleSetInterval)
 	return router
 }

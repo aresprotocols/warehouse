@@ -161,18 +161,22 @@ var (
 			TimeStamp:   1640746301,
 		},
 	}
+)
 
-	priceInfosCache = conf.PriceInfosCache{
-		PriceInfosCache: []conf.PriceInfos{
-			{
-				PriceInfos: priceInfos1,
-			},
-			{
-				PriceInfos: priceInfos2,
+func generateTestPriceInfosCache() conf.PriceInfosCache {
+	return conf.PriceInfosCache{
+		PriceInfosCache: map[string][]conf.PriceInfos{
+			"btcusdt": {
+				{
+					PriceInfos: priceInfos1,
+				},
+				{
+					PriceInfos: priceInfos2,
+				},
 			},
 		},
 	}
-)
+}
 
 func TestGlobalPriceInfoCache_GetLatestPriceInfos(t *testing.T) {
 	type fields struct {
@@ -187,7 +191,7 @@ func TestGlobalPriceInfoCache_GetLatestPriceInfos(t *testing.T) {
 		{
 			name: "basic",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			want: conf.PriceInfos{PriceInfos: priceInfos2},
@@ -207,7 +211,7 @@ func TestGlobalPriceInfoCache_GetLatestPriceInfos(t *testing.T) {
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
-			if got := c.GetLatestPriceInfos(); !reflect.DeepEqual(got, tt.want) {
+			if got := c.GetLatestPriceInfos("btcusdt"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetLatestPriceInfos() = %v, want %v", got, tt.want)
 			}
 		})
@@ -221,6 +225,7 @@ func TestGlobalPriceInfoCache_GetPriceInfosEqualTimestamp(t *testing.T) {
 	}
 	type args struct {
 		timestamp int64
+		symbol    string
 	}
 	tests := []struct {
 		name   string
@@ -232,20 +237,20 @@ func TestGlobalPriceInfoCache_GetPriceInfosEqualTimestamp(t *testing.T) {
 		{
 			name: "found at index 0",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
-			args:  args{timestamp: 1640745642},
+			args:  args{timestamp: 1640745642, symbol: "btcusdt"},
 			want:  true,
 			want1: conf.PriceInfos{PriceInfos: priceInfos1},
 		},
 		{
 			name: "found at index 1",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
-			args:  args{timestamp: 1640745981},
+			args:  args{timestamp: 1640745981, symbol: "btcusdt"},
 			want:  true,
 			want1: conf.PriceInfos{PriceInfos: priceInfos2},
 		},
@@ -253,21 +258,23 @@ func TestGlobalPriceInfoCache_GetPriceInfosEqualTimestamp(t *testing.T) {
 			name: "skip when priceInfos length is 0",
 			fields: fields{
 				gPriceInfosCache: conf.PriceInfosCache{
-					PriceInfosCache: []conf.PriceInfos{
-						{
-							PriceInfos: priceInfos1,
-						},
-						{
-							PriceInfos: []conf.PriceInfo{},
-						},
-						{
-							PriceInfos: priceInfos2,
+					PriceInfosCache: map[string][]conf.PriceInfos{
+						"btcusdt": {
+							{
+								PriceInfos: priceInfos1,
+							},
+							{
+								PriceInfos: []conf.PriceInfo{},
+							},
+							{
+								PriceInfos: priceInfos2,
+							},
 						},
 					},
 				},
 				m: new(sync.RWMutex),
 			},
-			args:  args{timestamp: 1640745981},
+			args:  args{timestamp: 1640745981, symbol: "btcusdt"},
 			want:  true,
 			want1: conf.PriceInfos{PriceInfos: priceInfos2},
 		},
@@ -275,7 +282,7 @@ func TestGlobalPriceInfoCache_GetPriceInfosEqualTimestamp(t *testing.T) {
 		{
 			name: "not found",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args:  args{timestamp: 1640745641},
@@ -289,7 +296,7 @@ func TestGlobalPriceInfoCache_GetPriceInfosEqualTimestamp(t *testing.T) {
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
-			got, got1 := c.GetPriceInfosEqualTimestamp(tt.args.timestamp)
+			got, got1 := c.GetPriceInfosEqualTimestamp(tt.args.symbol, tt.args.timestamp)
 			if got != tt.want {
 				t.Errorf("GetPriceInfosEqualTimestamp() got = %v, want %v", got, tt.want)
 			}
@@ -306,8 +313,9 @@ func TestGlobalPriceInfoCache_GetPriceInfosByRange(t *testing.T) {
 		m                *sync.RWMutex
 	}
 	type args struct {
-		start int
-		end   int
+		symbol string
+		start  int
+		end    int
 	}
 	tests := []struct {
 		name   string
@@ -318,70 +326,83 @@ func TestGlobalPriceInfoCache_GetPriceInfosByRange(t *testing.T) {
 		{
 			name: "find start 0 ,to 1",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args: args{
-				start: 0,
-				end:   1,
+				symbol: "btcusdt",
+				start:  0,
+				end:    1,
 			},
-			want: conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-				{
-					PriceInfos: priceInfos1,
+			want: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+				"btcusdt": {
+					{
+						PriceInfos: priceInfos1,
+					},
 				},
 			}},
 		},
 		{
 			name: "find start 0 ,to 2",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args: args{
-				start: 0,
-				end:   2,
+				symbol: "btcusdt",
+				start:  0,
+				end:    2,
 			},
-			want: conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-				{
-					PriceInfos: priceInfos1,
-				},
-				{
-					PriceInfos: priceInfos2,
+			want: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+				"btcusdt": {
+					{
+						PriceInfos: priceInfos1,
+					},
+					{
+						PriceInfos: priceInfos2,
+					},
 				},
 			}},
 		},
 		{
 			name: "find start 0 ,to 3",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args: args{
-				start: 0,
-				end:   3,
+				symbol: "btcusdt",
+				start:  0,
+				end:    3,
 			},
-			want: conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-				{
-					PriceInfos: priceInfos1,
+			want: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+				"btcusdt": {
+					{
+						PriceInfos: priceInfos1,
+					},
+					{
+						PriceInfos: priceInfos2,
+					},
 				},
-				{
-					PriceInfos: priceInfos2,
-				},
-			}},
+			},
+			},
 		},
 		{
 			name: "find start 1 ,to 3",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args: args{
-				start: 1,
-				end:   3,
+				symbol: "btcusdt",
+				start:  1,
+				end:    3,
 			},
-			want: conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-				{
-					PriceInfos: priceInfos2,
+			want: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+				"btcusdt": {
+					{
+						PriceInfos: priceInfos2,
+					},
 				},
 			}},
 		},
@@ -392,7 +413,7 @@ func TestGlobalPriceInfoCache_GetPriceInfosByRange(t *testing.T) {
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
-			if got := c.GetPriceInfosByRange(tt.args.start, tt.args.end); !reflect.DeepEqual(got, tt.want) {
+			if got := c.GetPriceInfosByRange(tt.args.symbol, tt.args.start, tt.args.end); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetPriceInfosByRange() = %v, want %v", got, tt.want)
 			}
 		})
@@ -412,10 +433,10 @@ func TestGlobalPriceInfoCache_GetCacheLength(t *testing.T) {
 		{
 			name: "basic",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
-			want: 2,
+			want: 1,
 		},
 		{
 			name: "empty",
@@ -445,6 +466,7 @@ func TestGlobalPriceInfoCache_UpdateCachePrice(t *testing.T) {
 		m                *sync.RWMutex
 	}
 	type args struct {
+		symbol     string
 		infos      conf.PriceInfos
 		maxMemTime int
 	}
@@ -458,10 +480,11 @@ func TestGlobalPriceInfoCache_UpdateCachePrice(t *testing.T) {
 		{
 			name: "basic",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args: args{
+				symbol:     "btcusdt",
 				infos:      conf.PriceInfos{priceInfos3},
 				maxMemTime: 5,
 			},
@@ -471,10 +494,11 @@ func TestGlobalPriceInfoCache_UpdateCachePrice(t *testing.T) {
 		{
 			name: "over maxMemTime",
 			fields: fields{
-				gPriceInfosCache: priceInfosCache,
+				gPriceInfosCache: generateTestPriceInfosCache(),
 				m:                new(sync.RWMutex),
 			},
 			args: args{
+				symbol:     "btcusdt",
 				infos:      conf.PriceInfos{priceInfos3},
 				maxMemTime: 2,
 			},
@@ -488,10 +512,10 @@ func TestGlobalPriceInfoCache_UpdateCachePrice(t *testing.T) {
 				gPriceInfosCache: tt.fields.gPriceInfosCache,
 				m:                tt.fields.m,
 			}
-			c.UpdateCachePrice(tt.args.infos, tt.args.maxMemTime)
+			c.UpdateCachePrice(tt.args.symbol, tt.args.infos, tt.args.maxMemTime)
 
-			gotLength := c.GetCacheLength()
-			gotLatestPriceInfos := c.GetLatestPriceInfos()
+			gotLatestPriceInfos := c.GetLatestPriceInfos(tt.args.symbol)
+			gotLength := c.GetSymbolCacheLength(tt.args.symbol)
 
 			if gotLength != tt.wantLength {
 				t.Errorf("UpdateCachePrice() gotLength = %v, wantLength %v", gotLength, tt.wantLength)

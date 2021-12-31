@@ -3,9 +3,7 @@ package service
 import (
 	"github.com/golang/mock/gomock"
 	conf "price_api/price_server/config"
-	"price_api/price_server/internal/cache"
 	mock_cache "price_api/price_server/internal/cache/mock"
-	"price_api/price_server/internal/repository"
 	mock_repository "price_api/price_server/internal/repository/mock"
 	"price_api/price_server/internal/vo"
 	"reflect"
@@ -13,7 +11,7 @@ import (
 )
 
 var (
-	priceInfos2 = []conf.PriceInfo{
+	btcPriceInfos = []conf.PriceInfo{
 		{
 			Symbol:      "btcusdt",
 			Price:       47851.30000000,
@@ -42,6 +40,9 @@ var (
 			Weight:      1,
 			TimeStamp:   1640745642,
 		},
+	}
+
+	avaxPriceInfos = []conf.PriceInfo{
 		{
 			Symbol:      "avaxusdt",
 			Price:       108.51400000,
@@ -82,41 +83,25 @@ var (
 
 func TestPriceService_GetBulkCurrencyPrices(t *testing.T) {
 	type fields struct {
-		gPriceInfosCache   cache.GlobalPriceInfoCache
-		coinHistoryRepo    repository.CoinHistoryRepository
-		gRequestPriceConfs cache.GlobalRequestPriceConfs
+		gPriceInfosCache   *mock_cache.MockGlobalPriceInfoCache
+		coinHistoryRepo    *mock_repository.MockCoinHistoryRepository
+		gRequestPriceConfs *mock_cache.MockGlobalRequestPriceConfs
 	}
 	type args struct {
 		symbol   string
 		currency string
 	}
 
-	//args1 := args{
-	//	symbol:   "btc_avax_ltc_bch_fil_etc_eos_dash_comp_matic",
-	//	currency: "usdt",
-	//}
-
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	gPriceInfosCache := mock_cache.NewMockGlobalPriceInfoCache(ctrl)
-	gReqeustPriceConfs := mock_cache.NewMockGlobalRequestPriceConfs(ctrl)
-	coinHistoryRepo := mock_repository.NewMockCoinHistoryRepository(ctrl)
-
-	gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2}).Times(2)
-
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
-		want   map[string]vo.PartyPriceInfo
+		name    string
+		prepare func(f *fields)
+		args    args
+		want    map[string]vo.PartyPriceInfo
 	}{
 		{
 			name: "only btc",
-			fields: fields{
-				gPriceInfosCache:   gPriceInfosCache,
-				coinHistoryRepo:    coinHistoryRepo,
-				gRequestPriceConfs: gReqeustPriceConfs,
+			prepare: func(f *fields) {
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 			},
 			args: args{
 				symbol:   "btc",
@@ -143,10 +128,9 @@ func TestPriceService_GetBulkCurrencyPrices(t *testing.T) {
 		},
 		{
 			name: " btc and avax",
-			fields: fields{
-				gPriceInfosCache:   gPriceInfosCache,
-				coinHistoryRepo:    coinHistoryRepo,
-				gRequestPriceConfs: gReqeustPriceConfs,
+			prepare: func(f *fields) {
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("avaxusdt")).Return(conf.PriceInfos{PriceInfos: avaxPriceInfos})
 			},
 			args: args{
 				symbol:   "btc_avax",
@@ -195,10 +179,22 @@ func TestPriceService_GetBulkCurrencyPrices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			f := fields{
+				gPriceInfosCache:   mock_cache.NewMockGlobalPriceInfoCache(ctrl),
+				coinHistoryRepo:    mock_repository.NewMockCoinHistoryRepository(ctrl),
+				gRequestPriceConfs: mock_cache.NewMockGlobalRequestPriceConfs(ctrl),
+			}
+			if tt.prepare != nil {
+				tt.prepare(&f)
+			}
+
 			s := &PriceService{
-				gPriceInfosCache:   tt.fields.gPriceInfosCache,
-				coinHistoryRepo:    tt.fields.coinHistoryRepo,
-				gRequestPriceConfs: tt.fields.gRequestPriceConfs,
+				gPriceInfosCache:   f.gPriceInfosCache,
+				coinHistoryRepo:    f.coinHistoryRepo,
+				gRequestPriceConfs: f.gRequestPriceConfs,
 			}
 			if got := s.GetBulkCurrencyPrices(tt.args.symbol, tt.args.currency); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetBulkCurrencyPrices() = %v, want %v", got, tt.want)
@@ -226,7 +222,7 @@ func TestPriceService_GetBulkPrices(t *testing.T) {
 		{
 			name: "only btc",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 			},
 			args: args{symbol: "btcusdt"},
 			want: map[string]vo.PRICE_INFO{
@@ -239,7 +235,8 @@ func TestPriceService_GetBulkPrices(t *testing.T) {
 		{
 			name: "btc and avax",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("avaxusdt")).Return(conf.PriceInfos{PriceInfos: avaxPriceInfos})
 			},
 			args: args{symbol: "btcusdt_avaxusdt"},
 			want: map[string]vo.PRICE_INFO{
@@ -300,7 +297,7 @@ func TestPriceService_GetBulkSymbolsState(t *testing.T) {
 		{
 			name: "btc",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("btcusdt").Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 				f.gRequestPriceConfs.EXPECT().GetConfsBySymbol(gomock.Eq("btc-usdt")).Return(exchangeConfigs)
 			},
 			args: args{
@@ -314,7 +311,8 @@ func TestPriceService_GetBulkSymbolsState(t *testing.T) {
 		{
 			name: "btc and avax",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("btcusdt").Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("avaxusdt").Return(conf.PriceInfos{PriceInfos: avaxPriceInfos})
 				f.gRequestPriceConfs.EXPECT().GetConfsBySymbol(gomock.Eq("btc-usdt")).Return(exchangeConfigs)
 				f.gRequestPriceConfs.EXPECT().GetConfsBySymbol(gomock.Eq("avax-usdt")).Return(exchangeConfigs)
 			},
@@ -420,7 +418,7 @@ func TestPriceService_GetHistoryPrice(t *testing.T) {
 		{
 			name: "from cache",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetPriceInfosEqualTimestamp(gomock.Eq(int64(1640745642))).Return(true, conf.PriceInfos{PriceInfos: priceInfos1})
+				f.gPriceInfosCache.EXPECT().GetPriceInfosEqualTimestamp(gomock.Eq("btcusdt"), gomock.Eq(int64(1640745642))).Return(true, conf.PriceInfos{PriceInfos: priceInfos1})
 				//f.coinHistoryRepo.EXPECT().GetHistoryByTimestamp(gomock.Eq(1640745642)).Return(priceInfos1)
 			},
 			args: args{
@@ -464,7 +462,7 @@ func TestPriceService_GetHistoryPrice(t *testing.T) {
 		{
 			name: "from db",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetPriceInfosEqualTimestamp(gomock.Eq(int64(1640745642))).Return(false, conf.PriceInfos{})
+				f.gPriceInfosCache.EXPECT().GetPriceInfosEqualTimestamp(gomock.Eq("btcusdt"), gomock.Eq(int64(1640745642))).Return(false, conf.PriceInfos{})
 				f.coinHistoryRepo.EXPECT().GetHistoryByTimestamp(gomock.Eq(int64(1640745642))).Return(priceInfos1, nil)
 			},
 			args: args{
@@ -556,53 +554,28 @@ func TestPriceService_GetLocalPrices(t *testing.T) {
 		{
 			name: "btc",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetPriceInfosByRange(gomock.Eq(0), gomock.Eq(1)).Return(conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-					{PriceInfos: priceInfos2},
+				f.gPriceInfosCache.EXPECT().GetPriceInfosByRange(gomock.Eq("btcusdt"), gomock.Eq(0), gomock.Eq(1)).Return(conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+					"btcusdt": {
+						{PriceInfos: btcPriceInfos}},
 				}})
 			},
+
 			args: args{
 				start:  0,
 				end:    1,
 				symbol: "btcusdt",
 			},
-			want: conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-				{PriceInfos: []conf.PriceInfo{
-					{
-						Symbol:      "btcusdt",
-						Price:       47851.30000000,
-						PriceOrigin: "ok",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "btcusdt",
-						Price:       47873.19000000,
-						PriceOrigin: "bitstamp",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "btcusdt",
-						Price:       47851.04000000,
-						PriceOrigin: "binance",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "btcusdt",
-						Price:       47852.37000000,
-						PriceOrigin: "coinbase",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-				}},
+			want: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+				"btcusdt": {
+					{PriceInfos: btcPriceInfos}},
 			}},
 		},
 		{
 			name: "avax",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetPriceInfosByRange(gomock.Eq(0), gomock.Eq(1)).Return(conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-					{PriceInfos: priceInfos2},
+				f.gPriceInfosCache.EXPECT().GetPriceInfosByRange(gomock.Eq("avaxusdt"), gomock.Eq(0), gomock.Eq(1)).Return(conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+					"avaxusdt": {
+						{PriceInfos: avaxPriceInfos}},
 				}})
 			},
 			args: args{
@@ -610,44 +583,9 @@ func TestPriceService_GetLocalPrices(t *testing.T) {
 				end:    1,
 				symbol: "avaxusdt",
 			},
-			want: conf.PriceInfosCache{PriceInfosCache: []conf.PriceInfos{
-				{PriceInfos: []conf.PriceInfo{
-					{
-						Symbol:      "avaxusdt",
-						Price:       108.51400000,
-						PriceOrigin: "kucoin",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "avaxusdt",
-						Price:       108.58400000,
-						PriceOrigin: "huobi",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "avaxusdt",
-						Price:       108.55000000,
-						PriceOrigin: "coinbase",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "avaxusdt",
-						Price:       108.60000000,
-						PriceOrigin: "binance",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-					{
-						Symbol:      "avaxusdt",
-						Price:       108.57900000,
-						PriceOrigin: "ok",
-						Weight:      1,
-						TimeStamp:   1640745642,
-					},
-				}},
+			want: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{
+				"avaxusdt": {
+					{PriceInfos: avaxPriceInfos}},
 			}},
 		},
 	}
@@ -696,7 +634,7 @@ func TestPriceService_GetPartyPrice(t *testing.T) {
 		{
 			name: "btc",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("btcusdt").Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 			},
 			args: args{symbol: "btcusdt"},
 			want: true,
@@ -720,7 +658,7 @@ func TestPriceService_GetPartyPrice(t *testing.T) {
 		{
 			name: "avax",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("avaxusdt").Return(conf.PriceInfos{PriceInfos: avaxPriceInfos})
 			},
 			args: args{symbol: "avaxusdt"},
 			want: true,
@@ -797,7 +735,7 @@ func TestPriceService_GetPrice(t *testing.T) {
 		{
 			name: "btc ok",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("btcusdt").Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 			},
 			args: args{
 				symbol:   "btcusdt",
@@ -812,7 +750,7 @@ func TestPriceService_GetPrice(t *testing.T) {
 		{
 			name: "btc huobi",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("btcusdt").Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 			},
 			args: args{
 				symbol:   "btcusdt",
@@ -824,7 +762,7 @@ func TestPriceService_GetPrice(t *testing.T) {
 		{
 			name: "avax ok",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("avaxusdt").Return(conf.PriceInfos{PriceInfos: avaxPriceInfos})
 			},
 			args: args{
 				symbol:   "avaxusdt",
@@ -886,7 +824,7 @@ func TestPriceService_GetPriceAll(t *testing.T) {
 		{
 			name: "btc",
 			prepare: func(f *fields) {
-				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos2})
+				f.gPriceInfosCache.EXPECT().GetLatestPriceInfos("btcusdt").Return(conf.PriceInfos{PriceInfos: btcPriceInfos})
 			},
 			args: args{symbol: "btcusdt"},
 			want: true,
@@ -970,9 +908,9 @@ func TestPriceService_InsertPriceInfo(t *testing.T) {
 		{
 			name: "basic",
 			prepare: func(f *fields) {
-				f.coinHistoryRepo.EXPECT().InsertPriceInfo(gomock.Eq(conf.PriceInfos{PriceInfos: priceInfos2})).Return(nil)
+				f.coinHistoryRepo.EXPECT().InsertPriceInfo(gomock.Eq(conf.PriceInfos{PriceInfos: btcPriceInfos})).Return(nil)
 			},
-			args:    args{cfg: conf.PriceInfos{PriceInfos: priceInfos2}},
+			args:    args{cfg: conf.PriceInfos{PriceInfos: btcPriceInfos}},
 			wantErr: false,
 		},
 	}

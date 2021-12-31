@@ -134,7 +134,7 @@ func TestCoinHistoryService_GetUpdatePriceHeartbeat(t *testing.T) {
 	updatePriceRepo := mock_repository.NewMockUpdatePriceRepository(ctrl)
 	coinHistoryRepo := mock_repository.NewMockCoinHistoryRepository(ctrl)
 
-	gPriceInfosCache.EXPECT().GetLatestPriceInfos().Return(conf.PriceInfos{PriceInfos: priceInfos1})
+	gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf.PriceInfos{PriceInfos: priceInfos1})
 	gReqeustPriceConfs.EXPECT().GetConfsBySymbol(gomock.Eq("btc-usdt")).Return(exchangeConfigs)
 
 	tests := []struct {

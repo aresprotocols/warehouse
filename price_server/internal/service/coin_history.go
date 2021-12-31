@@ -29,7 +29,7 @@ func newCoinHistory(svc *service) *CoinHistoryService {
 
 func (s *CoinHistoryService) GetUpdatePriceHeartbeat(symbol string, interval int64) (vo.HEARTBEAT_INFO, error) {
 
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
+	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 
 	var symbolPriceInfo = make([]conf.PriceInfo, 0)
 	for _, info := range latestInfos.PriceInfos {

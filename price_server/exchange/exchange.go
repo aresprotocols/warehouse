@@ -10,23 +10,17 @@ import (
 	"time"
 )
 
-var gCh = make(chan conf.PriceInfo)
-
 var gResPriceConfCH = make(chan vo.RESPONSE_PRICE_CONF)
 
-func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config) (conf.PriceInfos, error) {
+func GetSymbolExchangePrice(symbol string, reqConf map[string][]conf.ExchangeConfig, cfg conf.Config) (conf.PriceInfos, error) {
 	var retPriceInfos conf.PriceInfos
-
 	timestamp := time.Now().Unix()
-
+	var gCh = make(chan conf.PriceInfo)
 	reqCount := 0
-	for symbol, confList := range reqConf {
-		for _, exchangeConf := range confList {
-			reqCount++
-			go getPriceInfo(exchangeConf, symbol, cfg, reqConf)
-		}
+	for _, exchangeConf := range reqConf[symbol] {
+		reqCount++
+		go getPriceInfo(gCh, exchangeConf, symbol, cfg, reqConf)
 	}
-
 	for i := 0; i < reqCount; i++ {
 		priceInfo := <-gCh
 		priceInfo.TimeStamp = timestamp
@@ -34,14 +28,12 @@ func GetExchangePrice(reqConf map[string][]conf.ExchangeConfig, cfg conf.Config)
 			retPriceInfos.PriceInfos = append(retPriceInfos.PriceInfos, priceInfo)
 		}
 	}
-
 	// end := time.Now().Unix()
 	// log.Println("cost time:", end-timestamp)
-
 	return retPriceInfos, nil
 }
 
-func getPriceInfo(exchange conf.ExchangeConfig, symbol string, cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
+func getPriceInfo(gCh chan conf.PriceInfo, exchange conf.ExchangeConfig, symbol string, cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
 	var priceInfo conf.PriceInfo
 	defer func() {
 		gCh <- priceInfo
@@ -133,6 +125,18 @@ func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, 
 	} else {
 		return "", errors.New("unknow exchangeName:" + exchangeName)
 	}
+}
+
+func InitSymbolsUpdateInterval(cfg conf.Config) error {
+	updateIntervalService := service.Svc.UpdateInterval()
+	for _, symbol := range cfg.Symbols {
+		interval, err := updateIntervalService.CheckUpdateInterval(symbol, int(cfg.Interval))
+		if err != nil {
+			return err
+		}
+		updateIntervalService.SetUpdateInterval(symbol, interval)
+	}
+	return nil
 }
 
 func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, error) {

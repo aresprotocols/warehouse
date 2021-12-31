@@ -21,7 +21,6 @@ func init() {
 	if err != nil {
 		log.Fatalf("Could not instantiate log %s", err.Error())
 	}
-
 }
 
 func main() {
@@ -56,6 +55,11 @@ func main() {
 		logger.Errorf("Init request price conf occur err:%v", err)
 		return
 	}
+	err = exchange.InitSymbolsUpdateInterval(cfg)
+	if err != nil {
+		logger.Errorf("Init symbol update interval occur err:%v", err)
+		return
+	}
 	requestPriceConfService.SetConfs(requestPriceConfs)
 	logger.Info("request init over")
 
@@ -75,30 +79,38 @@ func main() {
 }
 
 func updatePrice(cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
-	idx := 0
 	time.Sleep(time.Second * 2) // run update for the first time,  need to sleep , because you have just completed initialization and have already requested data once
+	for symbol, _ := range reqConf {
+		go updateSymbolPrice(symbol, cfg, reqConf)
+	}
+
+}
+
+func updateSymbolPrice(symbol string, cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
+	idx := 0
 	priceService := service.Svc.Price()
+	updateIntervalService := service.Svc.UpdateInterval()
 	for {
-		logger.Infof("start new round update price")
-		infos, err := exchange.GetExchangePrice(reqConf, cfg)
+		logger.WithField("symbol", symbol).Infof("start new round update price")
+		infos, err := exchange.GetSymbolExchangePrice(symbol, reqConf, cfg)
 		if err != nil {
-			logger.WithError(err).Errorf("get exchange price occur error")
+			logger.WithField("symbol", symbol).WithError(err).Errorf("get exchange price occur error")
 		} else {
 			idx++
-			priceService.UpdateCachePrice(infos, int(cfg.MaxMemTime))
+			priceService.UpdateCachePrice(symbol, infos, int(cfg.MaxMemTime))
 		}
 
 		if idx >= int(cfg.InsertInterval) {
 			err = priceService.InsertPriceInfo(infos)
 			if err != nil {
-				logger.Errorf("insert price info occur err:%v", err)
+				logger.WithField("symbol", symbol).Errorf("insert price info occur err:%v", err)
 			} else {
 				idx = 0
 			}
 		}
-		logger.Infof("end this round update price")
-		time.Sleep(time.Second * time.Duration(cfg.Interval))
-
+		logger.WithField("symbol", symbol).Infof("end this round update price")
+		duration := updateIntervalService.GetIntervalFromCache(symbol)
+		time.Sleep(time.Second * time.Duration(duration))
 	}
 }
 

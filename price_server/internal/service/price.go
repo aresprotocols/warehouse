@@ -25,14 +25,11 @@ func newPrice(svc *service) *PriceService {
 }
 
 func (s *PriceService) GetBulkCurrencyPrices(symbol string, currency string) map[string]vo.PartyPriceInfo {
-
 	symbols := strings.Split(symbol, "_")
-
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
-
 	mSymbolPriceInfo := make(map[string]vo.PartyPriceInfo)
 	for _, symbolTemp := range symbols {
 		token := symbolTemp + currency
+		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(token)
 		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, token, true)
 		if !bFind {
 			mSymbolPriceInfo[token] = partyPriceData
@@ -45,11 +42,9 @@ func (s *PriceService) GetBulkCurrencyPrices(symbol string, currency string) map
 
 func (s *PriceService) GetBulkPrices(symbol string) map[string]vo.PRICE_INFO {
 	symbols := strings.Split(symbol, "_")
-
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
-
 	mSymbolPriceInfo := make(map[string]vo.PRICE_INFO)
 	for _, symbol := range symbols {
+		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, symbol, true)
 		if !bFind {
 			mSymbolPriceInfo[symbol] = vo.PRICE_INFO{Price: 0, Timestamp: 0}
@@ -63,11 +58,10 @@ func (s *PriceService) GetBulkPrices(symbol string) map[string]vo.PRICE_INFO {
 func (s *PriceService) GetBulkSymbolsState(symbolStr string, currency string) map[string]bool {
 	symbols := strings.Split(symbolStr, "_")
 
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
-
 	mSymbolState := make(map[string]bool)
 	for _, symbol := range symbols {
 		token := symbol + currency
+		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(token)
 		var symbolPriceInfo = make([]conf.PriceInfo, 0)
 		for _, info := range latestInfos.PriceInfos {
 			if strings.EqualFold(info.Symbol, token) {
@@ -93,7 +87,7 @@ func (s *PriceService) GetHistoryPrice(symbol string, timestamp int64, bAverage 
 	bMemory := false
 	var cacheInfo conf.PriceInfos
 
-	bMemory, cacheInfo = s.gPriceInfosCache.GetPriceInfosEqualTimestamp(timestamp)
+	bMemory, cacheInfo = s.gPriceInfosCache.GetPriceInfosEqualTimestamp(symbol, timestamp)
 
 	if bMemory {
 		return util.PartyPrice(cacheInfo.PriceInfos, symbol, bAverage)
@@ -110,25 +104,25 @@ func (s *PriceService) GetHistoryPrice(symbol string, timestamp int64, bAverage 
 }
 
 func (s *PriceService) GetLocalPrices(start int, end int, symbol string) conf.PriceInfosCache {
-	tmpRetData := s.gPriceInfosCache.GetPriceInfosByRange(start, end)
+	tmpRetData := s.gPriceInfosCache.GetPriceInfosByRange(symbol, start, end)
 
-	retData := conf.PriceInfosCache{}
-	for _, infosCache := range tmpRetData.PriceInfosCache {
-		var retPriceInfos conf.PriceInfos
-		for _, priceInfo := range infosCache.PriceInfos {
-			if priceInfo.Symbol == symbol {
-				retPriceInfos.PriceInfos = append(retPriceInfos.PriceInfos, priceInfo)
-			}
-		}
-		if len(retPriceInfos.PriceInfos) != 0 {
-			retData.PriceInfosCache = append(retData.PriceInfosCache, retPriceInfos)
-		}
-	}
-	return retData
+	//retData := conf.PriceInfosCache{}
+	//for _, infosCache := range tmpRetData.PriceInfosCache {
+	//	var retPriceInfos conf.PriceInfos
+	//	for _, priceInfo := range infosCache.PriceInfos {
+	//		if priceInfo.Symbol == symbol {
+	//			retPriceInfos.PriceInfos = append(retPriceInfos.PriceInfos, priceInfo)
+	//		}
+	//	}
+	//	if len(retPriceInfos.PriceInfos) != 0 {
+	//		retData.PriceInfosCache = append(retData.PriceInfosCache, retPriceInfos)
+	//	}
+	//}
+	return tmpRetData
 }
 
 func (s *PriceService) GetPartyPrice(symbol string) (bool, vo.PartyPriceInfo) {
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
+	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 	return util.PartyPrice(latestInfos.PriceInfos, symbol, true)
 }
 
@@ -136,7 +130,7 @@ func (s *PriceService) GetPrice(symbol, exchange string) (bool, vo.PRICE_INFO) {
 	var rspData vo.PRICE_INFO
 	bFind := false
 
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
+	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 	for _, info := range latestInfos.PriceInfos {
 		if strings.EqualFold(info.Symbol, symbol) &&
 			strings.EqualFold(info.PriceOrigin, exchange) {
@@ -151,7 +145,7 @@ func (s *PriceService) GetPrice(symbol, exchange string) (bool, vo.PRICE_INFO) {
 func (s *PriceService) GetPriceAll(symbol string) (bool, []vo.PriceAllInfo) {
 	bFind := false
 	var priceAll []vo.PriceAllInfo
-	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos()
+	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 	for _, info := range latestInfos.PriceInfos {
 		if strings.EqualFold(info.Symbol, symbol) {
 			bFind = true
@@ -171,8 +165,8 @@ func (s *PriceService) GetCacheLength() int {
 	return s.gPriceInfosCache.GetCacheLength()
 }
 
-func (s *PriceService) UpdateCachePrice(infos conf.PriceInfos, maxMemTime int) {
-	s.gPriceInfosCache.UpdateCachePrice(infos, maxMemTime)
+func (s *PriceService) UpdateCachePrice(symbol string, infos conf.PriceInfos, maxMemTime int) {
+	s.gPriceInfosCache.UpdateCachePrice(symbol, infos, maxMemTime)
 }
 
 func (s *PriceService) InsertPriceInfo(cfg conf.PriceInfos) error {

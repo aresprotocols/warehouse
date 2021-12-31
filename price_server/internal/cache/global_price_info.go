@@ -2,17 +2,19 @@ package cache
 
 import (
 	conf "price_api/price_server/config"
+	"strings"
 	"sync"
 )
 
 //go:generate mockgen -destination mock/global_price_info_mock.go price_api/price_server/internal/cache GlobalPriceInfoCache
 
 type GlobalPriceInfoCache interface {
-	GetLatestPriceInfos() conf.PriceInfos
-	GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos)
-	GetPriceInfosByRange(start, end int) conf.PriceInfosCache
+	GetLatestPriceInfos(symbol string) conf.PriceInfos
+	GetPriceInfosEqualTimestamp(symbol string, timestamp int64) (bool, conf.PriceInfos)
+	GetPriceInfosByRange(symbol string, start, end int) conf.PriceInfosCache
 	GetCacheLength() int
-	UpdateCachePrice(infos conf.PriceInfos, maxMemTime int)
+	GetSymbolCacheLength(symbol string) int
+	UpdateCachePrice(symbol string, infos conf.PriceInfos, maxMemTime int)
 }
 
 type globalPriceInfoCache struct {
@@ -22,68 +24,79 @@ type globalPriceInfoCache struct {
 
 func NewGlobalPriceInfoCache() GlobalPriceInfoCache {
 	return &globalPriceInfoCache{
-		gPriceInfosCache: conf.PriceInfosCache{},
+		gPriceInfosCache: conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{}},
 		m:                new(sync.RWMutex)}
 }
 
-func (c *globalPriceInfoCache) GetLatestPriceInfos() conf.PriceInfos {
+func (c *globalPriceInfoCache) GetLatestPriceInfos(symbol string) conf.PriceInfos {
 	c.m.RLock()
-	if len(c.gPriceInfosCache.PriceInfosCache) == 0 {
+	defer c.m.RUnlock()
+	if len(c.gPriceInfosCache.PriceInfosCache) == 0 || len(c.gPriceInfosCache.PriceInfosCache[symbol]) == 0 {
 		return conf.PriceInfos{}
 	}
-	latestInfos := c.gPriceInfosCache.PriceInfosCache[len(c.gPriceInfosCache.PriceInfosCache)-1]
-	c.m.RUnlock()
+	latestInfos := c.gPriceInfosCache.PriceInfosCache[symbol][len(c.gPriceInfosCache.PriceInfosCache[symbol])-1]
 	return latestInfos
 }
 
-func (c *globalPriceInfoCache) GetPriceInfosEqualTimestamp(timestamp int64) (bool, conf.PriceInfos) {
+func (c *globalPriceInfoCache) GetPriceInfosEqualTimestamp(symbol string, timestamp int64) (bool, conf.PriceInfos) {
 	bMemory := false
 	var cacheInfo conf.PriceInfos
 	c.m.RLock()
+	defer c.m.RUnlock()
 	//latestInfos := gPriceInfosCache.PriceInfosCache[len(gPriceInfosCache.PriceInfosCache)-1]
-	if len(c.gPriceInfosCache.PriceInfosCache) != 0 {
-		for i := len(c.gPriceInfosCache.PriceInfosCache) - 1; i >= 0; i-- {
-			info := c.gPriceInfosCache.PriceInfosCache[i]
+	if len(c.gPriceInfosCache.PriceInfosCache) != 0 && len(c.gPriceInfosCache.PriceInfosCache[symbol]) != 0 {
+		for i := len(c.gPriceInfosCache.PriceInfosCache[symbol]) - 1; i >= 0; i-- {
+			info := c.gPriceInfosCache.PriceInfosCache[symbol][i]
 			if len(info.PriceInfos) == 0 {
 				continue
 			}
 			if info.PriceInfos[0].TimeStamp == timestamp {
 				//use memory
 				bMemory = true
-				cacheInfo = c.gPriceInfosCache.PriceInfosCache[i]
+				cacheInfo = c.gPriceInfosCache.PriceInfosCache[symbol][i]
 			}
 		}
 	}
-	c.m.RUnlock()
+
 	return bMemory, cacheInfo
 }
 
-func (c *globalPriceInfoCache) GetPriceInfosByRange(start, end int) conf.PriceInfosCache {
-	tmpRetData := conf.PriceInfosCache{}
+func (c *globalPriceInfoCache) GetPriceInfosByRange(symbol string, start, end int) conf.PriceInfosCache {
+	tmpRetData := conf.PriceInfosCache{PriceInfosCache: map[string][]conf.PriceInfos{}}
 	c.m.RLock()
-	if start < len(c.gPriceInfosCache.PriceInfosCache) {
-		if end < len(c.gPriceInfosCache.PriceInfosCache) {
-			tmpRetData.PriceInfosCache = c.gPriceInfosCache.PriceInfosCache[start:end]
+	defer c.m.RUnlock()
+	if start < len(c.gPriceInfosCache.PriceInfosCache[symbol]) {
+		if end < len(c.gPriceInfosCache.PriceInfosCache[symbol]) {
+			tmpRetData.PriceInfosCache[symbol] = c.gPriceInfosCache.PriceInfosCache[symbol][start:end]
 		} else {
-			tmpRetData.PriceInfosCache = c.gPriceInfosCache.PriceInfosCache[start:]
+			tmpRetData.PriceInfosCache[symbol] = c.gPriceInfosCache.PriceInfosCache[symbol][start:]
 		}
 	}
-	c.m.RUnlock()
+
 	return tmpRetData
 }
 
 func (c *globalPriceInfoCache) GetCacheLength() int {
-	c.m.RLock()
+	c.m.Lock()
+	defer c.m.Unlock()
 	infoLen := len(c.gPriceInfosCache.PriceInfosCache)
-	c.m.RUnlock()
 	return infoLen
 }
 
-func (c *globalPriceInfoCache) UpdateCachePrice(infos conf.PriceInfos, maxMemTime int) {
+func (c *globalPriceInfoCache) GetSymbolCacheLength(symbol string) int {
 	c.m.Lock()
-	c.gPriceInfosCache.PriceInfosCache = append(c.gPriceInfosCache.PriceInfosCache, infos)
-	if len(c.gPriceInfosCache.PriceInfosCache) > maxMemTime {
-		c.gPriceInfosCache.PriceInfosCache = c.gPriceInfosCache.PriceInfosCache[1:]
+	defer c.m.Unlock()
+	infoLen := len(c.gPriceInfosCache.PriceInfosCache[symbol])
+	return infoLen
+}
+
+func (c *globalPriceInfoCache) UpdateCachePrice(symbol string, infos conf.PriceInfos, maxMemTime int) {
+	symbol = strings.Replace(symbol, "-", "", -1)
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.gPriceInfosCache.PriceInfosCache[symbol] = append(c.gPriceInfosCache.PriceInfosCache[symbol], infos)
+	if len(c.gPriceInfosCache.PriceInfosCache[symbol]) > maxMemTime {
+		c.gPriceInfosCache.PriceInfosCache[symbol] = c.gPriceInfosCache.PriceInfosCache[symbol][1:]
 	}
-	c.m.Unlock()
+
 }

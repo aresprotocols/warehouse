@@ -49,56 +49,70 @@ func (mr *MockGlobalPriceInfoCacheMockRecorder) GetCacheLength() *gomock.Call {
 }
 
 // GetLatestPriceInfos mocks base method.
-func (m *MockGlobalPriceInfoCache) GetLatestPriceInfos() conf.PriceInfos {
+func (m *MockGlobalPriceInfoCache) GetLatestPriceInfos(arg0 string) conf.PriceInfos {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLatestPriceInfos")
+	ret := m.ctrl.Call(m, "GetLatestPriceInfos", arg0)
 	ret0, _ := ret[0].(conf.PriceInfos)
 	return ret0
 }
 
 // GetLatestPriceInfos indicates an expected call of GetLatestPriceInfos.
-func (mr *MockGlobalPriceInfoCacheMockRecorder) GetLatestPriceInfos() *gomock.Call {
+func (mr *MockGlobalPriceInfoCacheMockRecorder) GetLatestPriceInfos(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestPriceInfos", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetLatestPriceInfos))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestPriceInfos", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetLatestPriceInfos), arg0)
 }
 
 // GetPriceInfosByRange mocks base method.
-func (m *MockGlobalPriceInfoCache) GetPriceInfosByRange(arg0, arg1 int) conf.PriceInfosCache {
+func (m *MockGlobalPriceInfoCache) GetPriceInfosByRange(arg0 string, arg1, arg2 int) conf.PriceInfosCache {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPriceInfosByRange", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetPriceInfosByRange", arg0, arg1, arg2)
 	ret0, _ := ret[0].(conf.PriceInfosCache)
 	return ret0
 }
 
 // GetPriceInfosByRange indicates an expected call of GetPriceInfosByRange.
-func (mr *MockGlobalPriceInfoCacheMockRecorder) GetPriceInfosByRange(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGlobalPriceInfoCacheMockRecorder) GetPriceInfosByRange(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPriceInfosByRange", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetPriceInfosByRange), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPriceInfosByRange", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetPriceInfosByRange), arg0, arg1, arg2)
 }
 
 // GetPriceInfosEqualTimestamp mocks base method.
-func (m *MockGlobalPriceInfoCache) GetPriceInfosEqualTimestamp(arg0 int64) (bool, conf.PriceInfos) {
+func (m *MockGlobalPriceInfoCache) GetPriceInfosEqualTimestamp(arg0 string, arg1 int64) (bool, conf.PriceInfos) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPriceInfosEqualTimestamp", arg0)
+	ret := m.ctrl.Call(m, "GetPriceInfosEqualTimestamp", arg0, arg1)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(conf.PriceInfos)
 	return ret0, ret1
 }
 
 // GetPriceInfosEqualTimestamp indicates an expected call of GetPriceInfosEqualTimestamp.
-func (mr *MockGlobalPriceInfoCacheMockRecorder) GetPriceInfosEqualTimestamp(arg0 interface{}) *gomock.Call {
+func (mr *MockGlobalPriceInfoCacheMockRecorder) GetPriceInfosEqualTimestamp(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPriceInfosEqualTimestamp", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetPriceInfosEqualTimestamp), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPriceInfosEqualTimestamp", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetPriceInfosEqualTimestamp), arg0, arg1)
+}
+
+// GetSymbolCacheLength mocks base method.
+func (m *MockGlobalPriceInfoCache) GetSymbolCacheLength(arg0 string) int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetSymbolCacheLength", arg0)
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// GetSymbolCacheLength indicates an expected call of GetSymbolCacheLength.
+func (mr *MockGlobalPriceInfoCacheMockRecorder) GetSymbolCacheLength(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSymbolCacheLength", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).GetSymbolCacheLength), arg0)
 }
 
 // UpdateCachePrice mocks base method.
-func (m *MockGlobalPriceInfoCache) UpdateCachePrice(arg0 conf.PriceInfos, arg1 int) {
+func (m *MockGlobalPriceInfoCache) UpdateCachePrice(arg0 string, arg1 conf.PriceInfos, arg2 int) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "UpdateCachePrice", arg0, arg1)
+	m.ctrl.Call(m, "UpdateCachePrice", arg0, arg1, arg2)
 }
 
 // UpdateCachePrice indicates an expected call of UpdateCachePrice.
-func (mr *MockGlobalPriceInfoCacheMockRecorder) UpdateCachePrice(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockGlobalPriceInfoCacheMockRecorder) UpdateCachePrice(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCachePrice", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).UpdateCachePrice), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCachePrice", reflect.TypeOf((*MockGlobalPriceInfoCache)(nil).UpdateCachePrice), arg0, arg1, arg2)
 }

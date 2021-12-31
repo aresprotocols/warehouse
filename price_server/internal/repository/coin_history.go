@@ -105,6 +105,7 @@ func (r *coinHistoryRepository) GetHistoryByTimestamp(timestamp int64) ([]conf.P
 
 	dbPriceInfos := make([]conf.PriceInfo, 0)
 	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where timestamp = ?;"
+	logger.Infoln("sql:", querySql, "timestamp", timestamp)
 	err := r.db.Select(&dbPriceInfos, querySql, timestamp)
 	if err != nil {
 		return []conf.PriceInfo{}, err

@@ -13,5 +13,5 @@ type PriceInfos struct {
 }
 
 type PriceInfosCache struct {
-	PriceInfosCache []PriceInfos
+	PriceInfosCache map[string][]PriceInfos
 }

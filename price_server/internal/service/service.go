@@ -16,22 +16,26 @@ type Service interface {
 	CoinHistory() *CoinHistoryService
 	WeightInfo() *WeightInfoService
 	RequestPriceConf() *RequestPriceConfService
+	UpdateInterval() *UpdateIntervalService
 }
 
 type service struct {
-	db                      *sqlx.DB
-	globalCache             cache.GlobalPriceInfoCache
-	globalRequestPriceConfs cache.GlobalRequestPriceConfs
+	db                        *sqlx.DB
+	globalCache               cache.GlobalPriceInfoCache
+	globalRequestPriceConfs   cache.GlobalRequestPriceConfs
+	globalUpdateIntervalCache cache.GlobalUpdateIntervalCache
 }
 
 // New init service
 func New(db *sqlx.DB) Service {
 	globalCahe := cache.NewGlobalPriceInfoCache()
 	globalRequestPriceConfs := cache.NewGlobalRequestPriceConfs()
+	globalUpdateIntervalCache := cache.NewGlobalUpdateIntervalCache()
 	return &service{
-		db:                      db,
-		globalCache:             globalCahe,
-		globalRequestPriceConfs: globalRequestPriceConfs,
+		db:                        db,
+		globalCache:               globalCahe,
+		globalRequestPriceConfs:   globalRequestPriceConfs,
+		globalUpdateIntervalCache: globalUpdateIntervalCache,
 	}
 }
 
@@ -61,4 +65,8 @@ func (s *service) WeightInfo() *WeightInfoService {
 
 func (s *service) RequestPriceConf() *RequestPriceConfService {
 	return newRequestPriceConfService(s)
+}
+
+func (s *service) UpdateInterval() *UpdateIntervalService {
+	return newUpdateInterval(s)
 }
