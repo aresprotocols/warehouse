@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	logger "github.com/sirupsen/logrus"
-	conf "price_api/price_server/config"
 	"price_api/price_server/internal/cache"
 	"price_api/price_server/internal/repository"
 	"price_api/price_server/internal/util"
@@ -31,13 +30,7 @@ func (s *CoinHistoryService) GetUpdatePriceHeartbeat(symbol string, interval int
 
 	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 
-	var symbolPriceInfo = make([]conf.PriceInfo, 0)
-	for _, info := range latestInfos.PriceInfos {
-		if strings.EqualFold(info.Symbol, symbol) {
-			symbolPriceInfo = append(symbolPriceInfo, info)
-		}
-	}
-
+	var symbolPriceInfo = latestInfos.PriceInfos
 	if len(symbolPriceInfo) == 0 {
 		return vo.HEARTBEAT_INFO{}, errors.New("not found symbol")
 	}
@@ -72,7 +65,7 @@ func (s *CoinHistoryService) GetUpdatePriceHistory(idx, pageSize int, symbol str
 			return 0, nil, err
 		}
 
-		bFind, partyPriceData := util.PartyPrice(infos, symbol, true)
+		bFind, partyPriceData := util.PartyPrice(infos, true)
 
 		if !bFind {
 			logger.Infoln("partyPrice error, symbol:", symbol)

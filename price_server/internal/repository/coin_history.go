@@ -14,7 +14,7 @@ type CoinHistoryRepository interface {
 	GetTotalHistoryBySymbol(symbol string) (int, error)
 	GetHistoryBySymbol(idx int, pageSize int, symbol string) ([]conf.PriceInfo, error)
 	GetHistoryBySymbolAndTimestamp(symbol string, timestamp int64) ([]conf.PriceInfo, error)
-	GetHistoryByTimestamp(timestamp int64) ([]conf.PriceInfo, error)
+	//GetHistoryByTimestamp(timestamp int64) ([]conf.PriceInfo, error)
 }
 
 func NewCoinHistoryRepository(db *sqlx.DB) CoinHistoryRepository {
@@ -101,15 +101,15 @@ func (r *coinHistoryRepository) GetHistoryBySymbolAndTimestamp(symbol string, ti
 	return infos, nil
 }
 
-func (r *coinHistoryRepository) GetHistoryByTimestamp(timestamp int64) ([]conf.PriceInfo, error) {
-
-	dbPriceInfos := make([]conf.PriceInfo, 0)
-	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where timestamp = ?;"
-	logger.Infoln("sql:", querySql, "timestamp", timestamp)
-	err := r.db.Select(&dbPriceInfos, querySql, timestamp)
-	if err != nil {
-		return []conf.PriceInfo{}, err
-	}
-
-	return dbPriceInfos, nil
-}
+//func (r *coinHistoryRepository) GetHistoryByTimestamp(timestamp int64) ([]conf.PriceInfo, error) {
+//
+//	dbPriceInfos := make([]conf.PriceInfo, 0)
+//	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where timestamp = ?;"
+//	logger.Infoln("sql:", querySql, "timestamp", timestamp)
+//	err := r.db.Select(&dbPriceInfos, querySql, timestamp)
+//	if err != nil {
+//		return []conf.PriceInfo{}, err
+//	}
+//
+//	return dbPriceInfos, nil
+//}

@@ -10,7 +10,6 @@ import (
 func TestPartyPrice2(t *testing.T) {
 	type args struct {
 		infos    []conf.PriceInfo
-		symbol   string
 		bAverage bool
 	}
 
@@ -66,7 +65,6 @@ func TestPartyPrice2(t *testing.T) {
 				infos: []conf.PriceInfo{
 					bitfinexPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -89,7 +87,6 @@ func TestPartyPrice2(t *testing.T) {
 					huobiPriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -118,7 +115,6 @@ func TestPartyPrice2(t *testing.T) {
 					kucoinPriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -144,7 +140,6 @@ func TestPartyPrice2(t *testing.T) {
 					binancePriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -176,7 +171,6 @@ func TestPartyPrice2(t *testing.T) {
 				infos: []conf.PriceInfo{
 					bitfinexPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -199,7 +193,6 @@ func TestPartyPrice2(t *testing.T) {
 					huobiPriceInfo,
 					binancePriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -228,7 +221,6 @@ func TestPartyPrice2(t *testing.T) {
 					binancePriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -264,7 +256,6 @@ func TestPartyPrice2(t *testing.T) {
 					binancePriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "bttusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -303,7 +294,7 @@ func TestPartyPrice2(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := PartyPrice(tt.args.infos, tt.args.symbol, tt.args.bAverage)
+			got, got1 := PartyPrice(tt.args.infos, tt.args.bAverage)
 			if got != tt.want {
 				t.Errorf("PartyPrice() got = %v, want %v", got, tt.want)
 			}

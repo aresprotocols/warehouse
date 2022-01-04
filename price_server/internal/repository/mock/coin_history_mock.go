@@ -64,21 +64,6 @@ func (mr *MockCoinHistoryRepositoryMockRecorder) GetHistoryBySymbolAndTimestamp(
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHistoryBySymbolAndTimestamp", reflect.TypeOf((*MockCoinHistoryRepository)(nil).GetHistoryBySymbolAndTimestamp), arg0, arg1)
 }
 
-// GetHistoryByTimestamp mocks base method.
-func (m *MockCoinHistoryRepository) GetHistoryByTimestamp(arg0 int64) ([]conf.PriceInfo, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHistoryByTimestamp", arg0)
-	ret0, _ := ret[0].([]conf.PriceInfo)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetHistoryByTimestamp indicates an expected call of GetHistoryByTimestamp.
-func (mr *MockCoinHistoryRepositoryMockRecorder) GetHistoryByTimestamp(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHistoryByTimestamp", reflect.TypeOf((*MockCoinHistoryRepository)(nil).GetHistoryByTimestamp), arg0)
-}
-
 // GetTotalHistoryBySymbol mocks base method.
 func (m *MockCoinHistoryRepository) GetTotalHistoryBySymbol(arg0 string) (int, error) {
 	m.ctrl.T.Helper()

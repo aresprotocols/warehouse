@@ -463,7 +463,7 @@ func TestPriceService_GetHistoryPrice(t *testing.T) {
 			name: "from db",
 			prepare: func(f *fields) {
 				f.gPriceInfosCache.EXPECT().GetPriceInfosEqualTimestamp(gomock.Eq("btcusdt"), gomock.Eq(int64(1640745642))).Return(false, conf.PriceInfos{})
-				f.coinHistoryRepo.EXPECT().GetHistoryByTimestamp(gomock.Eq(int64(1640745642))).Return(priceInfos1, nil)
+				f.coinHistoryRepo.EXPECT().GetHistoryBySymbolAndTimestamp(gomock.Eq("btcusdt"), gomock.Eq(int64(1640745642))).Return(priceInfos1, nil)
 			},
 			args: args{
 				symbol:    "btcusdt",
@@ -831,13 +831,6 @@ func TestPriceService_GetPriceAll(t *testing.T) {
 			want1: []vo.PriceAllInfo{
 				{
 					Symbol:    "btcusdt",
-					Price:     47851.30000000,
-					Name:      "ok",
-					Weight:    1,
-					Timestamp: 1640745642,
-				},
-				{
-					Symbol:    "btcusdt",
 					Price:     47873.19000000,
 					Name:      "bitstamp",
 					Weight:    1,
@@ -845,15 +838,22 @@ func TestPriceService_GetPriceAll(t *testing.T) {
 				},
 				{
 					Symbol:    "btcusdt",
-					Price:     47851.04000000,
-					Name:      "binance",
+					Price:     47852.37000000,
+					Name:      "coinbase",
 					Weight:    1,
 					Timestamp: 1640745642,
 				},
 				{
 					Symbol:    "btcusdt",
-					Price:     47852.37000000,
-					Name:      "coinbase",
+					Price:     47851.30000000,
+					Name:      "ok",
+					Weight:    1,
+					Timestamp: 1640745642,
+				},
+				{
+					Symbol:    "btcusdt",
+					Price:     47851.04000000,
+					Name:      "binance",
 					Weight:    1,
 					Timestamp: 1640745642,
 				},

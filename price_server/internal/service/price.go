@@ -30,7 +30,7 @@ func (s *PriceService) GetBulkCurrencyPrices(symbol string, currency string) map
 	for _, symbolTemp := range symbols {
 		token := symbolTemp + currency
 		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(token)
-		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, token, true)
+		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, true)
 		if !bFind {
 			mSymbolPriceInfo[token] = partyPriceData
 		} else {
@@ -43,13 +43,13 @@ func (s *PriceService) GetBulkCurrencyPrices(symbol string, currency string) map
 func (s *PriceService) GetBulkPrices(symbol string) map[string]vo.PRICE_INFO {
 	symbols := strings.Split(symbol, "_")
 	mSymbolPriceInfo := make(map[string]vo.PRICE_INFO)
-	for _, symbol := range symbols {
-		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
-		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, symbol, true)
+	for _, symbolTemp := range symbols {
+		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbolTemp)
+		bFind, partyPriceData := util.PartyPrice(latestInfos.PriceInfos, true)
 		if !bFind {
-			mSymbolPriceInfo[symbol] = vo.PRICE_INFO{Price: 0, Timestamp: 0}
+			mSymbolPriceInfo[symbolTemp] = vo.PRICE_INFO{Price: 0, Timestamp: 0}
 		} else {
-			mSymbolPriceInfo[symbol] = vo.PRICE_INFO{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
+			mSymbolPriceInfo[symbolTemp] = vo.PRICE_INFO{Price: partyPriceData.Price, Timestamp: partyPriceData.Timestamp}
 		}
 	}
 	return mSymbolPriceInfo
@@ -62,12 +62,7 @@ func (s *PriceService) GetBulkSymbolsState(symbolStr string, currency string) ma
 	for _, symbol := range symbols {
 		token := symbol + currency
 		latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(token)
-		var symbolPriceInfo = make([]conf.PriceInfo, 0)
-		for _, info := range latestInfos.PriceInfos {
-			if strings.EqualFold(info.Symbol, token) {
-				symbolPriceInfo = append(symbolPriceInfo, info)
-			}
-		}
+		var symbolPriceInfo = latestInfos.PriceInfos
 		actualResourcesLens := len(symbolPriceInfo)
 
 		tokenSymbol := symbol + "-" + currency
@@ -90,40 +85,27 @@ func (s *PriceService) GetHistoryPrice(symbol string, timestamp int64, bAverage 
 	bMemory, cacheInfo = s.gPriceInfosCache.GetPriceInfosEqualTimestamp(symbol, timestamp)
 
 	if bMemory {
-		return util.PartyPrice(cacheInfo.PriceInfos, symbol, bAverage)
+		return util.PartyPrice(cacheInfo.PriceInfos, bAverage)
 	}
 
-	dbPriceInfos, err := s.coinHistoryRepo.GetHistoryByTimestamp(timestamp)
+	dbPriceInfos, err := s.coinHistoryRepo.GetHistoryBySymbolAndTimestamp(symbol, timestamp)
 	if err != nil {
 		logger.WithError(err).Errorf("get history by symbol timestamp error,symbol:%s", symbol)
 		return false, vo.PartyPriceInfo{}
 	}
 
-	return util.PartyPrice(dbPriceInfos, symbol, bAverage)
+	return util.PartyPrice(dbPriceInfos, bAverage)
 
 }
 
 func (s *PriceService) GetLocalPrices(start int, end int, symbol string) conf.PriceInfosCache {
 	tmpRetData := s.gPriceInfosCache.GetPriceInfosByRange(symbol, start, end)
-
-	//retData := conf.PriceInfosCache{}
-	//for _, infosCache := range tmpRetData.PriceInfosCache {
-	//	var retPriceInfos conf.PriceInfos
-	//	for _, priceInfo := range infosCache.PriceInfos {
-	//		if priceInfo.Symbol == symbol {
-	//			retPriceInfos.PriceInfos = append(retPriceInfos.PriceInfos, priceInfo)
-	//		}
-	//	}
-	//	if len(retPriceInfos.PriceInfos) != 0 {
-	//		retData.PriceInfosCache = append(retData.PriceInfosCache, retPriceInfos)
-	//	}
-	//}
 	return tmpRetData
 }
 
 func (s *PriceService) GetPartyPrice(symbol string) (bool, vo.PartyPriceInfo) {
 	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
-	return util.PartyPrice(latestInfos.PriceInfos, symbol, true)
+	return util.PartyPrice(latestInfos.PriceInfos, true)
 }
 
 func (s *PriceService) GetPrice(symbol, exchange string) (bool, vo.PRICE_INFO) {
@@ -147,16 +129,14 @@ func (s *PriceService) GetPriceAll(symbol string) (bool, []vo.PriceAllInfo) {
 	var priceAll []vo.PriceAllInfo
 	latestInfos := s.gPriceInfosCache.GetLatestPriceInfos(symbol)
 	for _, info := range latestInfos.PriceInfos {
-		if strings.EqualFold(info.Symbol, symbol) {
-			bFind = true
-			priceAllInfo := vo.PriceAllInfo{Name: info.PriceOrigin,
-				Symbol:    info.Symbol,
-				Price:     info.Price,
-				Timestamp: info.TimeStamp,
-				Weight:    info.Weight,
-			}
-			priceAll = append(priceAll, priceAllInfo)
+		bFind = true
+		priceAllInfo := vo.PriceAllInfo{Name: info.PriceOrigin,
+			Symbol:    info.Symbol,
+			Price:     info.Price,
+			Timestamp: info.TimeStamp,
+			Weight:    info.Weight,
 		}
+		priceAll = append(priceAll, priceAllInfo)
 	}
 	return bFind, priceAll
 }

@@ -10,7 +10,6 @@ import (
 func TestPartyPrice(t *testing.T) {
 	type args struct {
 		infos    []conf.PriceInfo
-		symbol   string
 		bAverage bool
 	}
 
@@ -77,7 +76,6 @@ func TestPartyPrice(t *testing.T) {
 			name: "infos length is empty",
 			args: args{
 				infos:    []conf.PriceInfo{},
-				symbol:   "btcusdt",
 				bAverage: false,
 			},
 			want:  false,
@@ -86,16 +84,7 @@ func TestPartyPrice(t *testing.T) {
 		{
 			name: "infos not contain symbol",
 			args: args{
-				infos: []conf.PriceInfo{
-					bitfinexPriceInfo,
-					kucoinPriceInfo,
-					huobiPriceInfo,
-					binancePriceInfo,
-					okPriceInfo,
-					bitstampPriceInfo,
-					coinbasePriceInfo,
-				},
-				symbol:   "ethusdt",
+				infos:    []conf.PriceInfo{},
 				bAverage: true,
 			},
 			want:  false,
@@ -107,7 +96,6 @@ func TestPartyPrice(t *testing.T) {
 				infos: []conf.PriceInfo{
 					bitfinexPriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -130,7 +118,6 @@ func TestPartyPrice(t *testing.T) {
 					coinbasePriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -159,7 +146,6 @@ func TestPartyPrice(t *testing.T) {
 					okPriceInfo,
 					coinbasePriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -187,7 +173,6 @@ func TestPartyPrice(t *testing.T) {
 					bitstampPriceInfo,
 					coinbasePriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: true,
 			},
 			want: true,
@@ -229,7 +214,6 @@ func TestPartyPrice(t *testing.T) {
 				infos: []conf.PriceInfo{
 					bitstampPriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -252,7 +236,6 @@ func TestPartyPrice(t *testing.T) {
 					huobiPriceInfo,
 					binancePriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -281,7 +264,6 @@ func TestPartyPrice(t *testing.T) {
 					coinbasePriceInfo,
 					okPriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -320,7 +302,6 @@ func TestPartyPrice(t *testing.T) {
 					bitstampPriceInfo,
 					coinbasePriceInfo,
 				},
-				symbol:   "btcusdt",
 				bAverage: false,
 			},
 			want: true,
@@ -369,7 +350,7 @@ func TestPartyPrice(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := PartyPrice(tt.args.infos, tt.args.symbol, tt.args.bAverage)
+			got, got1 := PartyPrice(tt.args.infos, tt.args.bAverage)
 			if got != tt.want {
 				t.Errorf("PartyPrice() got = %v, want %v", got, tt.want)
 			}

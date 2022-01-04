@@ -5,19 +5,10 @@ import (
 	conf "price_api/price_server/config"
 	"price_api/price_server/internal/vo"
 	"sort"
-	"strings"
 )
 
-//@param bAverage     get average not cointain lowest and highest
-//@return bool     symbol find?
-func PartyPrice(infos []conf.PriceInfo, symbol string, bAverage bool) (bool, vo.PartyPriceInfo) {
-	var symbolPriceInfo []conf.PriceInfo
-	for _, info := range infos {
-		if strings.EqualFold(info.Symbol, symbol) {
-			symbolPriceInfo = append(symbolPriceInfo, info)
-		}
-	}
-
+func PartyPrice(infos []conf.PriceInfo, bAverage bool) (bool, vo.PartyPriceInfo) {
+	var symbolPriceInfo = infos
 	infosLen := len(symbolPriceInfo)
 	if infosLen == 0 {
 		return false, vo.PartyPriceInfo{}

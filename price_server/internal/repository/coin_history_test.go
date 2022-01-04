@@ -143,60 +143,6 @@ func TestCoinHistoryRepository_GetHistoryBySymbolAndTimestamp(t *testing.T) {
 	}
 }
 
-func TestCoinHistoryRepository_GetHistoryByTimestamp(t *testing.T) {
-	type fields struct {
-		DB *sqlx.DB
-	}
-	type args struct {
-		timestamp int64
-	}
-
-	db, mock := NewMock()
-	defer func() {
-		db.Close()
-	}()
-
-	args1 := args{timestamp: priceInfo.TimeStamp}
-
-	querySql := "select symbol, timestamp, price, weight, price_origin from `" + TABLE_COIN_PRICE + "` where timestamp = ?;"
-
-	rows := sqlmock.NewRows([]string{"symbol", "timestamp", "price", "weight", "price_origin"}).
-		AddRow(priceInfo.Symbol, priceInfo.TimeStamp, priceInfo.Price, priceInfo.Weight, priceInfo.PriceOrigin)
-
-	mock.ExpectQuery(regexp.QuoteMeta(querySql)).WithArgs(args1.timestamp).WillReturnRows(rows)
-
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []conf.PriceInfo
-		wantErr bool
-	}{
-		{
-			name:    "basic",
-			fields:  fields{DB: db},
-			args:    args1,
-			want:    []conf.PriceInfo{priceInfo},
-			wantErr: false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			r := &coinHistoryRepository{
-				db: tt.fields.DB,
-			}
-			got, err := r.GetHistoryByTimestamp(tt.args.timestamp)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetHistoryByTimestamp() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetHistoryByTimestamp() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestCoinHistoryRepository_GetTotalHistoryBySymbol(t *testing.T) {
 	type fields struct {
 		DB *sqlx.DB
