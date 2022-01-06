@@ -12,3 +12,5 @@ Cargo.lock
 **/.idea
 server.log
 warehouse.log
+build
+logs

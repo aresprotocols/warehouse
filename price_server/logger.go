@@ -28,7 +28,7 @@ func DefaultConfiguration() *Configuration {
 		EnableFile:        true,
 		FileJSONFormat:    false,
 		FileLevel:         logrus.InfoLevel.String(),
-		FileLocation:      "warehouse.log",
+		FileLocation:      "logs/warehouse.log",
 	}
 }
 
