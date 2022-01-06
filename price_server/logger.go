@@ -25,10 +25,10 @@ func DefaultConfiguration() *Configuration {
 		EnableConsole:     true,
 		ConsoleJSONFormat: false,
 		ConsoleLevel:      logrus.DebugLevel.String(),
-		EnableFile:        false,
+		EnableFile:        true,
 		FileJSONFormat:    false,
 		FileLevel:         logrus.InfoLevel.String(),
-		FileLocation:      "server.log",
+		FileLocation:      "warehouse.log",
 	}
 }
 
@@ -89,7 +89,7 @@ func InitLogrusLogger(config *Configuration) error {
 	stdOutHandler := os.Stdout
 	fileHandler := &lumberjack.Logger{
 		Filename: config.FileLocation,
-		MaxSize:  100,
+		MaxSize:  20,
 		Compress: true,
 		MaxAge:   30,
 	}
