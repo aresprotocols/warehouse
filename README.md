@@ -69,12 +69,12 @@ brew install mysql
 
 If version >= 8.0, config with:
 ```bash
-mysql
+mysql -u root -p
 use mysql;
 GRANT ALL ON *.* TO 'root'@'%';
 flush privileges;
-ALTER USER 'root'@'localhost' IDENTIFIED BY 'yourpassword' PASSWORD EXPIRE NEVER;
-ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY 'yourpassword';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$yourpassword$' PASSWORD EXPIRE NEVER;
+ALTER USER 'root'@'%' IDENTIFIED WITH mysql_native_password BY '$yourpassword$';
 FLUSH PRIVILEGES;
 ```
 
@@ -87,14 +87,21 @@ Run
 ## Api
 ### Get exchange price
 >
-> http://127.0.0.1:5566/api/getprice/$symbol/$market
+> http://127.0.0.1:5566/api/getPrice/$symbol/$market
 >
-> example: http://127.0.0.1:5566/api/getprice/btcusdt/huobi
+> example: http://127.0.0.1:5566/api/getPrice/btcusdt/huobi
 
 **Return**
 
 ``` javascript
-{"code":0,"message":"OK","data":{"timestamp":1629340675,"price":44721.54}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"price": 43409.26,
+		"timestamp": 1641435137
+	}
+}
 ```
 
 
@@ -109,9 +116,41 @@ Run
 **Return**
 
 ```javascript
-{"code":0,"message":"OK","data":{"price":44727.4,"timestamp":1629340811,"infos":[{"price":44731.7,"weight":1,"exchangeName":"ok"},
-{"price":44726.48,"weight":1,"exchangeName":"huobi"},{"price":44720,"weight":1,"exchangeName":"bitfinex"},{"price":44732.52,"weight":1,"exchangeName":"bitstamp"},
-{"price":44726.3,"weight":1,"exchangeName":"binance"}]}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"price": 43340.53,
+		"timestamp": 1641435560,
+		"infos": [
+			{
+				"price": 43345.31,
+				"weight": 2,
+				"exchangeName": "huobi"
+			},
+			{
+				"price": 43341,
+				"weight": 1,
+				"exchangeName": "kucoin"
+			},
+			{
+				"price": 43340,
+				"weight": 1,
+				"exchangeName": "binance"
+			},
+			{
+				"price": 43337.56,
+				"weight": 1,
+				"exchangeName": "bitstamp"
+			},
+			{
+				"price": 43334,
+				"weight": 1,
+				"exchangeName": "bitfinex"
+			}
+		]
+	}
+}
 ```
 
 
@@ -124,7 +163,61 @@ Run
 **Return**
 
 ``` javascript
-{"code":0,"message":"OK","data":[{"name":"ok","symbol":"btcusdt","price":54398.9,"timestamp":1633678924,"weight":1},{"name":"bitfinex","symbol":"btcusdt","price":54431,"timestamp":1633678924,"weight":1},{"name":"binance","symbol":"btcusdt","price":54393.67,"timestamp":1633678924,"weight":1},{"name":"huobi","symbol":"btcusdt","price":54396,"timestamp":1633678924,"weight":2},{"name":"bitstamp","symbol":"btcusdt","price":54368.34,"timestamp":1633678924,"weight":1}]}
+{
+	"code": 0,
+	"message": "OK",
+	"data": [
+		{
+			"name": "kucoin",
+			"symbol": "btcusdt",
+			"price": 43383,
+			"timestamp": 1641435319,
+			"weight": 1
+		},
+		{
+			"name": "ok",
+			"symbol": "btcusdt",
+			"price": 43378.9,
+			"timestamp": 1641435319,
+			"weight": 1
+		},
+		{
+			"name": "binance",
+			"symbol": "btcusdt",
+			"price": 43378.32,
+			"timestamp": 1641435319,
+			"weight": 1
+		},
+		{
+			"name": "huobi",
+			"symbol": "btcusdt",
+			"price": 43377.56,
+			"timestamp": 1641435319,
+			"weight": 2
+		},
+		{
+			"name": "coinbase",
+			"symbol": "btcusdt",
+			"price": 43376.92,
+			"timestamp": 1641435319,
+			"weight": 3
+		},
+		{
+			"name": "bitfinex",
+			"symbol": "btcusdt",
+			"price": 43367,
+			"timestamp": 1641435319,
+			"weight": 1
+		},
+		{
+			"name": "bitstamp",
+			"symbol": "btcusdt",
+			"price": 43337.56,
+			"timestamp": 1641435319,
+			"weight": 1
+		}
+	]
+}
 ```
 
 
@@ -137,25 +230,46 @@ Run
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"price":44655.439999999995,"timestamp":1629341547,"infos":[{"price":44655.27,"weight":1,"exchangeName":"cryptocompare"},
-{"price":44652.4,"weight":1,"exchangeName":"ok"},{"price":44666,"weight":1,"exchangeName":"huobi"},{"price":44665.62,"weight":1,"exchangeName":"binance"},
-{"price":44637.91,"weight":1,"exchangeName":"bitstamp"}]}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"price": 43376.2625,
+		"timestamp": 1641435319,
+		"infos": [
+			{
+				"price": 43378.9,
+				"weight": 1,
+				"exchangeName": "ok"
+			},
+			{
+				"price": 43378.32,
+				"weight": 1,
+				"exchangeName": "binance"
+			},
+			{
+				"price": 43377.56,
+				"weight": 2,
+				"exchangeName": "huobi"
+			},
+			{
+				"price": 43376.92,
+				"weight": 3,
+				"exchangeName": "coinbase"
+			},
+			{
+				"price": 43367,
+				"weight": 1,
+				"exchangeName": "bitfinex"
+			}
+		]
+	}
+}
 ```
 
 
-### Get ares info
 
-> http://127.0.0.1:5566/api/getAresAll
->
-> example:http://127.0.0.1:5566/api/getAresAll
->
- **Return** 
-
-```javascript
-{"code":0,"message":"OK","data":{"price":0.04235333740536,"percent_change":-5.38960837,"rank":1108,"market_cap":6516779.946008743,"volume":749528.82939821}}
-```
-
-### Get symbol price
+### bulk get symbol price
 
 > http://127.0.0.1:5566/api/getBulkPrices?symbol={}
 >
@@ -164,23 +278,246 @@ Run
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"btcusdt":{"price":42174.990000000005,"timestamp":1632279887},"ethusdt":{"price":2874.3959999999997,"timestamp":1632279887}}}
-
-{"code":0,"message":"OK","data":{"arrusdt":{"price":0,"timestamp":0}}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"btcusdt": {
+			"price": 43341.02125,
+			"timestamp": 1641435801
+		},
+		"ethusdt": {
+			"price": 3512.214,
+			"timestamp": 1641435833
+		}
+	}
+}
 ```
 
 
-### Get symbol price
+### bulk get symbol price by currency
 
 > http://127.0.0.1:5566/api/getBulkCurrencyPrices?symbol={}
 >
-> example:https://api.aresprotocol.io/api/getBulkCurrencyPrices?symbol=btc_eth_dot_link&currency=usdt
+> example:http://127.0.0.1:5566/api/getBulkCurrencyPrices?symbol=btc_eth_dot_link&currency=usdt
 >
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"btcusdt":{"price":57465.51,"timestamp":1638167488},"dotusdt":{"price":36.158,"timestamp":1638167488},"ethusdt":{"price":4335.455,"timestamp":1638167488},"linkusdt":{"price":25.005,"timestamp":1638167488}}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"btcusdt": {
+			"price": 43372.14375,
+			"timestamp": 1641435862,
+			"infos": [
+				{
+					"price": 43374,
+					"weight": 1,
+					"exchangeName": "bitfinex"
+				},
+				{
+					"price": 43373.05,
+					"weight": 3,
+					"exchangeName": "coinbase"
+				},
+				{
+					"price": 43371.6,
+					"weight": 2,
+					"exchangeName": "huobi"
+				},
+				{
+					"price": 43370.7,
+					"weight": 1,
+					"exchangeName": "kucoin"
+				},
+				{
+					"price": 43370.1,
+					"weight": 1,
+					"exchangeName": "ok"
+				}
+			]
+		},
+		"dotusdt": {
+			"price": 26.262575,
+			"timestamp": 1641435881,
+			"infos": [
+				{
+					"price": 26.2722,
+					"weight": 1,
+					"exchangeName": "kucoin"
+				},
+				{
+					"price": 26.2681,
+					"weight": 1,
+					"exchangeName": "huobi"
+				},
+				{
+					"price": 26.26,
+					"weight": 1,
+					"exchangeName": "binance"
+				},
+				{
+					"price": 26.25,
+					"weight": 1,
+					"exchangeName": "coinbase"
+				}
+			]
+		},
+		"ethusdt": {
+			"price": 3512.214,
+			"timestamp": 1641435833,
+			"infos": [
+				{
+					"price": 3513.06,
+					"weight": 1,
+					"exchangeName": "huobi"
+				},
+				{
+					"price": 3512.95,
+					"weight": 1,
+					"exchangeName": "binance"
+				},
+				{
+					"price": 3512.5,
+					"weight": 1,
+					"exchangeName": "coinbase"
+				},
+				{
+					"price": 3512.26,
+					"weight": 1,
+					"exchangeName": "ok"
+				},
+				{
+					"price": 3510.3,
+					"weight": 1,
+					"exchangeName": "bitfinex"
+				}
+			]
+		},
+		"linkusdt": {
+			"price": 23.68055,
+			"timestamp": 1641435836,
+			"infos": [
+				{
+					"price": 23.681,
+					"weight": 1,
+					"exchangeName": "ok"
+				},
+				{
+					"price": 23.6801,
+					"weight": 1,
+					"exchangeName": "kucoin"
+				}
+			]
+		}
+	}
+}
 ```
+### Get getReqConfig
+
+> http://127.0.0.1:5566/api/getReqConfig
+
+ **Return** 
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"aave-usdt": {
+			"weight": [
+				{
+					"exchange": "binance",
+					"weight": 2
+				},
+				{
+					"exchange": "huobi",
+					"weight": 4
+				},
+				{
+					"exchange": "ok",
+					"weight": 1
+				},
+				{
+					"exchange": "kucoin",
+					"weight": 1
+				}
+			],
+			"interval": 60
+		},
+		"btc-usdt": {
+			"weight": [
+				{
+					"exchange": "bitfinex",
+					"weight": 1
+				},
+				{
+					"exchange": "binance",
+					"weight": 1
+				},
+				{
+					"exchange": "huobi",
+					"weight": 2
+				},
+				{
+					"exchange": "ok",
+					"weight": 1
+				},
+				{
+					"exchange": "coinbase",
+					"weight": 3
+				},
+				{
+					"exchange": "kucoin",
+					"weight": 1
+				},
+				{
+					"exchange": "bitstamp",
+					"weight": 1
+				}
+			],
+			"interval": 60
+		},
+		"eth-usdt": {
+			"weight": [
+				{
+					"exchange": "huobi",
+					"weight": 1
+				},
+				{
+					"exchange": "binance",
+					"weight": 1
+				},
+				{
+					"exchange": "bitfinex",
+					"weight": 1
+				},
+				{
+					"exchange": "ok",
+					"weight": 1
+				},
+				{
+					"exchange": "coinbase",
+					"weight": 1
+				},
+				{
+					"exchange": "kucoin",
+					"weight": 1
+				},
+				{
+					"exchange": "bitstamp",
+					"weight": 1
+				}
+			],
+			"interval": 60
+		}
+	}
+}
+```
+
+
 
 ### Get log info
 
@@ -196,29 +533,90 @@ Run
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"infos":[{"client_ip":"127.0.0.1","method":"GET","post_data":"","proto":"HTTP/1.1","request_time":"2021-09-23 16:37:32","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36","request_url":"/api/getRequestInfo?index=1","response_time":"2021-09-23 16:37:32","response":"{\"code\":0,\"message\":\"OK\",\"data\":{\"infos\":null}}"}]}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"infos": [
+			{
+				"client_ip": "158.247.224.166",
+				"request_time": "2022-01-06 02:35:42",
+				"user_agent": "",
+				"request_url": "/api/getBulkCurrencyPrices?currency=usdt&symbol=link",
+				"response_time": "2022-01-06 02:35:42",
+				"response": "{\"code\":0,\"message\":\"OK\",\"data\":{\"linkusdt\":{\"price\":23.7733,\"timestamp\":1641436498,\"infos\":[{\"price\":23.7761,\"weight\":1,\"exchangeName\":\"huobi\"},{\"price\":23.7705,\"weight\":1,\"exchangeName\":\"kucoin\"}]}}}"
+			},
+		]
+	}
+}
 ```
 
-### Get local prices
+### get symbol request info
 
-> http://127.0.0.1:5566/api/getLocalPrices?index={}&symbol={}
+> http://127.0.0.1:5566/api/getRequestInfoBySymbol?index={}&symbol={}&ip={}
+> 
+> ip is optional
 >
-> example:http://127.0.0.1:5566/api/getLocalPrices?index=0&symbol=ethusdt
+> example:http://127.0.0.1:5566/api/getRequestInfoBySymbol?index=0&symbol=btcusdt
 >
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"PriceInfosCache":[{"PriceInfos":[{"Symbol":"ethusdt","Price":3126.18,"PriceOrigin":"bitstamp","Weight":1,"TimeStamp":1632722382},{"Symbol":"ethusdt","Price":3130.29,"PriceOrigin":"coinbase","Weight":1,"TimeStamp":1632722382},{"Symbol":"ethusdt","Price":3134.2,"PriceOrigin":"bitfinex","Weight":1,"TimeStamp":1632722382},{"Symbol":"ethusdt","Price":3130.65,"PriceOrigin":"huobi","Weight":1,"TimeStamp":1632722382},{"Symbol":"ethusdt","Price":3130.4,"PriceOrigin":"binance","Weight":1,"TimeStamp":1632722382},{"Symbol":"ethusdt","Price":3131.31,"PriceOrigin":"ok","Weight":1,"TimeStamp":1632722382}]}]}}
-```
-
-### Get getReqConfig
-
-> http://127.0.0.1:5566/api/getReqConfig
-
- **Return** 
-
-```javascript
-{"code":0,"message":"OK","data":{"1INCH-usdt":["huobi","binance","cryptocompare"],"aave-usdt":["binance","ok","huobi"],"ada-usdt":["ok","huobi","bitfinex","binance"],"algo-usdt":["ok","huobi"],"atom-usdt":["huobi","binance","ok","cryptocompare"],"avax-usdt":["cryptocompare","huobi","ok"],"axs-usdt":["bitfinex","coinbase","huobi","binance","ok"],"bat-usdt":["cryptocompare","huobi"],"bch-usdt":["huobi","cryptocompare","binance","ok"],"bnt-usdt":["binance","huobi","ok","bitfinex"],"btc-usdt":["ok","bitstamp","coinbase","huobi","cryptocompare","bitfinex"],"btt-usdt":["binance","ok"],"celo-usdt":["binance","ok","cryptocompare"],"chz-usdt":["cryptocompare","binance","ok","coinbase"],"comp-usdt":["cryptocompare","ok"],"crv-usdt":["ok","binance","huobi"],"dash-usdt":["huobi","cryptocompare","ok"],"dcr-usdt":["huobi","ok","cryptocompare","bitfinex"],"doge-usdt":["huobi","binance","ok","coinbase"],"dot-usdt":["huobi","bitfinex","coinbase","binance","ok"],"egld-usdt":["ok"],"enj-usdt":["huobi","ok"],"eos-usdt":["binance","huobi","ok","bitfinex"],"etc-usdt":["binance","huobi","bitfinex","cryptocompare"],"eth-usdt":["bitstamp","huobi","coinbase","binance"],"fet-usdt":["binance","bitfinex","coinbase"],"fil-usdt":["binance","huobi","ok"],"ftm-usdt":["ok","binance","bitfinex"],"ftt-usdt":["binance","huobi","cryptocompare"],"grt-usdt":["huobi","ok","cryptocompare","binance","bitfinex"],"hbar-usdt":["binance","huobi","ok"],"icp-usdt":["huobi","bitfinex","cryptocompare"],"icx-usdt":["binance","ok","huobi"],"iost-usdt":["binance","huobi","ok"],"iota-usdt":["huobi","binance"],"iotx-usdt":["huobi","coinbase","cryptocompare"],"kava-usdt":["huobi","binance"],"ksm-usdt":["binance","cryptocompare","bitfinex","ok"],"link-usdt":["ok","binance"],"lrc-usdt":["cryptocompare","binance","bitfinex","ok","huobi"],"ltc-usdt":["huobi","ok","binance"],"luna-usdt":["binance","huobi","ok","cryptocompare"],"mana-usdt":["binance","ok","huobi","cryptocompare"],"matic-usdt":["bitstamp","ok"],"mkr-usdt":["bitfinex","ok","binance","cryptocompare"],"nano-usdt":["cryptocompare","ok","huobi"],"near-usdt":["binance","ok","huobi"],"neo-usdt":["bitfinex","cryptocompare","ok","huobi","binance"],"omg-usdt":["bitfinex","cryptocompare","ok","huobi","binance"],"ont-usdt":["binance","ok"],"qtum-usdt":["binance","cryptocompare","huobi","ok"],"ren-usdt":["binance","huobi","cryptocompare","ok"],"sand-usdt":["binance","huobi","ok","cryptocompare"],"sc-usdt":["huobi","binance","ok"],"snx-usdt":["huobi","binance","ok","bitfinex"],"sol-usdt":["coinbase","ok","bitfinex","huobi","binance"],"srm-usdt":["cryptocompare","binance"],"stx-usdt":["ok"],"sushi-usdt":["binance","ok","huobi"],"theta-usdt":["ok","binance"],"trx-usdt":["bitfinex","huobi","binance"],"uma-usdt":["binance","huobi","ok"],"uni-usdt":["huobi","bitfinex","binance","ok","cryptocompare"],"vet-usdt":["binance"],"waves-usdt":["binance","cryptocompare","huobi","ok"],"xem-usdt":["binance","cryptocompare","huobi"],"xlm-usdt":["binance","bitfinex","cryptocompare","huobi"],"xmr-usdt":["huobi","binance","bitfinex"],"xrp-usdt":["bitfinex","bitstamp","binance","ok"],"xtz-usdt":["bitfinex","huobi","binance","ok"],"yfi-usdt":["bitfinex","huobi","binance","ok"],"zec-usdt":["huobi","ok","binance","bitfinex"],"zen-usdt":["huobi","coinbase","cryptocompare","binance","ok"],"zil-usdt":["binance","bitfinex","ok"],"zrx-usdt":["ok","bitfinex","huobi","cryptocompare","binance"]}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"curPage": 0,
+		"totalNum": 207485,
+		"items": [
+			{
+				"type": "getBulkCurrencyPrices",
+				"client": {
+					"ip": "45.77.30.9",
+					"request_time": "2022-01-06 02:42:24",
+					"request_timestamp": 1641436944
+				},
+				"price_info": {
+					"price": 43310.613333,
+					"timestamp": 1641436888
+				},
+				"price_infos": [
+					{
+						"price": 43320.1,
+						"timestamp": 1641436888,
+						"exchange": "ok",
+						"weight": 1
+					},
+					{
+						"price": 43309.9,
+						"timestamp": 1641436888,
+						"exchange": "kucoin",
+						"weight": 1
+					},
+					{
+						"price": 43309.17,
+						"timestamp": 1641436888,
+						"exchange": "binance",
+						"weight": 1
+					},
+					{
+						"price": 43309.07,
+						"timestamp": 1641436888,
+						"exchange": "huobi",
+						"weight": 2
+					},
+					{
+						"price": 43306.37,
+						"timestamp": 1641436888,
+						"exchange": "bitstamp",
+						"weight": 1
+					}
+				]
+			},
+			
+		]
+	}
+}
 ```
 
 
@@ -231,8 +629,298 @@ Run
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"infos":[{"url":"https://www.okex.com/api/spot/v3/instruments/{$symbol1}-{$symbol2}/ticker","symbol":"btc-usdt","error":"test error","Timestamp":1632727340},{"url":"https://api.huobi.pro/market/detail/merged?symbol={$symbol}","symbol":"btc-usdt","error":"test error","Timestamp":1632727288}]}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"curPage": 0,
+		"totalNum": 674,
+		"items": [
+			{
+				"url": "https://api-pub.bitfinex.com/v2/tickers?symbols=t{$symbol}",
+				"symbol": "btc-usdt",
+				"error": "status code :429 url:https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD",
+				"Timestamp": 1641283069
+			},
+			{
+				"url": "https://api-pub.bitfinex.com/v2/tickers?symbols=t{$symbol}",
+				"symbol": "btc-usdt",
+				"error": "Get \"https://api-pub.bitfinex.com/v2/tickers?symbols=tBTCUSD\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+				"Timestamp": 1640707125
+			},
+			{
+				"url": "https://api.huobi.pro/market/detail/merged?symbol={$symbol}",
+				"symbol": "btc-usdt",
+				"error": "Get \"https://api.huobi.pro/market/detail/merged?symbol=btcusdt\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)",
+				"Timestamp": 1640707125
+			},
+			{
+				"url": "https://api.binance.com/api/v3/ticker/price?symbol={$symbol}",
+				"symbol": "btc-usdt",
+				"error": "Get \"https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT\": read tcp 141.164.58.241:58974->52.84.252.143:443: read: connection reset by peer",
+				"Timestamp": 1640707124
+			},
+			
+		]
+	}
+}
 ```
+
+### Get local prices
+
+> http://127.0.0.1:5566/api/getLocalPrices?index={}&symbol={}
+>
+> example:http://127.0.0.1:5566/api/getLocalPrices?index=0&symbol=btcusdt
+>
+ **Return** 
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"PriceInfosCache": {
+			"btcusdt": [
+				{
+					"PriceInfos": [
+						{
+							"symbol": "btcusdt",
+							"price": 46512.1,
+							"priceOrigin": "kucoin",
+							"weight": 1,
+							"timestamp": 1641283060
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46508.92,
+							"priceOrigin": "huobi",
+							"weight": 2,
+							"timestamp": 1641283060
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46507.77,
+							"priceOrigin": "binance",
+							"weight": 1,
+							"timestamp": 1641283060
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46507.08,
+							"priceOrigin": "coinbase",
+							"weight": 3,
+							"timestamp": 1641283060
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46505.5,
+							"priceOrigin": "ok",
+							"weight": 1,
+							"timestamp": 1641283060
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46286.21,
+							"priceOrigin": "bitstamp",
+							"weight": 1,
+							"timestamp": 1641283060
+						}
+					]
+				},
+				{
+					"PriceInfos": [
+						{
+							"symbol": "btcusdt",
+							"price": 46513,
+							"priceOrigin": "bitfinex",
+							"weight": 1,
+							"timestamp": 1641283129
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46507,
+							"priceOrigin": "kucoin",
+							"weight": 1,
+							"timestamp": 1641283129
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46505.97,
+							"priceOrigin": "coinbase",
+							"weight": 3,
+							"timestamp": 1641283129
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46503.8,
+							"priceOrigin": "ok",
+							"weight": 1,
+							"timestamp": 1641283129
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46502.45,
+							"priceOrigin": "binance",
+							"weight": 1,
+							"timestamp": 1641283129
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46502.09,
+							"priceOrigin": "huobi",
+							"weight": 2,
+							"timestamp": 1641283129
+						},
+						{
+							"symbol": "btcusdt",
+							"price": 46286.21,
+							"priceOrigin": "bitstamp",
+							"weight": 1,
+							"timestamp": 1641283129
+						}
+					]
+				}				
+			]
+		}
+	}
+}
+```
+
+
+
+### Get update price history
+
+> http://127.0.0.1:5566/api/getUpdatePriceHistory?index={}&symbol={}
+>
+> example:http://127.0.0.1:5566/api/getUpdatePriceHistory?index=0&symbol=btcusdt
+>
+ **Return** 
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"curPage": 0,
+		"totalNum": 35787,
+		"items": [
+			{
+				"timestamp": 1641438277,
+				"symbol": "btcusdt",
+				"price": 43299.32,
+				"infos": [
+					{
+						"symbol": "btcusdt",
+						"price": 43306.37,
+						"priceOrigin": "bitstamp",
+						"weight": 1,
+						"timestamp": 1641438277
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43301.9,
+						"priceOrigin": "kucoin",
+						"weight": 1,
+						"timestamp": 1641438277
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43301.3,
+						"priceOrigin": "ok",
+						"weight": 1,
+						"timestamp": 1641438277
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43300.43,
+						"priceOrigin": "binance",
+						"weight": 1,
+						"timestamp": 1641438277
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43299.8,
+						"priceOrigin": "huobi",
+						"weight": 2,
+						"timestamp": 1641438277
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43297.11,
+						"priceOrigin": "coinbase",
+						"weight": 3,
+						"timestamp": 1641438277
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43280,
+						"priceOrigin": "bitfinex",
+						"weight": 1,
+						"timestamp": 1641438277
+					}
+				]
+			},
+			{
+				"timestamp": 1641437976,
+				"symbol": "btcusdt",
+				"price": 43233.92875,
+				"infos": [
+					{
+						"symbol": "btcusdt",
+						"price": 43306.37,
+						"priceOrigin": "bitstamp",
+						"weight": 1,
+						"timestamp": 1641437976
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43248.6,
+						"priceOrigin": "ok",
+						"weight": 1,
+						"timestamp": 1641437976
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43242.5,
+						"priceOrigin": "kucoin",
+						"weight": 1,
+						"timestamp": 1641437976
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43234.09,
+						"priceOrigin": "binance",
+						"weight": 1,
+						"timestamp": 1641437976
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43229.32,
+						"priceOrigin": "huobi",
+						"weight": 2,
+						"timestamp": 1641437976
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43229.2,
+						"priceOrigin": "coinbase",
+						"weight": 3,
+						"timestamp": 1641437976
+					},
+					{
+						"symbol": "btcusdt",
+						"price": 43220,
+						"priceOrigin": "bitfinex",
+						"weight": 1,
+						"timestamp": 1641437976
+					}
+				]
+			}
+		]
+	}
+}
+```
+
 
 ### set weight
 
@@ -244,25 +932,65 @@ Run
 > 
 > Body: {"symbol":"btc-usdt", "exchange":"huobi", "weight":2 }
 >
-> example:http://127.0.0.1:5566/api/setWeight?exchange=coinbase&symbol=btc-usdt&weight=3
 >
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":null}
+{
+	"code": 0,
+	"message": "OK",
+	"data": null
+}
 ```
 
-### get symbol request info
+### Get ares info
 
-> http://127.0.0.1:5566/api/getRequestInfoBySymbol?index={}&symbol={}
+> http://127.0.0.1:5566/api/getAresAll
 >
-> example:http://127.0.0.1:5566/api/getRequestInfoBySymbol?index=0&symbol=btcusdt
+> example:http://127.0.0.1:5566/api/getAresAll
 >
  **Return** 
 
 ```javascript
-{"code":0,"message":"OK","data":{"getBulkPrices":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-29 11:03:26"},"price_info":{"price":41700.786666666674,"timestamp":1632884557}}],"getHistoryPrice":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-29 11:02:55"},"price_info":{"price":45287.56999999999,"timestamp":1629268984},"price_infos":[{"price":45286.2,"timestamp":1629268984,"exchange":"ok","weight":1},{"price":45295,"timestamp":1629268984,"exchange":"bitfinex","weight":1},{"price":45283.32,"timestamp":1629268984,"exchange":"huobi","weight":1},{"price":45290.2,"timestamp":1629268984,"exchange":"bitstamp","weight":1},{"price":45283.13,"timestamp":1629268984,"exchange":"binance","weight":1}]}],"getPartyPrice":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-29 14:00:27"},"price_info":{"price":42288.427500000005,"timestamp":1632895181},"price_infos":[{"price":42291.66,"timestamp":1632895181,"exchange":"huobi","weight":2},{"price":42294.39,"timestamp":1632895181,"exchange":"binance","weight":1},{"price":42276,"timestamp":1632895181,"exchange":"ok","weight":1}]},{"client":{"ip":"127.0.0.1","request_time":"2021-09-28 16:54:31"},"price_info":{"price":41721.92571428571,"timestamp":1632819233},"price_infos":[{"price":41679.61,"timestamp":1632819233,"exchange":"huobi","weight":2},{"price":41939.72,"timestamp":1632819233,"exchange":"bitstamp","weight":1},{"price":41750,"timestamp":1632819233,"exchange":"bitfinex","weight":1},{"price":41668.18,"timestamp":1632819233,"exchange":"coinbase","weight":3}]}],"getPrice":[{"client":{"ip":"127.0.0.1","request_time":"2021-09-28 16:55:53"},"price_info":{"price":41724,"timestamp":1632819294}}],"getPriceAll":[{"client":{"ip":"127.0.0.1","request_time":"2021-10-08 15:42:38"},"price_infos":[{"price":54398.9,"timestamp":1633678924,"exchange":"ok","weight":1},{"price":54431,"timestamp":1633678924,"exchange":"bitfinex","weight":1},{"price":54393.67,"timestamp":1633678924,"exchange":"binance","weight":1},{"price":54396,"timestamp":1633678924,"exchange":"huobi","weight":2},{"price":54368.34,"timestamp":1633678924,"exchange":"bitstamp","weight":1}]}]}}
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"price": 0.0129,
+		"percent_change": -10.29,
+		"rank": 1438,
+		"market_cap": 3004786.5293474947,
+		"volume": 1751021.98137502
+	}
+}
 ```
+
+### Get Dex price info
+
+> http://127.0.0.1:5566/api/getDexPrice
+>
+> example:http://127.0.0.1:5566/api/getDexPrice
+>
+ **Return** 
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"uni": {
+			"price": "0.01368310053",
+			"timestamp": 1641438741
+		},
+		"pancake": {
+			"price": "0.01426012838",
+			"timestamp": 1641438738
+		}
+	}
+}
+```
+
+
 
 ### auth
 
@@ -275,5 +1003,79 @@ Run
 **Return**
 
 ```javascript
-{"code": 0, "message": "OK", "data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJleHAiOjE2Mzg5MzY3MTEsImlzcyI6ImdldC1wcmljZSJ9.LEgHx3ZfbCNIf6UMxYFNDmg8cd5lu2oqLUk2Eb1TwOw"}
+{
+	"code": 0,
+	"message": "OK",
+	"data": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3QiLCJleHAiOjE2NDE0NDM3MDUsImlzcyI6ImdldC1wcmljZSJ9.VKz70nqgizZbMtUwUt-z4_pIHjj2stbuWVQX8ULrG3c"
+}
+```
+
+
+
+
+### Get update price heartbeat
+>
+> http://127.0.0.1:5566/api/getUpdatePriceHeartbeat/$symbol
+>
+> example: http://127.0.0.1:5566/api/getUpdatePriceHeartbeat/btcusdt
+>
+**Return**
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"expect_resources": 7,
+		"actual_resources": 7,
+		"latest_timestamp": 1641439787,
+		"interval": 60
+	}
+}
+```
+
+
+
+### bulk get symbol state
+
+> http://127.0.0.1:5566/api/getBulkSymbolsState?symbol={}
+>
+> example:http://127.0.0.1:5566/api/getBulkSymbolsState?symbol=btc_eth_dot_link&currency=usdt
+>
+
+**Return**
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": {
+		"btcusdt": true,
+		"dotusdt": true,
+		"ethusdt": true,
+		"linkusdt": true
+	}
+}
+```
+
+
+### set update price interval
+
+> POST http://127.0.0.1:5566/api/setInterval
+> 
+> Header:  
+> 
+>       Authorization: Bearer TOKEN
+> 
+> Body: {"symbol":"btc-usdt", "interval":20 }
+>
+>
+ **Return** 
+
+```javascript
+{
+	"code": 0,
+	"message": "OK",
+	"data": null
+}
 ```
