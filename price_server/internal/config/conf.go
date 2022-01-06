@@ -53,7 +53,7 @@ func GetConfig() (Config, error) {
 	var retConfig Config
 	var ok bool
 
-	config, err := toml.LoadFile("./conf.toml")
+	config, err := toml.LoadFile("./configs/conf.toml")
 	if err != nil {
 		return Config{}, err
 	}
