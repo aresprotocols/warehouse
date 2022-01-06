@@ -2,9 +2,9 @@ package service
 
 import (
 	"github.com/golang/mock/gomock"
-	conf "price_api/price_server/config"
 	"price_api/price_server/internal/cache"
 	mock_cache "price_api/price_server/internal/cache/mock"
+	conf2 "price_api/price_server/internal/config"
 	"price_api/price_server/internal/repository"
 	mock_repository "price_api/price_server/internal/repository/mock"
 	"price_api/price_server/internal/vo"
@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	priceInfos1 = []conf.PriceInfo{
+	priceInfos1 = []conf2.PriceInfo{
 		{
 			Symbol:      "btcusdt",
 			Price:       47851.30000000,
@@ -64,7 +64,7 @@ var (
 			TimeStamp:   1640745642,
 		},
 	}
-	exchangeConfigs = []conf.ExchangeConfig{
+	exchangeConfigs = []conf2.ExchangeConfig{
 		{
 			Name:   "binance",
 			Weight: 1,
@@ -105,7 +105,7 @@ var (
 		Timestamp: 1639640386,
 		Symbol:    "btcusdt",
 	}
-	priceInfo = conf.PriceInfo{
+	priceInfo = conf2.PriceInfo{
 		Symbol:      "btcusdt",
 		Price:       58609,
 		PriceOrigin: "huobi",
@@ -134,7 +134,7 @@ func TestCoinHistoryService_GetUpdatePriceHeartbeat(t *testing.T) {
 	updatePriceRepo := mock_repository.NewMockUpdatePriceRepository(ctrl)
 	coinHistoryRepo := mock_repository.NewMockCoinHistoryRepository(ctrl)
 
-	gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf.PriceInfos{PriceInfos: priceInfos1})
+	gPriceInfosCache.EXPECT().GetLatestPriceInfos(gomock.Eq("btcusdt")).Return(conf2.PriceInfos{PriceInfos: priceInfos1})
 	gReqeustPriceConfs.EXPECT().GetConfsBySymbol(gomock.Eq("btc-usdt")).Return(exchangeConfigs)
 
 	tests := []struct {
@@ -211,7 +211,7 @@ func TestCoinHistoryService_GetUpdatePriceHistory(t *testing.T) {
 
 	updatePriceRepo.EXPECT().GetUpdatePriceHistoryBySymbol(gomock.Eq(args1.idx), gomock.Eq(args1.pageSize), gomock.Eq(args1.symbol)).Return([]vo.UpdatePirceHistory{updatePriceHistory}, nil)
 	updatePriceRepo.EXPECT().GetTotalUpdatePriceHistoryBySymbol(gomock.Eq(args1.symbol)).Return(1, nil)
-	coinHistoryRepo.EXPECT().GetHistoryBySymbolAndTimestamp(gomock.Eq(updatePriceHistory.Symbol), gomock.Eq(updatePriceHistory.Timestamp)).Return([]conf.PriceInfo{priceInfo}, nil)
+	coinHistoryRepo.EXPECT().GetHistoryBySymbolAndTimestamp(gomock.Eq(updatePriceHistory.Symbol), gomock.Eq(updatePriceHistory.Timestamp)).Return([]conf2.PriceInfo{priceInfo}, nil)
 
 	tests := []struct {
 		name    string
@@ -235,7 +235,7 @@ func TestCoinHistoryService_GetUpdatePriceHistory(t *testing.T) {
 				Timestamp: updatePriceHistory.Timestamp,
 				Symbol:    updatePriceHistory.Symbol,
 				Price:     priceInfo.Price,
-				Infos:     []conf.PriceInfo{priceInfo},
+				Infos:     []conf2.PriceInfo{priceInfo},
 			}},
 			wantErr: false,
 		},

@@ -1,8 +1,8 @@
 package service
 
 import (
-	conf "price_api/price_server/config"
 	"price_api/price_server/internal/cache"
+	"price_api/price_server/internal/config"
 )
 
 type RequestPriceConfService struct {

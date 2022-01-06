@@ -1,6 +1,8 @@
 package vo
 
-import conf "price_api/price_server/config"
+import (
+	"price_api/price_server/internal/config"
+)
 
 type RESPONSE_PRICE_CONF struct {
 	Price  float64

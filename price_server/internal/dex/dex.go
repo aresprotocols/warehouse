@@ -7,8 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	logger "github.com/sirupsen/logrus"
 	"math/big"
-	"price_api/price_server/dex/erc20"
-	pair "price_api/price_server/dex/uniswapV2Pair"
+	"price_api/price_server/internal/dex/erc20"
+	"price_api/price_server/internal/dex/uniswapV2Pair"
 	"price_api/price_server/internal/util"
 )
 

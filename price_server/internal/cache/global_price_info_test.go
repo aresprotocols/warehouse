@@ -1,7 +1,7 @@
 package cache
 
 import (
-	conf "price_api/price_server/config"
+	"price_api/price_server/internal/config"
 	"reflect"
 	"sync"
 	"testing"

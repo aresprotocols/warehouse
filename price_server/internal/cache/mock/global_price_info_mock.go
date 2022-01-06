@@ -5,7 +5,7 @@
 package mock_cache
 
 import (
-	conf "price_api/price_server/config"
+	"price_api/price_server/internal/config"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

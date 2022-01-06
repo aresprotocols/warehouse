@@ -3,7 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	conf "price_api/price_server/config"
+	"price_api/price_server/internal/config"
 	"price_api/price_server/internal/constant"
 	"price_api/price_server/internal/service"
 	"price_api/price_server/internal/vo"

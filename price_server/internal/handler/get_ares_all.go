@@ -4,9 +4,9 @@ import (
 	"github.com/gin-gonic/gin"
 	logger "github.com/sirupsen/logrus"
 	"net/http"
-	conf "price_api/price_server/config"
-	"price_api/price_server/exchange"
+	"price_api/price_server/internal/config"
 	"price_api/price_server/internal/constant"
+	"price_api/price_server/internal/exchange"
 	"price_api/price_server/internal/vo"
 )
 

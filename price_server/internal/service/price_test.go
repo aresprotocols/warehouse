@@ -2,8 +2,8 @@ package service
 
 import (
 	"github.com/golang/mock/gomock"
-	conf "price_api/price_server/config"
 	mock_cache "price_api/price_server/internal/cache/mock"
+	"price_api/price_server/internal/config"
 	mock_repository "price_api/price_server/internal/repository/mock"
 	"price_api/price_server/internal/vo"
 	"reflect"

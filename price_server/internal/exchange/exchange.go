@@ -3,7 +3,7 @@ package exchange
 import (
 	"errors"
 	logger "github.com/sirupsen/logrus"
-	conf "price_api/price_server/config"
+	conf2 "price_api/price_server/internal/config"
 	"price_api/price_server/internal/service"
 	"price_api/price_server/internal/vo"
 	"strings"
@@ -12,10 +12,10 @@ import (
 
 var gResPriceConfCH = make(chan vo.RESPONSE_PRICE_CONF)
 
-func GetSymbolExchangePrice(symbol string, reqConf map[string][]conf.ExchangeConfig, cfg conf.Config) (conf.PriceInfos, error) {
-	var retPriceInfos conf.PriceInfos
+func GetSymbolExchangePrice(symbol string, reqConf map[string][]conf2.ExchangeConfig, cfg conf2.Config) (conf2.PriceInfos, error) {
+	var retPriceInfos conf2.PriceInfos
 	timestamp := time.Now().Unix()
-	var gCh = make(chan conf.PriceInfo)
+	var gCh = make(chan conf2.PriceInfo)
 	reqCount := 0
 	for _, exchangeConf := range reqConf[symbol] {
 		reqCount++
@@ -33,8 +33,8 @@ func GetSymbolExchangePrice(symbol string, reqConf map[string][]conf.ExchangeCon
 	return retPriceInfos, nil
 }
 
-func getPriceInfo(gCh chan conf.PriceInfo, exchange conf.ExchangeConfig, symbol string, cfg conf.Config, reqConf map[string][]conf.ExchangeConfig) {
-	var priceInfo conf.PriceInfo
+func getPriceInfo(gCh chan conf2.PriceInfo, exchange conf2.ExchangeConfig, symbol string, cfg conf2.Config, reqConf map[string][]conf2.ExchangeConfig) {
+	var priceInfo conf2.PriceInfo
 	defer func() {
 		gCh <- priceInfo
 	}()
@@ -127,7 +127,7 @@ func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, 
 	}
 }
 
-func InitSymbolsUpdateInterval(cfg conf.Config) error {
+func InitSymbolsUpdateInterval(cfg conf2.Config) error {
 	updateIntervalService := service.Svc.UpdateInterval()
 	for _, symbol := range cfg.Symbols {
 		interval, err := updateIntervalService.CheckUpdateInterval(symbol, int(cfg.Interval))
@@ -139,8 +139,8 @@ func InitSymbolsUpdateInterval(cfg conf.Config) error {
 	return nil
 }
 
-func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, error) {
-	retRequestPriceConf := make(map[string][]conf.ExchangeConfig)
+func InitRequestPriceConf(cfg conf2.Config) (map[string][]conf2.ExchangeConfig, error) {
+	retRequestPriceConf := make(map[string][]conf2.ExchangeConfig)
 
 	for _, exchange := range cfg.Exchanges {
 		for _, symbol := range cfg.Symbols {
@@ -176,7 +176,7 @@ func InitRequestPriceConf(cfg conf.Config) (map[string][]conf.ExchangeConfig, er
 	return retRequestPriceConf, nil
 }
 
-func initRequestPrice(exchange conf.ExchangeConfig, symbol string, cfg conf.Config) {
+func initRequestPrice(exchange conf2.ExchangeConfig, symbol string, cfg conf2.Config) {
 	resPriceConf := vo.RESPONSE_PRICE_CONF{Conf: exchange, Symbol: symbol}
 	defer func() {
 		gResPriceConfCH <- resPriceConf
@@ -185,7 +185,7 @@ func initRequestPrice(exchange conf.ExchangeConfig, symbol string, cfg conf.Conf
 	resPriceConf.Price = getPriceByConf(exchange, symbol, cfg, false)
 }
 
-func getPriceByConf(exchange conf.ExchangeConfig, symbol string, cfg conf.Config, bRemberDb bool) float64 {
+func getPriceByConf(exchange conf2.ExchangeConfig, symbol string, cfg conf2.Config, bRemberDb bool) float64 {
 	var resJson string
 	var err error
 

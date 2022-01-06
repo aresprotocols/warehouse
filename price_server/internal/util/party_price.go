@@ -2,7 +2,7 @@ package util
 
 import (
 	"github.com/shopspring/decimal"
-	conf "price_api/price_server/config"
+	"price_api/price_server/internal/config"
 	"price_api/price_server/internal/vo"
 	"sort"
 )

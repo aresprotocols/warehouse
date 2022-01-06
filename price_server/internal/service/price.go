@@ -2,8 +2,8 @@ package service
 
 import (
 	logger "github.com/sirupsen/logrus"
-	conf "price_api/price_server/config"
 	"price_api/price_server/internal/cache"
+	"price_api/price_server/internal/config"
 	"price_api/price_server/internal/repository"
 	"price_api/price_server/internal/util"
 	"price_api/price_server/internal/vo"

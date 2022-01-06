@@ -4,8 +4,8 @@ import (
 	"errors"
 	logger "github.com/sirupsen/logrus"
 	"math/big"
-	conf "price_api/price_server/config"
-	"price_api/price_server/dex"
+	"price_api/price_server/internal/config"
+	"price_api/price_server/internal/dex"
 	"sync"
 	"time"
 )

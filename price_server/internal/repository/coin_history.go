@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/jmoiron/sqlx"
 	logger "github.com/sirupsen/logrus"
-	conf "price_api/price_server/config"
+	"price_api/price_server/internal/config"
 	"strconv"
 )
 
