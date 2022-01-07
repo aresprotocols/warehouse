@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+  mysql:
+    restart: unless-stopped
+    image: mysql:8.0.20
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: zywl
+      MYSQL_DATABASE: db_price
+    ports:
+      - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+
+  warehouse:
+    image: ares/warehouse:latest
+    container_name: warehouse
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    ports:
+      - "5566:5566"
+    volumes:
+      - ./configs:/opt/configs:ro
+      - ./logs:/opt/logs
+    command:
+      sh -c "./warehouse"
+

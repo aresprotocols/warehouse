@@ -14,3 +14,5 @@ server.log
 warehouse.log
 build
 logs
+**/deploy/data/
+**/deploy/logs/
