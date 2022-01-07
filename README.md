@@ -100,6 +100,47 @@ Run
 ./start.sh
 ```
 
+## Docker run
+
+### Getting the source
+
+Your can get the source from github, run
+
+``` bash
+ git clone https://github.com/aresprotocols/warehouse.git
+```
+
+### go to the deploy folder
+``` bash
+ cd warehouse/price_server/deploy
+```
+
+### Configuration
+
+Copy env_example to .env
+``` bash
+ cp env_example .env
+```
+
+Modify the .env file and change your mysql password
+
+> MYSQL_ROOT_PASSWORD='xxx'
+
+If you want to modify others configs,you can follow section `Configuration` to modify the `configs/config.toml` file
+
+
+### Start
+Use `docker-compose` to start service 
+```bash
+docker-compose up -d
+```
+
+### Stop
+Use `docker-compose` to stop service
+```bash
+docker-compose stop
+```
+
 ## Api
 
 ### Get exchange price
