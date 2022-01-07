@@ -7,7 +7,7 @@ This project is used for get price
 Your can get the source from github, run
 
 ``` bash
- git clone https://github.com/aresprotocols/get_price.git
+ git clone https://github.com/aresprotocols/warehouse.git
 ```
 
 ## Building the source
