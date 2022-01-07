@@ -7,7 +7,7 @@ services:
     volumes:
       - ./data/mysql:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: zywl
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: db_price
     ports:
       - "3306:3306"
@@ -24,6 +24,8 @@ services:
     volumes:
       - ./configs:/opt/configs:ro
       - ./logs:/opt/logs
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     command:
       sh -c "./warehouse"
 

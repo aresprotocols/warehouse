@@ -2,6 +2,8 @@ package conf
 
 import (
 	"errors"
+	logger "github.com/sirupsen/logrus"
+	"os"
 	"strconv"
 
 	"github.com/pelletier/go-toml"
@@ -136,6 +138,14 @@ func GetConfig() (Config, error) {
 	if !ok {
 		return Config{}, errors.New("parse key mysql.password error")
 	}
+
+	// try read mysql password from environment
+	envMysqlPassword := os.Getenv("MYSQL_ROOT_PASSWORD")
+	if envMysqlPassword != "" {
+		retConfig.Mysql.Password = envMysqlPassword
+	}
+
+	logger.Debugf("mysql password:%s", retConfig.Mysql.Password)
 
 	index := 1
 	exchange := "exchange."
