@@ -79,7 +79,9 @@ func (f *Fetcher) GetCMCInfo() *AresShowInfo {
 func (f *Fetcher) Start() {
 	go f.calUniswapPriceTimer(true)
 	go f.calUniswapPriceTimer(false)
-	go f.calGateCMCAresInfoTimer()
+	if !f.cfg.RunByDocker {
+		go f.calGateCMCAresInfoTimer()
+	}
 	go f.loop()
 }
 
@@ -166,6 +168,7 @@ func (f *Fetcher) calUniswapPrice(uniswap bool) {
 }
 
 func (f *Fetcher) calGateCMCAresInfoTimer() {
+	logger.Debugln("run calGateCMCAresInfoTimer")
 	go f.calGateCMCAresInfo()
 
 	timer1 := time.NewTicker(30 * time.Minute)

@@ -36,6 +36,7 @@ type Config struct {
 	RetryCount     int64 `toml:"retryCount"`
 	User           string
 	Password       string
+	RunByDocker    bool
 	Mysql          MysqlConfig
 	Exchanges      []ExchangeConfig
 	Symbols        []string
@@ -67,6 +68,11 @@ func GetConfig() (Config, error) {
 	retConfig.Port, ok = config.Get("port").(int64)
 	if !ok {
 		return Config{}, errors.New("parse key port error")
+	}
+
+	retConfig.RunByDocker, ok = config.Get("runByDocker").(bool)
+	if !ok {
+		return Config{}, errors.New("parse key runByDocker error")
 	}
 
 	retConfig.MaxMemTime, ok = config.Get("maxMemTime").(int64)
