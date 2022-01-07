@@ -5,4 +5,4 @@ warehouse:
 
 
 build-docker:
-	docker build -t ares/warehouse:latest -f docker/Dockerfile ../
+	docker build -t aresprotocollab/warehouse:latest -f docker/Dockerfile ../
