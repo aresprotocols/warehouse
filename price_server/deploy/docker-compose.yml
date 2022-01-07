@@ -14,7 +14,7 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   warehouse:
-    image: ares/warehouse:latest
+    image: aresprotocollab/warehouse:latest
     container_name: warehouse
     restart: unless-stopped
     depends_on:
