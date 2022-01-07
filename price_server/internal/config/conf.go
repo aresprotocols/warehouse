@@ -2,7 +2,6 @@ package conf
 
 import (
 	"errors"
-	logger "github.com/sirupsen/logrus"
 	"os"
 	"strconv"
 
@@ -144,8 +143,6 @@ func GetConfig() (Config, error) {
 	if envMysqlPassword != "" {
 		retConfig.Mysql.Password = envMysqlPassword
 	}
-
-	logger.Debugf("mysql password:%s", retConfig.Mysql.Password)
 
 	index := 1
 	exchange := "exchange."
