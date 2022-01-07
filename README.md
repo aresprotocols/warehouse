@@ -129,16 +129,16 @@ Modify the .env file and change your mysql password
 If you want to modify others configs,you can follow section `Configuration` to modify the `configs/config.toml` file
 
 
-### Start
-Use `docker-compose` to start service 
+### Up service
+Use `docker-compose` to up service 
 ```bash
 docker-compose up -d
 ```
 
-### Stop
-Use `docker-compose` to stop service
+### Down service
+Use `docker-compose` to down service
 ```bash
-docker-compose stop
+docker-compose down
 ```
 
 ## Api
