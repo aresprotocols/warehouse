@@ -1270,7 +1270,7 @@ Success Response Example
 }
 ```
 
-### bulk get symbol price
+### Get symbol price update status in bulk
 
 URL: `api/getBulkSymbolsState`
 
