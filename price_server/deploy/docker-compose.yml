@@ -4,6 +4,8 @@ services:
   mysql:
     restart: unless-stopped
     image: mysql:8.0.20
+    env_file:
+      - .env
     volumes:
       - ./data/mysql:/var/lib/mysql
     environment:
@@ -17,6 +19,8 @@ services:
   warehouse:
     image: aresprotocollab/warehouse:latest
     container_name: warehouse
+    env_file:
+      - .env
     restart: unless-stopped
     depends_on:
       - mysql
