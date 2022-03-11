@@ -2,11 +2,12 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+	conf "price_api/price_server/internal/config"
 	"price_api/price_server/internal/handler"
 	"price_api/price_server/internal/middleware"
 )
 
-func NewRouter() *gin.Engine {
+func NewRouter(conf conf.Config) *gin.Engine {
 
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
@@ -32,5 +33,9 @@ func NewRouter() *gin.Engine {
 	router.GET("/api/getUpdatePriceHeartbeat/:symbol", middleware.Check(), handler.HandleGetUpdatePriceHeartbeat)
 	router.GET("/api/getBulkSymbolsState", middleware.Check(), handler.HandleGetBulkSymbolsState)
 	router.POST("/api/setInterval", middleware.JWTAuthMiddleware(), middleware.Check(), handler.HandleSetInterval)
+
+	if !conf.RunByDocker {
+		router.GET("/api/gas/cal", middleware.Check(), handler.CalGasFee)
+	}
 	return router
 }

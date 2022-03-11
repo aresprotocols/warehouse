@@ -10,6 +10,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/mock v1.3.1
 	github.com/jmoiron/sqlx v1.3.4
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.9.3
 	github.com/shopspring/decimal v1.3.1
 	github.com/sirupsen/logrus v1.2.0

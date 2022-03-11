@@ -1,6 +1,7 @@
 package main
 
 import (
+	gocache "github.com/patrickmn/go-cache"
 	logger "github.com/sirupsen/logrus"
 	"log"
 	"os"
@@ -44,7 +45,7 @@ func main() {
 
 	logger.Info("mysql init over")
 	// Init service
-	service.Svc = service.New(repository.DB)
+	service.Svc = service.New(repository.DB, gocache.New(5*time.Minute, 10*time.Minute))
 
 	handle := handler.InitHandle(cfg)
 
@@ -65,7 +66,7 @@ func main() {
 
 	showIgnoreSymbols(cfg, requestPriceConfService.GetConfs())
 
-	router := routers.NewRouter()
+	router := routers.NewRouter(conf.GCfg)
 
 	go updatePrice(cfg, requestPriceConfService.GetConfs())
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))

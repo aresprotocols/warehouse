@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/jmoiron/sqlx"
+	gocache "github.com/patrickmn/go-cache"
 	"price_api/price_server/internal/cache"
 )
 
@@ -17,6 +18,7 @@ type Service interface {
 	WeightInfo() *WeightInfoService
 	RequestPriceConf() *RequestPriceConfService
 	UpdateInterval() *UpdateIntervalService
+	Gas() *GasService
 }
 
 type service struct {
@@ -24,10 +26,11 @@ type service struct {
 	globalCache               cache.GlobalPriceInfoCache
 	globalRequestPriceConfs   cache.GlobalRequestPriceConfs
 	globalUpdateIntervalCache cache.GlobalUpdateIntervalCache
+	goCache                   *gocache.Cache
 }
 
 // New init service
-func New(db *sqlx.DB) Service {
+func New(db *sqlx.DB, goCache *gocache.Cache) Service {
 	globalCahe := cache.NewGlobalPriceInfoCache()
 	globalRequestPriceConfs := cache.NewGlobalRequestPriceConfs()
 	globalUpdateIntervalCache := cache.NewGlobalUpdateIntervalCache()
@@ -36,6 +39,7 @@ func New(db *sqlx.DB) Service {
 		globalCache:               globalCahe,
 		globalRequestPriceConfs:   globalRequestPriceConfs,
 		globalUpdateIntervalCache: globalUpdateIntervalCache,
+		goCache:                   goCache,
 	}
 }
 
@@ -69,4 +73,8 @@ func (s *service) RequestPriceConf() *RequestPriceConfService {
 
 func (s *service) UpdateInterval() *UpdateIntervalService {
 	return newUpdateInterval(s)
+}
+
+func (s *service) Gas() *GasService {
+	return newGas(s)
 }
