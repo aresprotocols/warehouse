@@ -1,6 +1,6 @@
 interval = 60
 port = 5566
-runByDocker = true
+runByDocker = false
 insertInterval = 5 #insert db interval  time = insertInterval * interval
 maxMemTime = 18000  #max memory time in memory （second）
 pageSize = 20 
