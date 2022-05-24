@@ -6,6 +6,7 @@ import (
 	"price_api/price_server/internal/repository"
 	"price_api/price_server/internal/vo"
 	"strings"
+	"time"
 )
 
 type RequestInfoService struct {
@@ -163,4 +164,11 @@ func (s *RequestInfoService) parseLogInfos(logInfos []vo.REQ_RSP_LOG_INFO, symbo
 
 func (s *RequestInfoService) InsertLogInfo(mapInfo map[string]interface{}, t int) error {
 	return s.logInfoRepo.InsertLogInfo(mapInfo, t)
+}
+
+func (s *RequestInfoService) DeleteOldLogs() error {
+	now := time.Now()
+	oldTime := now.AddDate(0, -2, 0)
+	oldTimestamp := oldTime.Unix()
+	return s.logInfoRepo.DeleteOldLogs(oldTimestamp)
 }

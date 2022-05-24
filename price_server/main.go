@@ -69,6 +69,7 @@ func main() {
 	router := routers.NewRouter(conf.GCfg)
 
 	go updatePrice(cfg, requestPriceConfService.GetConfs())
+	go deleteOldLogs()
 	router.Run(":" + strconv.Itoa(int(cfg.Port)))
 
 	abortChan := make(chan os.Signal, 1)
@@ -142,4 +143,12 @@ func showIgnoreSymbols(cfg conf.Config, gRequestPriceConfs map[string][]conf.Exc
 		ignoreSymbols[symbol] = exchanges
 	}
 	logger.Infoln("ignore symbols and exchange:", ignoreSymbols)
+}
+
+func deleteOldLogs() {
+	requestInfoService := service.Svc.RequestInfo()
+	go func() {
+		requestInfoService.DeleteOldLogs()
+	}()
+	time.Sleep(time.Hour)
 }

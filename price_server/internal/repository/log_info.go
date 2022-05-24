@@ -14,6 +14,7 @@ type LogInfoRepository interface {
 	GetLogInfo(idx int, pageSize int) (vo.LOG_INFOS, error)
 	GetTotalLogInfoBySymbol(symbol string, ip string) (int, error)
 	GetLogInfoBySymbol(idx int, pageSize int, symbol string, ip string) ([]vo.REQ_RSP_LOG_INFO, error)
+	DeleteOldLogs(timestamp int64) error
 }
 
 func NewLogInfoRepository(db *sqlx.DB) LogInfoRepository {
@@ -93,4 +94,19 @@ func (r *logInfoRepository) GetLogInfoBySymbol(idx int, pageSize int, symbol str
 	}
 
 	return logInfos, nil
+}
+
+func (r *logInfoRepository) DeleteOldLogs(timestamp int64) error {
+	argsArr := make([]interface{}, 0)
+	querySql := "delete from " + TABLE_LOG_INFO + " where request_timestamp <= ? "
+	argsArr = append(argsArr, timestamp)
+	logger.Infoln("sql:", querySql, " args:", argsArr)
+	result, err := r.DB.Exec(querySql, argsArr...)
+	if err != nil {
+		logger.WithError(err).Errorf("exec delete log occur err")
+		return err
+	}
+	effectRows, _ := result.RowsAffected()
+	logger.Infof("exec delete log success,%d rows", effectRows)
+	return nil
 }
