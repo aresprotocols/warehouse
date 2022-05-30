@@ -34,8 +34,6 @@ func parseHuobiPrice(priceJson string) (float64, error) {
 	} else {
 		if len(huobiPriceInfo.Tick.Ask) == 0 {
 			logger.Infoln("response:", huobiPriceInfo.Status, " Tick:", huobiPriceInfo.Tick)
-		}
-		if len(huobiPriceInfo.Tick.Ask) == 0 {
 			return 0, nil
 		} else {
 			return huobiPriceInfo.Tick.Ask[0], nil
