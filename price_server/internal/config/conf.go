@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/pelletier/go-toml"
 )
@@ -40,6 +41,7 @@ type Config struct {
 	Mysql          MysqlConfig
 	Exchanges      []ExchangeConfig
 	Symbols        []string
+	SymbolReplaces map[string]map[string]string
 }
 
 // func GetConfig() (Config, error) {
@@ -142,6 +144,28 @@ func GetConfig() (Config, error) {
 	retConfig.Mysql.Password, ok = config.Get("mysql.password").(string)
 	if !ok {
 		return Config{}, errors.New("parse key mysql.password error")
+	}
+
+	symbolReplaces := config.Get("symbolReplaces")
+	if symbolReplaces == nil {
+		return Config{}, errors.New("get symbolReplaces error")
+	}
+
+	for _, replaceTemp := range symbolReplaces.([]interface{}) {
+		replaceArr := strings.Split(replaceTemp.(string), ",")
+		if len(replaceArr) != 3 {
+			return Config{}, errors.New("incorrect symbol replace " + replaceTemp.(string))
+		}
+		oldSymbol := replaceArr[0]
+		exchange := replaceArr[1]
+		newSymbol := replaceArr[2]
+		if retConfig.SymbolReplaces == nil {
+			retConfig.SymbolReplaces = make(map[string]map[string]string)
+		}
+		if _, ok := retConfig.SymbolReplaces[oldSymbol]; !ok {
+			retConfig.SymbolReplaces[oldSymbol] = make(map[string]string)
+		}
+		retConfig.SymbolReplaces[oldSymbol][exchange] = newSymbol
 	}
 
 	// try read mysql password from environment

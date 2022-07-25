@@ -53,8 +53,13 @@ func getPriceInfo(gCh chan conf2.PriceInfo, exchange conf2.ExchangeConfig, symbo
 	priceInfo.Price = getPriceByConf(exchange, symbol, cfg, true)
 }
 
-func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string) (string, error) {
+func getPriceBySymbolExchange(url, symbol, exchangeName, proxy string, replaces map[string]map[string]string) (string, error) {
 	lowName := strings.ToLower(exchangeName)
+	if len(replaces[symbol]) != 0 {
+		if _, ok := replaces[symbol][lowName]; ok {
+			symbol = replaces[symbol][lowName]
+		}
+	}
 	if lowName == "binance" {
 		if strings.Contains(url, "{$symbol}") {
 			symbol = strings.ReplaceAll(symbol, "-", "")
@@ -191,7 +196,7 @@ func getPriceByConf(exchange conf2.ExchangeConfig, symbol string, cfg conf2.Conf
 
 	lowName := strings.ToLower(exchange.Name)
 	for i := 0; i < int(cfg.RetryCount); i++ {
-		resJson, err = getPriceBySymbolExchange(exchange.Url, symbol, exchange.Name, cfg.Proxy)
+		resJson, err = getPriceBySymbolExchange(exchange.Url, symbol, exchange.Name, cfg.Proxy, cfg.SymbolReplaces)
 		if err == nil {
 			break
 		}

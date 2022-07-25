@@ -24,6 +24,8 @@ symbols = [
     "ont-usdt", "nano-usdt", "crv-usdt", "bnt-usdt", "fet-usdt", "uma-usdt", "iotx-usdt",
     "lrc-usdt", "sand-usdt", "srm-usdt", "1inch-usdt", "kava-usdt", "knc-usdt", "bnb-usdt"]
 
+symbolReplaces=[
+    "btt-usdt,binance,bttc-usdt"]
 
 [mysql]
 server = "127.0.0.1"
