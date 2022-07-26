@@ -16,7 +16,7 @@ func StartCron() {
 	requestInfoService := service.Svc.RequestInfo()
 	coinHistoryService := service.Svc.CoinHistory()
 	c := cron.New(cron.WithSeconds(), cron.WithChain(cron.SkipIfStillRunning(cron.DefaultLogger)), cron.WithLocation(location))
-	_, _ = c.AddFunc("0 */1 * * * *", func() {
+	_, _ = c.AddFunc("0 0 */1 * * *", func() {
 		requestInfoService.DeleteOld()
 		coinHistoryService.DeleteOld()
 	})
