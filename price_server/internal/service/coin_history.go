@@ -8,6 +8,7 @@ import (
 	"price_api/price_server/internal/util"
 	"price_api/price_server/internal/vo"
 	"strings"
+	"time"
 )
 
 type CoinHistoryService struct {
@@ -82,4 +83,23 @@ func (s *CoinHistoryService) GetUpdatePriceHistory(idx, pageSize int, symbol str
 		historyResps = append(historyResps, historyResp)
 	}
 	return total, historyResps, nil
+}
+
+func (s *CoinHistoryService) DeleteOld() error {
+	logger.Info("start delete old coin history")
+	now := time.Now()
+	oldTime := now.AddDate(0, -2, 0)
+	oldTimestamp := oldTime.Unix()
+	err := s.coinHistoryRepo.DeleteOldLogs(oldTimestamp)
+	if err != nil {
+		logger.WithError(err).Errorf("delete old coin history occur err")
+		return err
+	}
+	logger.Info("start delete old update price history")
+	err = s.updatePriceRepo.DeleteOldLogs(oldTimestamp)
+	if err != nil {
+		logger.WithError(err).Errorf("delete old update price occur err")
+		return err
+	}
+	return nil
 }

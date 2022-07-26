@@ -15,6 +15,7 @@ type CoinHistoryRepository interface {
 	GetHistoryBySymbol(idx int, pageSize int, symbol string) ([]conf.PriceInfo, error)
 	GetHistoryBySymbolAndTimestamp(symbol string, timestamp int64) ([]conf.PriceInfo, error)
 	//GetHistoryByTimestamp(timestamp int64) ([]conf.PriceInfo, error)
+	DeleteOldLogs(timestamp int64) error
 }
 
 func NewCoinHistoryRepository(db *sqlx.DB) CoinHistoryRepository {
@@ -113,3 +114,18 @@ func (r *coinHistoryRepository) GetHistoryBySymbolAndTimestamp(symbol string, ti
 //
 //	return dbPriceInfos, nil
 //}
+
+func (r *coinHistoryRepository) DeleteOldLogs(timestamp int64) error {
+	argsArr := make([]interface{}, 0)
+	querySql := "delete from " + TABLE_COIN_PRICE + " where timestamp <= ? "
+	argsArr = append(argsArr, timestamp)
+	logger.Infoln("sql:", querySql, " args:", argsArr)
+	result, err := r.db.Exec(querySql, argsArr...)
+	if err != nil {
+		logger.WithError(err).Errorf("exec delete coin history occur err")
+		return err
+	}
+	effectRows, _ := result.RowsAffected()
+	logger.Infof("exec delete coin history success,%d rows", effectRows)
+	return nil
+}

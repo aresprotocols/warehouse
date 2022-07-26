@@ -12,6 +12,7 @@ import (
 type UpdatePriceRepository interface {
 	GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error)
 	GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]vo.UpdatePirceHistory, error)
+	DeleteOldLogs(timestamp int64) error
 }
 
 func NewUpdatePriceRepository(db *sqlx.DB) UpdatePriceRepository {
@@ -43,4 +44,19 @@ func (r *updatePriceRepository) GetUpdatePriceHistoryBySymbol(idx int, pageSize 
 		return histories, err
 	}
 	return histories, nil
+}
+
+func (r *updatePriceRepository) DeleteOldLogs(timestamp int64) error {
+	argsArr := make([]interface{}, 0)
+	querySql := "delete from " + TABLE_UPDATE_PRICE_HISTORY + " where timestamp <= ? "
+	argsArr = append(argsArr, timestamp)
+	logger.Infoln("sql:", querySql, " args:", argsArr)
+	result, err := r.DB.Exec(querySql, argsArr...)
+	if err != nil {
+		logger.WithError(err).Errorf("exec delete update price history occur err")
+		return err
+	}
+	effectRows, _ := result.RowsAffected()
+	logger.Infof("exec delete update price history success,%d rows", effectRows)
+	return nil
 }

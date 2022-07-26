@@ -166,7 +166,8 @@ func (s *RequestInfoService) InsertLogInfo(mapInfo map[string]interface{}, t int
 	return s.logInfoRepo.InsertLogInfo(mapInfo, t)
 }
 
-func (s *RequestInfoService) DeleteOldLogs() error {
+func (s *RequestInfoService) DeleteOld() error {
+	logger.Info("start delete old logs")
 	now := time.Now()
 	oldTime := now.AddDate(0, -2, 0)
 	oldTimestamp := oldTime.Unix()
