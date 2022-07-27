@@ -52,7 +52,7 @@ func (r *updatePriceRepository) GetUpdatePriceHistoryByInterval(beforeTimestamp 
 	querySql := "select b.timestamp,b.symbol from " +
 		"(SELECT min(timestamp) as timestamp,symbol,floor(timestamp / (10 * 60)) * (10 * 60) as intervals from `" +
 		TABLE_UPDATE_PRICE_HISTORY +
-		"` where timestamp >= ? and symbol = ? group by intervals,symbol) as b"
+		"` where timestamp >= ? and symbol = ? group by intervals,symbol) as b order by b.timestamp"
 	logger.Infoln("sql:", querySql, "symbol", symbol)
 	err := r.DB.Select(&histories, querySql, beforeTimestamp, symbol)
 	if err != nil {
