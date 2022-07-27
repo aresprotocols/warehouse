@@ -84,6 +84,42 @@ func (s *CoinHistoryService) GetUpdatePriceHistory(idx, pageSize int, symbol str
 	}
 	return total, historyResps, nil
 }
+func (s *CoinHistoryService) GetUpdatePriceHistoryForChart(symbol string) ([]vo.UpdatePriceHistoryResp, error) {
+
+	now := time.Now()
+	oldTime := now.AddDate(0, 0, -1)
+
+	histories, err := s.updatePriceRepo.GetUpdatePriceHistoryByInterval(oldTime.Unix(), symbol)
+	if err != nil {
+		logger.WithError(err).Errorf("get history by interval occur error,symbol:%s", symbol)
+		return nil, err
+	}
+	historyResps := make([]vo.UpdatePriceHistoryResp, 0)
+	for _, history := range histories {
+		infos, err := s.coinHistoryRepo.GetHistoryBySymbolAndTimestamp(history.Symbol, history.Timestamp)
+		if err != nil {
+			logger.WithError(err).Errorf("get history by interval occur error,symbol:%s", symbol)
+			return nil, err
+		}
+
+		bFind, partyPriceData := util.PartyPrice(infos, true)
+
+		if !bFind {
+			logger.Infoln("partyPrice error, symbol:", symbol)
+
+			return nil, err
+		}
+
+		historyResp := vo.UpdatePriceHistoryResp{
+			Timestamp: history.Timestamp,
+			Symbol:    history.Symbol,
+			Price:     partyPriceData.Price,
+			Infos:     infos,
+		}
+		historyResps = append(historyResps, historyResp)
+	}
+	return historyResps, nil
+}
 
 func (s *CoinHistoryService) DeleteOld() error {
 	logger.Info("start delete old coin history")

@@ -13,6 +13,7 @@ type UpdatePriceRepository interface {
 	GetTotalUpdatePriceHistoryBySymbol(symbol string) (int, error)
 	GetUpdatePriceHistoryBySymbol(idx int, pageSize int, symbol string) ([]vo.UpdatePirceHistory, error)
 	DeleteOldLogs(timestamp int64) error
+	GetUpdatePriceHistoryByInterval(beforeTimestamp int64, symbol string) ([]vo.UpdatePirceHistory, error)
 }
 
 func NewUpdatePriceRepository(db *sqlx.DB) UpdatePriceRepository {
@@ -40,6 +41,20 @@ func (r *updatePriceRepository) GetUpdatePriceHistoryBySymbol(idx int, pageSize 
 	logger.Infoln("sql:", querySql, "symbol", symbol, " limit:", strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
 
 	err := r.DB.Select(&histories, querySql, symbol, strconv.Itoa(idx*pageSize), strconv.Itoa(pageSize))
+	if err != nil {
+		return histories, err
+	}
+	return histories, nil
+}
+
+func (r *updatePriceRepository) GetUpdatePriceHistoryByInterval(beforeTimestamp int64, symbol string) ([]vo.UpdatePirceHistory, error) {
+	var histories []vo.UpdatePirceHistory
+	querySql := "select b.timestamp,b.symbol from " +
+		"(SELECT min(timestamp) as timestamp,symbol,floor(timestamp / (10 * 60)) * (10 * 60) as intervals from `" +
+		TABLE_UPDATE_PRICE_HISTORY +
+		"` where timestamp >= ? and symbol = ? group by intervals,symbol) as b"
+	logger.Infoln("sql:", querySql, "symbol", symbol)
+	err := r.DB.Select(&histories, querySql, beforeTimestamp, symbol)
 	if err != nil {
 		return histories, err
 	}

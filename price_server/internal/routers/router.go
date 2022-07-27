@@ -33,6 +33,7 @@ func NewRouter(conf conf.Config) *gin.Engine {
 	router.GET("/api/getUpdatePriceHeartbeat/:symbol", middleware.Check(), handler.HandleGetUpdatePriceHeartbeat)
 	router.GET("/api/getBulkSymbolsState", middleware.Check(), handler.HandleGetBulkSymbolsState)
 	router.POST("/api/setInterval", middleware.JWTAuthMiddleware(), middleware.Check(), handler.HandleSetInterval)
+	router.GET("/api/getUpdatePriceHistoryForChart", handler.HandleGetUpdatePriceHistoryForChart)
 
 	if !conf.RunByDocker {
 		router.GET("/api/gas/cal", middleware.Check(), handler.CalGasFee)

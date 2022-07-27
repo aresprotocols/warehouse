@@ -5,7 +5,7 @@
 package mock_repository
 
 import (
-	"price_api/price_server/internal/config"
+	conf "price_api/price_server/internal/config"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -32,6 +32,20 @@ func NewMockCoinHistoryRepository(ctrl *gomock.Controller) *MockCoinHistoryRepos
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockCoinHistoryRepository) EXPECT() *MockCoinHistoryRepositoryMockRecorder {
 	return m.recorder
+}
+
+// DeleteOldLogs mocks base method.
+func (m *MockCoinHistoryRepository) DeleteOldLogs(arg0 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOldLogs", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOldLogs indicates an expected call of DeleteOldLogs.
+func (mr *MockCoinHistoryRepositoryMockRecorder) DeleteOldLogs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOldLogs", reflect.TypeOf((*MockCoinHistoryRepository)(nil).DeleteOldLogs), arg0)
 }
 
 // GetHistoryBySymbol mocks base method.

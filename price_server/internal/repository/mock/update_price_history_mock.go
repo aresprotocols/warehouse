@@ -34,6 +34,20 @@ func (m *MockUpdatePriceRepository) EXPECT() *MockUpdatePriceRepositoryMockRecor
 	return m.recorder
 }
 
+// DeleteOldLogs mocks base method.
+func (m *MockUpdatePriceRepository) DeleteOldLogs(arg0 int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteOldLogs", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteOldLogs indicates an expected call of DeleteOldLogs.
+func (mr *MockUpdatePriceRepositoryMockRecorder) DeleteOldLogs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteOldLogs", reflect.TypeOf((*MockUpdatePriceRepository)(nil).DeleteOldLogs), arg0)
+}
+
 // GetTotalUpdatePriceHistoryBySymbol mocks base method.
 func (m *MockUpdatePriceRepository) GetTotalUpdatePriceHistoryBySymbol(arg0 string) (int, error) {
 	m.ctrl.T.Helper()
@@ -47,6 +61,21 @@ func (m *MockUpdatePriceRepository) GetTotalUpdatePriceHistoryBySymbol(arg0 stri
 func (mr *MockUpdatePriceRepositoryMockRecorder) GetTotalUpdatePriceHistoryBySymbol(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTotalUpdatePriceHistoryBySymbol", reflect.TypeOf((*MockUpdatePriceRepository)(nil).GetTotalUpdatePriceHistoryBySymbol), arg0)
+}
+
+// GetUpdatePriceHistoryByInterval mocks base method.
+func (m *MockUpdatePriceRepository) GetUpdatePriceHistoryByInterval(arg0 int64, arg1 string) ([]vo.UpdatePirceHistory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUpdatePriceHistoryByInterval", arg0, arg1)
+	ret0, _ := ret[0].([]vo.UpdatePirceHistory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUpdatePriceHistoryByInterval indicates an expected call of GetUpdatePriceHistoryByInterval.
+func (mr *MockUpdatePriceRepositoryMockRecorder) GetUpdatePriceHistoryByInterval(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUpdatePriceHistoryByInterval", reflect.TypeOf((*MockUpdatePriceRepository)(nil).GetUpdatePriceHistoryByInterval), arg0, arg1)
 }
 
 // GetUpdatePriceHistoryBySymbol mocks base method.
